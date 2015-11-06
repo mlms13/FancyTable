@@ -1,0 +1,22 @@
+.ft-table {
+  background: #fafafa;
+  border-top: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+}
+.ft-row {
+  border-bottom: 1px solid #ddd;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+.ft-col {
+  border-right: 1px solid #ddd;
+  box-sizing: border-box;
+  -webkit-box-flex: 1;
+  -webkit-flex: auto;
+      -ms-flex: auto;
+          flex: auto;
+  min-height: 30px;
+  padding: 5px;
+}

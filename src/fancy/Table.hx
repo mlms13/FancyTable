@@ -1,26 +1,37 @@
 package fancy;
 
 import fancy.table.*;
-import fancy.browserHelpers.Dom;
+import fancy.table.util.Types;
+import fancy.browser.Dom;
 import js.html.Element;
 
 class Table {
   var parent : Element;
   var el : Element;
   var rows : Array<Row>;
+  var colCount : Int;
 
-  public function new(parent : Element, options : FancyTableOptions) {
+  public function new(parent : Element, ?options : FancyTableOptions) {
     this.parent = parent;
     rows = [];
-    this.el = Dom.create(".fancy-table");
+    colCount = 0;
+    el = Dom.create("div.ft-table");
+    parent.appendChild(el);
   }
 
   public function appendRow() : Table {
-    rows.push(new Row());
+    var row = new Row(colCount);
+
+    rows.push(row);
+    el.appendChild(row.el);
     return this;
   }
 
   public function appendColumn() : Table {
+    colCount++;
+    rows.map(function (row) {
+      row.appendColumn();
+    });
     return this;
   }
 }

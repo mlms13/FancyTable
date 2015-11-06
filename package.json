@@ -1,0 +1,33 @@
+{
+  "name": "fancytable",
+  "version": "0.0.1",
+  "description": "Tables with folding, fixed headers, and more",
+  "main": "bin/demo.js",
+  "bin": {
+    "fancytable": "demo.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mlms13/FancyTable.git"
+  },
+  "keywords": [
+    "browser",
+    "table"
+  ],
+  "author": "Michael Martin-Smucker <mlmartin13@gmail.com> (http://www.martinsmucker.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mlms13/FancyTable/issues"
+  },
+  "homepage": "https://github.com/mlms13/FancyTable#readme",
+  "dependencies": {
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-stylus": "^2.1.0",
+    "gulp-util": "^3.0.7"
+  }
+}

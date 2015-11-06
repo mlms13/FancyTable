@@ -2,11 +2,109 @@
 (function (console) { "use strict";
 var Main = function() { };
 Main.main = function() {
-	var table = new fancy_Table();
+	var el = window.document.querySelector(".table-container");
+	var table = new fancy_Table(el,{ });
+	table.appendRow().appendRow().appendColumn().appendColumn();
 };
-var fancy_Table = function() {
+var Reflect = function() { };
+Reflect.field = function(o,field) {
+	try {
+		return o[field];
+	} catch( e ) {
+		return null;
+	}
+};
+Reflect.fields = function(o) {
+	var a = [];
+	if(o != null) {
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+		for( var f in o ) {
+		if(f != "__id__" && f != "hx__closures__" && hasOwnProperty.call(o,f)) a.push(f);
+		}
+	}
+	return a;
+};
+var fancy_Table = function(parent,options) {
+	this.parent = parent;
 	this.rows = [];
+	this.colCount = 0;
+	this.el = fancy_browser_Dom.create("div.ft-table");
+	parent.appendChild(this.el);
 };
-var fancy_table_Row = function() { };
+fancy_Table.prototype = {
+	appendRow: function() {
+		var row = new fancy_table_Row(this.colCount);
+		this.rows.push(row);
+		this.el.appendChild(row.el);
+		return this;
+	}
+	,appendColumn: function() {
+		this.colCount++;
+		this.rows.map(function(row) {
+			row.appendColumn();
+		});
+		return this;
+	}
+};
+var fancy_browser_Dom = function() { };
+fancy_browser_Dom.create = function(name,attrs,children,textContent) {
+	if(attrs == null) attrs = { };
+	if(children == null) children = [];
+	var classNames;
+	if(Object.prototype.hasOwnProperty.call(attrs,"class")) classNames = Reflect.field(attrs,"class"); else classNames = "";
+	var nameParts = name.split(".");
+	name = nameParts.shift();
+	if(nameParts.length > 0) classNames += " " + nameParts.join(" ");
+	var el = window.document.createElement(name);
+	var _g = 0;
+	var _g1 = Reflect.fields(attrs);
+	while(_g < _g1.length) {
+		var att = _g1[_g];
+		++_g;
+		console.log(att);
+		console.log(Reflect.field(attrs,att));
+		el.setAttribute(att,Reflect.field(attrs,att));
+	}
+	el.className = classNames;
+	var _g2 = 0;
+	while(_g2 < children.length) {
+		var child = children[_g2];
+		++_g2;
+		el.appendChild(child);
+	}
+	if(textContent != null) el.appendChild(window.document.createTextNode(textContent));
+	return el;
+};
+var fancy_table_Column = function(value) {
+	this.el = fancy_browser_Dom.create("div.ft-col",value);
+};
+var fancy_table_Row = function(colCount) {
+	if(colCount == null) colCount = 0;
+	this.cols = [];
+	this.el = fancy_browser_Dom.create("div.ft-row");
+	var _g = 0;
+	while(_g < colCount) {
+		var i = _g++;
+		this.appendColumn();
+	}
+};
+fancy_table_Row.prototype = {
+	appendColumn: function(value) {
+		var col = new fancy_table_Column(value);
+		this.cols.push(col);
+		this.el.appendChild(col.el);
+		return col;
+	}
+};
+if(Array.prototype.map == null) Array.prototype.map = function(f) {
+	var a = [];
+	var _g1 = 0;
+	var _g = this.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		a[i] = f(this[i]);
+	}
+	return a;
+};
 Main.main();
 })(typeof console != "undefined" ? console : {log:function(){}});
