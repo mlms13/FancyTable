@@ -19,7 +19,7 @@ class Table {
     parent.appendChild(el);
   }
 
-  public function insertRowAt(index : Int, ?values : Array<String>) : Table {
+  public function insertRowAt(index : Int) : Table {
     var row = new Row(colCount);
     rows.insert(index, row);
     el.insertChildAtIndex(row.el, index);
