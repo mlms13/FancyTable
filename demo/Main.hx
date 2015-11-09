@@ -8,6 +8,8 @@ class Main {
       .appendRow()
       .appendRow()
       .appendColumn()
+      .appendColumn()
+      .appendRow()
       .appendColumn();
   }
 }

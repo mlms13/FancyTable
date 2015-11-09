@@ -2,7 +2,7 @@ package fancy;
 
 import fancy.table.*;
 import fancy.table.util.Types;
-import fancy.browser.Dom;
+using fancy.browser.Dom;
 import js.html.Element;
 
 class Table {
@@ -19,19 +19,34 @@ class Table {
     parent.appendChild(el);
   }
 
-  public function appendRow() : Table {
+  public function insertRowAt(index : Int, ?values : Array<String>) : Table {
     var row = new Row(colCount);
-
-    rows.push(row);
-    el.appendChild(row.el);
+    rows.insert(index, row);
+    el.insertChildAtIndex(row.el, index);
     return this;
   }
 
-  public function appendColumn() : Table {
+  public function prependRow() : Table {
+    return insertRowAt(0);
+  }
+
+  public function appendRow() : Table {
+    return insertRowAt(rows.length);
+  }
+
+  public function insertColumnAt(index : Int) : Table {
     colCount++;
     rows.map(function (row) {
-      row.appendColumn();
+      row.insertColumn(index);
     });
     return this;
+  }
+
+  public function prependColumn() : Table {
+    return insertColumnAt(0);
+  }
+
+  public function appendColumn() : Table {
+    return insertColumnAt(colCount);
   }
 }

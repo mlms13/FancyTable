@@ -4,7 +4,7 @@ var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var table = new fancy_Table(el,{ });
-	table.appendRow().appendRow().appendColumn().appendColumn();
+	table.appendRow().appendRow().appendColumn().appendColumn().appendRow().appendColumn();
 };
 var Reflect = function() { };
 Reflect.field = function(o,field) {
@@ -32,18 +32,24 @@ var fancy_Table = function(parent,options) {
 	parent.appendChild(this.el);
 };
 fancy_Table.prototype = {
-	appendRow: function() {
+	insertRowAt: function(index,values) {
 		var row = new fancy_table_Row(this.colCount);
-		this.rows.push(row);
-		this.el.appendChild(row.el);
+		this.rows.splice(index,0,row);
+		fancy_browser_Dom.insertChildAtIndex(this.el,row.el,index);
+		return this;
+	}
+	,appendRow: function() {
+		return this.insertRowAt(this.rows.length);
+	}
+	,insertColumnAt: function(index) {
+		this.colCount++;
+		this.rows.map(function(row) {
+			row.insertColumn(index);
+		});
 		return this;
 	}
 	,appendColumn: function() {
-		this.colCount++;
-		this.rows.map(function(row) {
-			row.appendColumn();
-		});
-		return this;
+		return this.insertColumnAt(this.colCount);
 	}
 };
 var fancy_browser_Dom = function() { };
@@ -75,8 +81,12 @@ fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(textContent != null) el.appendChild(window.document.createTextNode(textContent));
 	return el;
 };
+fancy_browser_Dom.insertChildAtIndex = function(el,child,index) {
+	el.insertBefore(child,el.children[index]);
+	return el;
+};
 var fancy_table_Column = function(value) {
-	this.el = fancy_browser_Dom.create("div.ft-col",value);
+	this.el = fancy_browser_Dom.create("div.ft-col",null,null,value);
 };
 var fancy_table_Row = function(colCount) {
 	if(colCount == null) colCount = 0;
@@ -85,14 +95,14 @@ var fancy_table_Row = function(colCount) {
 	var _g = 0;
 	while(_g < colCount) {
 		var i = _g++;
-		this.appendColumn();
+		this.insertColumn(i);
 	}
 };
 fancy_table_Row.prototype = {
-	appendColumn: function(value) {
+	insertColumn: function(index,value) {
 		var col = new fancy_table_Column(value);
-		this.cols.push(col);
-		this.el.appendChild(col.el);
+		this.cols.splice(index,0,col);
+		fancy_browser_Dom.insertChildAtIndex(this.el,col.el,index);
 		return col;
 	}
 };

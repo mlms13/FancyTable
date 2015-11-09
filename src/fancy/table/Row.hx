@@ -1,6 +1,6 @@
 package fancy.table;
 
-import fancy.browser.Dom;
+using fancy.browser.Dom;
 import js.html.Element;
 
 class Row {
@@ -10,13 +10,13 @@ class Row {
   public function new(?colCount = 0) {
     cols = [];
     this.el = Dom.create("div.ft-row");
-    for (i in 0...colCount) appendColumn();
+    for (i in 0...colCount) insertColumn(i);
   }
 
-  public function appendColumn(?value) : Column {
+  public function insertColumn(index : Int, ?value : String) : Column {
     var col = new Column(value);
-    cols.push(col);
-    el.appendChild(col.el);
+    cols.insert(index, col);
+    el.insertChildAtIndex(col.el, index);
     return col;
   }
 }
