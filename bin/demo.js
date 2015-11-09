@@ -11,8 +11,17 @@ HxOverrides.iter = function(a) {
 var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var table = new fancy_Table(el,{ });
-	table.appendRow().appendRow().appendColumn().appendColumn().appendRow().appendColumn();
+	var data = [{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : ""}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
+	thx_Arrays.reduce(data,function(table,curr) {
+		return table.appendRow(Main.generateRow(curr));
+	},new fancy_Table(el));
+};
+Main.generateRow = function(data) {
+	if(data.values == null) data.values = []; else data.values = data.values;
+	var row = thx_Arrays.reduce(data.values,function(acc,curr) {
+		return acc.appendColumn(new fancy_table_Column(curr));
+	},new fancy_table_Row([new fancy_table_Column(data.label)]));
+	return row;
 };
 var Reflect = function() { };
 Reflect.field = function(o,field) {
@@ -40,24 +49,14 @@ var fancy_Table = function(parent,options) {
 	parent.appendChild(this.el);
 };
 fancy_Table.prototype = {
-	insertRowAt: function(index) {
-		var row = new fancy_table_Row(null,this.colCount);
+	insertRowAt: function(index,row) {
+		if(row == null) row = new fancy_table_Row(null,this.colCount); else row = row;
 		this.rows.splice(index,0,row);
 		fancy_browser_Dom.insertChildAtIndex(this.el,row.el,index);
 		return this;
 	}
-	,appendRow: function() {
-		return this.insertRowAt(this.rows.length);
-	}
-	,insertColumnAt: function(index) {
-		this.colCount++;
-		this.rows.map(function(row) {
-			row.insertColumn(index);
-		});
-		return this;
-	}
-	,appendColumn: function() {
-		return this.insertColumnAt(this.colCount);
+	,appendRow: function(row) {
+		return this.insertRowAt(this.rows.length,row);
 	}
 };
 var fancy_browser_Dom = function() { };
@@ -113,22 +112,52 @@ var fancy_table_Row = function(cols,colCount) {
 	}
 };
 fancy_table_Row.prototype = {
-	insertColumn: function(index,value) {
-		var col = new fancy_table_Column(value);
+	insertColumn: function(index,col) {
+		if(col == null) col = new fancy_table_Column(); else col = col;
 		this.cols.splice(index,0,col);
 		fancy_browser_Dom.insertChildAtIndex(this.el,col.el,index);
 		return this;
 	}
-};
-if(Array.prototype.map == null) Array.prototype.map = function(f) {
-	var a = [];
-	var _g1 = 0;
-	var _g = this.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		a[i] = f(this[i]);
+	,appendColumn: function(col) {
+		return this.insertColumn(this.cols.length,col);
 	}
-	return a;
 };
+var thx_Arrays = function() { };
+thx_Arrays.reduce = function(array,callback,initial) {
+	return array.reduce(callback,initial);
+};
+
+      // Production steps of ECMA-262, Edition 5, 15.4.4.21
+      // Reference: http://es5.github.io/#x15.4.4.21
+      if (!Array.prototype.reduce) {
+        Array.prototype.reduce = function(callback /*, initialValue*/) {
+          'use strict';
+          if (this == null) {
+            throw new TypeError('Array.prototype.reduce called on null or undefined');
+          }
+          if (typeof callback !== 'function') {
+            throw new TypeError(callback + ' is not a function');
+          }
+          var t = Object(this), len = t.length >>> 0, k = 0, value;
+          if (arguments.length == 2) {
+            value = arguments[1];
+          } else {
+            while (k < len && ! k in t) {
+              k++;
+            }
+            if (k >= len) {
+              throw new TypeError('Reduce of empty array with no initial value');
+            }
+            value = t[k++];
+          }
+          for (; k < len; k++) {
+            if (k in t) {
+              value = callback(value, t[k], k, t);
+            }
+          }
+          return value;
+        };
+      }
+    ;
 Main.main();
 })(typeof console != "undefined" ? console : {log:function(){}});

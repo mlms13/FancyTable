@@ -19,19 +19,19 @@ class Table {
     parent.appendChild(el);
   }
 
-  public function insertRowAt(index : Int) : Table {
-    var row = new Row(colCount);
+  public function insertRowAt(index : Int, ?row : Row) : Table {
+    row = row == null ? new Row(colCount) : row;
     rows.insert(index, row);
     el.insertChildAtIndex(row.el, index);
     return this;
   }
 
-  public function prependRow() : Table {
-    return insertRowAt(0);
+  public function prependRow(?row : Row) : Table {
+    return insertRowAt(0, row);
   }
 
-  public function appendRow() : Table {
-    return insertRowAt(rows.length);
+  public function appendRow(?row : Row) : Table {
+    return insertRowAt(rows.length, row);
   }
 
   public function insertColumnAt(index : Int) : Table {

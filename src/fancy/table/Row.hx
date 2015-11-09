@@ -24,10 +24,14 @@ class Row {
     }
   }
 
-  public function insertColumn(index : Int, ?value : String) : Row {
-    var col = new Column(value);
+  public function insertColumn(index : Int, ?col : Column) : Row {
+    col = col == null ? new Column() : col;
     cols.insert(index, col);
     el.insertChildAtIndex(col.el, index);
     return this;
+  }
+
+  public function appendColumn(?col : Column) : Row {
+    return insertColumn(cols.length, col);
   }
 }
