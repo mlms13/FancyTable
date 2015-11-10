@@ -13,22 +13,31 @@
   display: -ms-flexbox;
   display: flex;
 }
-.ft-row-with-children > .ft-row-values > .ft-col:first-child:before {
-  content: "\25B8";
-  margin-right: 6px;
-}
 .ft-row .ft-row {
   border-bottom: 0;
   border-top: 1px solid #ddd;
 }
 .ft-row .ft-row .ft-col:first-child {
-  padding-left: 20px;
+  padding-left: 24px;
 }
 .ft-row .ft-row .ft-row .ft-col:first-child {
-  padding-left: 32px;
+  padding-left: 40px;
 }
 .ft-row .ft-row .ft-row .ft-row .ft-col:first-child {
-  padding-left: 44px;
+  padding-left: 56px;
+}
+.ft-row-with-children > .ft-row-values > .ft-col:first-child:before {
+  content: "\25B8";
+  display: inline-block;
+  margin-right: 5px;
+}
+.ft-row-with-children.ft-row-expanded > .ft-row-values > .ft-col:first-child:before {
+  -webkit-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+          transform: rotate(90deg);
+}
+.ft-row-collapsed .ft-row {
+  display: none;
 }
 .ft-col {
   border-right: 1px solid #ddd;

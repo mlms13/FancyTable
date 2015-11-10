@@ -13,12 +13,6 @@ $basePadding = 8px
     &-values
       display flex
 
-    // rows that contain other rows show dropdown arrows
-    &-with-children
-      > .ft-row-values > .ft-col:first-child:before
-        content "\25B8"
-        margin-right 6px
-
     // nested rows
     .ft-row
       border-bottom 0
@@ -26,13 +20,27 @@ $basePadding = 8px
 
     // indent first column in nested rows
     .ft-row .ft-col:first-child
-      padding-left $basePadding + 12px
+      padding-left $basePadding + (2 * $basePadding)
 
     .ft-row .ft-row .ft-col:first-child
-      padding-left $basePadding + 24px
+      padding-left $basePadding + (4 * $basePadding)
 
     .ft-row .ft-row .ft-row .ft-col:first-child
-      padding-left $basePadding + 36px
+      padding-left $basePadding + (6 * $basePadding)
+
+    // rows that contain other rows show dropdown arrows
+    &-with-children
+      > .ft-row-values > .ft-col:first-child:before
+        content "\25B8"
+        display inline-block
+        margin-right 5px
+
+      &.ft-row-expanded > .ft-row-values > .ft-col:first-child:before
+        transform rotate(90deg)
+
+    &-collapsed
+      .ft-row
+        display none
 
   &-col
     border-right 1px solid #ddd

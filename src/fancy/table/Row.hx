@@ -1,20 +1,25 @@
 package fancy.table;
 
 using fancy.browser.Dom;
+import fancy.table.util.Types;
 import js.html.Element;
 using thx.Arrays;
+using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
   var cellsEl : Element;
+  var opts : FancyRowOptions;
   var cols : Array<Column>;
   var rows : Array<Row>;
 
-  public function new(?cols : Array<Column>, ?colCount = 0) {
+  public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
     this.cols = cols == null ? [] : cols;
     this.rows = [];
+    opts = createDefaultOptions(options);
+    opts.classes = createDefaultClasses(opts.classes);
     cellsEl = Dom.create("div.ft-row-values");
-    this.el = Dom.create("div.ft-row", [cellsEl]);
+    el = Dom.create("div.ft-row", [cellsEl]);
 
     // append all provided columns to this row in the dom
     this.cols.reducei(function (container : Element, col, index) {
@@ -26,6 +31,23 @@ class Row {
     if (colDiff > 0) {
       for (i in 0...colDiff) insertColumn(i + this.cols.length);
     }
+  }
+
+  function createDefaultOptions(?options : FancyRowOptions) : FancyRowOptions {
+    return Objects.merge({
+      expanded : true,
+      classes : ({} : FancyRowClasses) // TODO: surely the syntax can be nicer
+    }, options == null ? {} : options);
+  }
+
+  function createDefaultClasses(?classes : FancyRowClasses) : FancyRowClasses {
+    return Objects.merge({
+      row : "ft-row",
+      values : "ft-row-values",
+      expanded : "ft-row-expanded",
+      collapsed : "ft-row-collapsed",
+      withChildren : "ft-row-with-children"
+    }, classes == null ? {} : classes);
   }
 
   public function insertColumn(index : Int, ?col : Column) : Row {
@@ -43,13 +65,31 @@ class Row {
     row = row == null ? new Row() : row;
     rows.insert(index, row);
     el
-      .addClass("ft-row-with-children")
+      .addClass(opts.classes.withChildren)
+      .addClass(opts.expanded ? opts.classes.expanded : opts.classes.collapsed)
       .insertChildAtIndex(row.el, index);
     return this;
   }
 
   public function appendRow(?row : Row) : Row {
     return insertRow(rows.length + 1, row);
+  }
+
+  public function expand() {
+    opts.expanded = true;
+    el.removeClass(opts.classes.collapsed).addClass(opts.classes.expanded);
+  }
+
+  public function collapse() {
+    opts.expanded = false;
+    el.removeClass(opts.classes.expanded).addClass(opts.classes.collapsed);
+  }
+
+  public function toggle() {
+    if (opts.expanded)
+      collapse();
+    else
+      expand();
   }
 
   public function setCellValue(index : Int, value : String) : Row {

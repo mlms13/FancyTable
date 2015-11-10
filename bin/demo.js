@@ -17,6 +17,9 @@ EReg.prototype = {
 		this.r.s = s;
 		return this.r.m != null;
 	}
+	,replace: function(s,by) {
+		return s.replace(this.r,by);
+	}
 };
 var HxOverrides = function() { };
 HxOverrides.iter = function(a) {
@@ -29,16 +32,20 @@ HxOverrides.iter = function(a) {
 var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
+	var data = [{ label : "Color and cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
 	thx_Arrays.reduce(data,function(table,curr) {
 		return table.appendRow(Main.generateRow(curr));
 	},new fancy_Table(el));
 };
 Main.generateRow = function(data) {
 	if(data.values == null) data.values = []; else data.values = data.values;
+	var headerCell = new fancy_table_Column(data.label);
 	var row = thx_Arrays.reducei(data.values,function(acc,curr,index) {
 		return acc.setCellValue(index + 1,curr);
-	},new fancy_table_Row([new fancy_table_Column(data.label)],4));
+	},new fancy_table_Row([headerCell],4));
+	fancy_browser_Dom.on(headerCell.el,"click",function(_) {
+		row.toggle();
+	});
 	if(data.data == null) return row; else return data.data.reduce(function(row1,curr1) {
 		return row1.appendRow(Main.generateRow(curr1));
 	},row);
@@ -95,6 +102,15 @@ fancy_browser_Dom.addClass = function(el,className) {
 	if(!fancy_browser_Dom.hasClass(el,className)) el.className += " " + className;
 	return el;
 };
+fancy_browser_Dom.removeClass = function(el,className) {
+	var regex = new EReg("(?:^|\\s)(" + className + ")(?!\\S)","g");
+	el.className = regex.replace(el.className,"");
+	return el;
+};
+fancy_browser_Dom.on = function(el,eventName,callback) {
+	el.addEventListener(eventName,callback);
+	return el;
+};
 fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(attrs == null) attrs = { };
 	if(children == null) children = [];
@@ -134,10 +150,12 @@ fancy_browser_Dom.empty = function(el) {
 var fancy_table_Column = function(value) {
 	this.el = fancy_browser_Dom.create("div.ft-col",null,null,value);
 };
-var fancy_table_Row = function(cols,colCount) {
+var fancy_table_Row = function(cols,colCount,options) {
 	if(colCount == null) colCount = 0;
 	if(cols == null) this.cols = []; else this.cols = cols;
 	this.rows = [];
+	this.opts = this.createDefaultOptions(options);
+	this.opts.classes = this.createDefaultClasses(this.opts.classes);
 	this.cellsEl = fancy_browser_Dom.create("div.ft-row-values");
 	this.el = fancy_browser_Dom.create("div.ft-row",null,[this.cellsEl]);
 	this.cols.reduce(function(container,col,index) {
@@ -153,7 +171,13 @@ var fancy_table_Row = function(cols,colCount) {
 	}
 };
 fancy_table_Row.prototype = {
-	insertColumn: function(index,col) {
+	createDefaultOptions: function(options) {
+		return thx_Objects.combine({ expanded : true, classes : { }},options == null?{ }:options);
+	}
+	,createDefaultClasses: function(classes) {
+		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", withChildren : "ft-row-with-children"},classes == null?{ }:classes);
+	}
+	,insertColumn: function(index,col) {
 		if(col == null) col = new fancy_table_Column(); else col = col;
 		this.cols.splice(index,0,col);
 		fancy_browser_Dom.insertChildAtIndex(this.cellsEl,col.el,index);
@@ -162,11 +186,22 @@ fancy_table_Row.prototype = {
 	,insertRow: function(index,row) {
 		if(row == null) row = new fancy_table_Row(); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(fancy_browser_Dom.addClass(this.el,"ft-row-with-children"),row.el,index);
+		fancy_browser_Dom.insertChildAtIndex(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(this.el,this.opts.classes.withChildren),this.opts.expanded?this.opts.classes.expanded:this.opts.classes.collapsed),row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
 		return this.insertRow(this.rows.length + 1,row);
+	}
+	,expand: function() {
+		this.opts.expanded = true;
+		fancy_browser_Dom.addClass(fancy_browser_Dom.removeClass(this.el,this.opts.classes.collapsed),this.opts.classes.expanded);
+	}
+	,collapse: function() {
+		this.opts.expanded = false;
+		fancy_browser_Dom.addClass(fancy_browser_Dom.removeClass(this.el,this.opts.classes.expanded),this.opts.classes.collapsed);
+	}
+	,toggle: function() {
+		if(this.opts.expanded) this.collapse(); else this.expand();
 	}
 	,setCellValue: function(index,value) {
 		if(index >= this.cols.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");

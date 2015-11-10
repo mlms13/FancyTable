@@ -1,3 +1,4 @@
+using fancy.browser.Dom;
 import fancy.Table;
 import fancy.table.*;
 using thx.Arrays;
@@ -7,6 +8,9 @@ class Main {
     var el = js.Browser.document.querySelector(".table-container");
 
     var data : Array<RowData> = [{
+      label: "Color and cards",
+      values: ["CMC", "Draft Value", "Price"]
+    }, {
       label: "White",
       data: [{
         label: "Mythic",
@@ -62,10 +66,18 @@ class Main {
     // fix missing values
     data.values = data.values == null ? [] : data.values;
 
+    // make the the first cell, which should always exist
+    var headerCell = new Column(data.label);
+
     // create a new row and fill it with values if they exist
-    var row =  data.values.reducei(function (acc : Row, curr, index) {
+    var row = data.values.reducei(function (acc : Row, curr, index) {
       return acc.setCellValue(index + 1, curr);
-    }, new Row([new Column(data.label)], 4));
+    }, new Row([headerCell], 4));
+
+    // wire up the header cell to toggle the row expansion
+    headerCell.el.on("click", function (_) {
+      row.toggle();
+    });
 
     // return the row with sub-rows appended as necessary
     return  data.data == null ? row : data.data.reduce(function (row : Row, curr : RowData) {
