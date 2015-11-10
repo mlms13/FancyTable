@@ -42,7 +42,9 @@ class Row {
   public function insertRow(index : Int, ?row : Row) : Row {
     row = row == null ? new Row() : row;
     rows.insert(index, row);
-    el.insertChildAtIndex(row.el, index);
+    el
+      .addClass("ft-row-with-children")
+      .insertChildAtIndex(row.el, index);
     return this;
   }
 
@@ -52,7 +54,7 @@ class Row {
 
   public function setCellValue(index : Int, value : String) : Row {
     if (index >= cols.length) {
-      return throw 'Cannot set value for cell at index $index, which does not exist';
+      return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 
     cols[index].el.empty().textContent = value;

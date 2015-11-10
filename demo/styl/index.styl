@@ -1,3 +1,5 @@
+$basePadding = 8px
+
 .ft
   &-table
     background #fafafa
@@ -11,27 +13,33 @@
     &-values
       display flex
 
+    // rows that contain other rows show dropdown arrows
+    &-with-children
+      > .ft-row-values > .ft-col:first-child:before
+        content "\25B8"
+        margin-right 6px
+
     // nested rows
     .ft-row
       border-bottom 0
       border-top 1px solid #ddd
-      text-indent 10px;
 
-      .ft-row
-        text-indent 20px
+    // indent first column in nested rows
+    .ft-row .ft-col:first-child
+      padding-left $basePadding + 12px
 
-        .ft-row
-          text-indent 30px
+    .ft-row .ft-row .ft-col:first-child
+      padding-left $basePadding + 24px
+
+    .ft-row .ft-row .ft-row .ft-col:first-child
+      padding-left $basePadding + 36px
 
   &-col
     border-right 1px solid #ddd
     box-sizing border-box
     flex auto
     min-height 30px
-    padding 8px
-
-    &:not(:first-child)
-      text-indent 0!important
+    padding $basePadding
 
     &:nth-child(1)
       width 50%

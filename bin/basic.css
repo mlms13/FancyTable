@@ -13,16 +13,22 @@
   display: -ms-flexbox;
   display: flex;
 }
+.ft-row-with-children > .ft-row-values > .ft-col:first-child:before {
+  content: "\25B8";
+  margin-right: 6px;
+}
 .ft-row .ft-row {
   border-bottom: 0;
   border-top: 1px solid #ddd;
-  text-indent: 10px;
 }
-.ft-row .ft-row .ft-row {
-  text-indent: 20px;
+.ft-row .ft-row .ft-col:first-child {
+  padding-left: 20px;
 }
-.ft-row .ft-row .ft-row .ft-row {
-  text-indent: 30px;
+.ft-row .ft-row .ft-row .ft-col:first-child {
+  padding-left: 32px;
+}
+.ft-row .ft-row .ft-row .ft-row .ft-col:first-child {
+  padding-left: 44px;
 }
 .ft-col {
   border-right: 1px solid #ddd;
@@ -33,9 +39,6 @@
           flex: auto;
   min-height: 30px;
   padding: 8px;
-}
-.ft-col:not(:first-child) {
-  text-indent: 0 !important;
 }
 .ft-col:nth-child(1) {
   width: 50%;

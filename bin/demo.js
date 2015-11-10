@@ -6,6 +6,18 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var EReg = function(r,opt) {
+	opt = opt.split("u").join("");
+	this.r = new RegExp(r,opt);
+};
+EReg.prototype = {
+	match: function(s) {
+		if(this.r.global) this.r.lastIndex = 0;
+		this.r.m = this.r.exec(s);
+		this.r.s = s;
+		return this.r.m != null;
+	}
+};
 var HxOverrides = function() { };
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
@@ -75,6 +87,14 @@ fancy_Table.prototype = {
 	}
 };
 var fancy_browser_Dom = function() { };
+fancy_browser_Dom.hasClass = function(el,className) {
+	var regex = new EReg("(?:^|\\s)(" + className + ")(?!\\S)","g");
+	return regex.match(el.className);
+};
+fancy_browser_Dom.addClass = function(el,className) {
+	if(!fancy_browser_Dom.hasClass(el,className)) el.className += " " + className;
+	return el;
+};
 fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(attrs == null) attrs = { };
 	if(children == null) children = [];
@@ -142,14 +162,14 @@ fancy_table_Row.prototype = {
 	,insertRow: function(index,row) {
 		if(row == null) row = new fancy_table_Row(); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(this.el,row.el,index);
+		fancy_browser_Dom.insertChildAtIndex(fancy_browser_Dom.addClass(this.el,"ft-row-with-children"),row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
 		return this.insertRow(this.rows.length + 1,row);
 	}
 	,setCellValue: function(index,value) {
-		if(index >= this.cols.length) throw new js__$Boot_HaxeError("Cannot set value for cell at index " + index + ", which does not exist");
+		if(index >= this.cols.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
 		fancy_browser_Dom.empty(this.cols[index].el).textContent = value;
 		return this;
 	}
