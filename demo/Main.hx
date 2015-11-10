@@ -59,13 +59,13 @@ class Main {
   }
 
   static function generateRow(data : RowData) : Row {
-    // fix empty values
+    // fix missing values
     data.values = data.values == null ? [] : data.values;
 
     // create a new row and fill it with values if they exist
-    var row =  data.values.reduce(function (acc : Row, curr) {
-      return acc.appendColumn(new Column(curr));
-    }, new Row([new Column(data.label)]));
+    var row =  data.values.reducei(function (acc : Row, curr, index) {
+      return acc.setCellValue(index + 1, curr);
+    }, new Row([new Column(data.label)], 4));
 
     // return the row with sub-rows appended as necessary
     return  data.data == null ? row : data.data.reduce(function (row : Row, curr : RowData) {

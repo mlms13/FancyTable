@@ -4,23 +4,30 @@ import fancy.table.*;
 import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
+using thx.Objects;
 
 class Table {
   var parent : Element;
   var el : Element;
+  var options : FancyTableOptions;
   var rows : Array<Row>;
-  var colCount : Int;
 
-  public function new(parent : Element, ?options : FancyTableOptions) {
+  public function new(parent : Element, ?opts : FancyTableOptions) {
     this.parent = parent;
+    this.options = createDefaultOptions(opts);
     rows = [];
-    colCount = 0;
     el = Dom.create("div.ft-table");
     parent.appendChild(el);
   }
 
+  function createDefaultOptions(?opts : FancyTableOptions) {
+    return Objects.merge({
+      colCount : 0
+    }, opts == null ? {} : opts);
+  }
+
   public function insertRowAt(index : Int, ?row : Row) : Table {
-    row = row == null ? new Row(colCount) : row;
+    row = row == null ? new Row(options.colCount) : row;
     rows.insert(index, row);
     el.insertChildAtIndex(row.el, index);
     return this;
@@ -35,7 +42,7 @@ class Table {
   }
 
   public function insertColumnAt(index : Int) : Table {
-    colCount++;
+    options.colCount++;
     rows.map(function (row) {
       row.insertColumn(index);
     });
@@ -47,6 +54,6 @@ class Table {
   }
 
   public function appendColumn() : Table {
-    return insertColumnAt(colCount);
+    return insertColumnAt(options.colCount);
   }
 }

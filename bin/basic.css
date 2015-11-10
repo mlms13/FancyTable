@@ -37,3 +37,11 @@
 .ft-col:not(:first-child) {
   text-indent: 0 !important;
 }
+.ft-col:nth-child(1) {
+  width: 50%;
+}
+.ft-col:nth-child(2),
+.ft-col:nth-child(3),
+.ft-col:nth-child(4) {
+  width: 16.6667%;
+}

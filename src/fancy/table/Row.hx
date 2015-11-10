@@ -24,7 +24,7 @@ class Row {
     // if the total cols is less than the provided count, add more columns
     var colDiff = colCount - this.cols.length;
     if (colDiff > 0) {
-      for (i in 0...colDiff) insertColumn(i);
+      for (i in 0...colDiff) insertColumn(i + this.cols.length);
     }
   }
 
@@ -48,5 +48,14 @@ class Row {
 
   public function appendRow(?row : Row) : Row {
     return insertRow(rows.length + 1, row);
+  }
+
+  public function setCellValue(index : Int, value : String) : Row {
+    if (index >= cols.length) {
+      return throw 'Cannot set value for cell at index $index, which does not exist';
+    }
+
+    cols[index].el.empty().textContent = value;
+    return this;
   }
 }
