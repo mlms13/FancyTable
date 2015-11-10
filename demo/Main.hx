@@ -25,7 +25,8 @@ class Main {
             label: "Hero of Goma Fada",
             values: ["5", "3.5", "0.27"]
           }, {
-            label: ""
+            label: "Felidar Sovereign",
+            values: ["6", "4", "0.56"]
           }]
         }]
       }]
@@ -67,8 +68,9 @@ class Main {
     }, new Row([new Column(data.label)]));
 
     // return the row with sub-rows appended as necessary
-    return row;
-    // return  data.data == null ? row : row.addRow(generateRow(data.data));
+    return  data.data == null ? row : data.data.reduce(function (row : Row, curr : RowData) {
+      return row.appendRow(generateRow(curr));
+    }, row);
   }
 }
 

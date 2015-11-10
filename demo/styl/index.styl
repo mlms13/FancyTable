@@ -3,14 +3,32 @@
     background #fafafa
     border-top 1px solid #ddd
     border-left 1px solid #ddd
+    font-size 14px
 
   &-row
     border-bottom 1px solid #ddd
-    display flex
+
+    &-values
+      display flex
+
+    // nested rows
+    .ft-row
+      border-bottom 0
+      border-top 1px solid #ddd
+      text-indent 10px;
+
+      .ft-row
+        text-indent 20px
+
+        .ft-row
+          text-indent 30px
 
   &-col
     border-right 1px solid #ddd
     box-sizing border-box
     flex auto
     min-height 30px
-    padding 5px
+    padding 8px
+
+    &:not(:first-child)
+      text-indent 0!important

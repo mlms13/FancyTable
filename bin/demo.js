@@ -11,7 +11,7 @@ HxOverrides.iter = function(a) {
 var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : ""}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
+	var data = [{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
 	thx_Arrays.reduce(data,function(table,curr) {
 		return table.appendRow(Main.generateRow(curr));
 	},new fancy_Table(el));
@@ -21,7 +21,9 @@ Main.generateRow = function(data) {
 	var row = thx_Arrays.reduce(data.values,function(acc,curr) {
 		return acc.appendColumn(new fancy_table_Column(curr));
 	},new fancy_table_Row([new fancy_table_Column(data.label)]));
-	return row;
+	if(data.data == null) return row; else return data.data.reduce(function(row1,curr1) {
+		return row1.appendRow(Main.generateRow(curr1));
+	},row);
 };
 var Reflect = function() { };
 Reflect.field = function(o,field) {
@@ -98,10 +100,12 @@ var fancy_table_Column = function(value) {
 var fancy_table_Row = function(cols,colCount) {
 	if(colCount == null) colCount = 0;
 	if(cols == null) this.cols = []; else this.cols = cols;
-	this.el = fancy_browser_Dom.create("div.ft-row");
+	this.rows = [];
+	this.cellsEl = fancy_browser_Dom.create("div.ft-row-values");
+	this.el = fancy_browser_Dom.create("div.ft-row",null,[this.cellsEl]);
 	this.cols.reduce(function(container,col,index) {
 		return fancy_browser_Dom.insertChildAtIndex(container,col.el,index);
-	},this.el);
+	},this.cellsEl);
 	var colDiff = colCount - this.cols.length;
 	if(colDiff > 0) {
 		var _g = 0;
@@ -115,11 +119,20 @@ fancy_table_Row.prototype = {
 	insertColumn: function(index,col) {
 		if(col == null) col = new fancy_table_Column(); else col = col;
 		this.cols.splice(index,0,col);
-		fancy_browser_Dom.insertChildAtIndex(this.el,col.el,index);
+		fancy_browser_Dom.insertChildAtIndex(this.cellsEl,col.el,index);
 		return this;
 	}
 	,appendColumn: function(col) {
 		return this.insertColumn(this.cols.length,col);
+	}
+	,insertRow: function(index,row) {
+		if(row == null) row = new fancy_table_Row(); else row = row;
+		this.rows.splice(index,0,row);
+		fancy_browser_Dom.insertChildAtIndex(this.el,row.el,index);
+		return this;
+	}
+	,appendRow: function(row) {
+		return this.insertRow(this.rows.length + 1,row);
 	}
 };
 var thx_Arrays = function() { };
