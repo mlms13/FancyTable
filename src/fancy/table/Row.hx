@@ -33,11 +33,11 @@ class Row {
     }
   }
 
-  function createDefaultOptions(?options : FancyRowOptions) : FancyRowOptions {
+  function createDefaultOptions(?options : FancyRowOptions) {
     return Objects.merge({
       expanded : true,
-      classes : ({} : FancyRowClasses) // TODO: surely the syntax can be nicer
-    }, options == null ? {} : options);
+      classes : {},
+    }, options == null ? ({} : FancyRowOptions) : options);
   }
 
   function createDefaultClasses(?classes : FancyRowClasses) : FancyRowClasses {
