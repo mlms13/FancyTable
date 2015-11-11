@@ -1,18 +1,27 @@
 $basePadding = 8px
 
 .ft
-  &-table
+  &-table-container
     background #fafafa
     border-top 1px solid #ddd
     border-left 1px solid #ddd
     font-size 14px
-    max-height 500px
+    position relative
+
+  &-table-header-rows
+    background #fff
+    font-weight bold
+    position absolute
+    top 0
 
   &-row
     border-bottom 1px solid #ddd
 
     &-values
       display flex
+
+    &.ft-row-fixed-header
+      visibility hidden
 
     // nested rows
     .ft-row

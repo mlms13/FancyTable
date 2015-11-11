@@ -32,10 +32,10 @@ HxOverrides.iter = function(a) {
 var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ label : "Color and cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
+	var data = [{ label : "Cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
 	thx_Arrays.reduce(data,function(table,curr) {
 		return table.appendRow(Main.generateRow(curr));
-	},new fancy_Table(el));
+	},new fancy_Table(el)).setFixedRow();
 };
 Main.generateRow = function(data) {
 	if(data.values == null) data.values = []; else data.values = data.values;
@@ -73,11 +73,13 @@ Reflect.fields = function(o) {
 	return a;
 };
 var fancy_Table = function(parent,opts) {
-	this.parent = parent;
 	this.options = this.createDefaultOptions(opts);
 	this.rows = [];
-	this.el = fancy_browser_Dom.create("div.ft-table");
-	parent.appendChild(this.el);
+	this.container = fancy_browser_Dom.create("div.ft-table-container");
+	this.tableEl = fancy_browser_Dom.create("div.ft-table");
+	this.headerRows = fancy_browser_Dom.create("div.ft-table-header-rows");
+	this.container.appendChild(this.tableEl);
+	parent.appendChild(this.container);
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(opts) {
@@ -86,11 +88,24 @@ fancy_Table.prototype = {
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,this.options.colCount); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(this.el,row.el,index);
+		fancy_browser_Dom.insertChildAtIndex(this.tableEl,row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
 		return this.insertRowAt(this.rows.length,row);
+	}
+	,setFixedRow: function(howMany) {
+		if(howMany == null) howMany = 1;
+		fancy_browser_Dom.empty(this.headerRows);
+		if(howMany == 0) this.headerRows.remove(); else this.container.appendChild(this.headerRows);
+		this.rows.reduce(function(acc,row,index) {
+			if(index < howMany) {
+				acc.appendChild(row.el.cloneNode(true));
+				fancy_browser_Dom.addClass(row.el,"ft-row-fixed-header");
+			} else fancy_browser_Dom.removeClass(row.el,"ft-row-fixed-header");
+			return acc;
+		},this.headerRows);
+		return this;
 	}
 };
 var fancy_browser_Dom = function() { };

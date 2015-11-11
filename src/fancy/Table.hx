@@ -4,20 +4,28 @@ import fancy.table.*;
 import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
+using thx.Arrays;
 using thx.Objects;
 
 class Table {
-  var parent : Element;
-  var el : Element;
+  var container : Element;
+  var tableEl : Element;
+  var headerRows : Element;
   var options : FancyTableOptions;
   var rows : Array<Row>;
 
   public function new(parent : Element, ?opts : FancyTableOptions) {
-    this.parent = parent;
     this.options = createDefaultOptions(opts);
     rows = [];
-    el = Dom.create("div.ft-table");
-    parent.appendChild(el);
+
+    // create lots of dom
+    container = Dom.create("div.ft-table-container");
+    tableEl = Dom.create("div.ft-table");
+    headerRows = Dom.create("div.ft-table-header-rows");
+
+    // and append everybody to everybody
+    container.appendChild(tableEl);
+    parent.appendChild(container);
   }
 
   function createDefaultOptions(?opts : FancyTableOptions) {
@@ -27,9 +35,13 @@ class Table {
   }
 
   public function insertRowAt(index : Int, ?row : Row) : Table {
+    // TODO: if you're inserting a row within the range of the affixed header
+    // rows, we need to re-create the header table
+    // ALSO TODO: we need to grab the first n cells in the new row and add them
+    // to the affixed header column table (where n = number of affixed cells)
     row = row == null ? new Row(options.colCount) : row;
     rows.insert(index, row);
-    el.insertChildAtIndex(row.el, index);
+    tableEl.insertChildAtIndex(row.el, index);
     return this;
   }
 
@@ -55,5 +67,31 @@ class Table {
 
   public function appendColumn() : Table {
     return insertColumnAt(options.colCount);
+  }
+
+  public function setFixedRow(?howMany = 1) : Table {
+    // empty existing fixed-row table
+    headerRows.empty();
+    // remove it from the dom if we're un-fixing all rows
+    if (howMany == 0) {
+      // TODO: IE < 12 doesn't support this
+      headerRows.remove();
+    } else {
+      container.appendChild(headerRows);
+    }
+
+    // fill that table with `howMany` rows, cloned from the regular table
+    rows.reducei(function (acc : Element, row : Row, index) {
+      if (index < howMany) {
+        //mark the real rows for easy hiding
+        acc.appendChild(row.el.cloneNode(true));
+        row.el.addClass("ft-row-fixed-header");
+      } else {
+        row.el.removeClass("ft-row-fixed-header");
+      }
+      return acc;
+    }, headerRows);
+
+    return this;
   }
 }

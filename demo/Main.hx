@@ -8,7 +8,7 @@ class Main {
     var el = js.Browser.document.querySelector(".table-container");
 
     var data : Array<RowData> = [{
-      label: "Color and cards",
+      label: "Cards",
       values: ["CMC", "Draft Value", "Price"]
     }, {
       label: "White",
@@ -59,7 +59,7 @@ class Main {
 
     data.reduce(function (table : Table, curr : RowData) {
       return table.appendRow(generateRow(curr));
-    }, new Table(el));
+    }, new Table(el)).setFixedRow();
   }
 
   static function generateRow(data : RowData) : Row {
