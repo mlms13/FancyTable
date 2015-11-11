@@ -27,6 +27,13 @@
 .ft-row .ft-row .ft-row .ft-row .ft-col:first-child {
   padding-left: 56px;
 }
+.ft-row-with-children > .ft-row-values > .ft-col:first-child {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  cursor: pointer;
+}
 .ft-row-with-children > .ft-row-values > .ft-col:first-child:before {
   content: "\25B8";
   display: inline-block;

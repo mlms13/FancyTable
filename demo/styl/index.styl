@@ -31,10 +31,14 @@ $basePadding = 8px
 
     // rows that contain other rows show dropdown arrows
     &-with-children
-      > .ft-row-values > .ft-col:first-child:before
-        content "\25B8"
-        display inline-block
-        margin-right 5px
+      > .ft-row-values > .ft-col:first-child
+        user-select none
+        cursor pointer
+
+        &:before
+          content "\25B8"
+          display inline-block
+          margin-right 5px
 
       &.ft-row-expanded > .ft-row-values > .ft-col:first-child:before
         transform rotate(90deg)
