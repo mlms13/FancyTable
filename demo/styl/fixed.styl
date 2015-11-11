@@ -1,0 +1,28 @@
+clearfix()
+  zoom 1
+  &:after
+  &:before
+    content ""
+    display table
+  &:after
+    clear both
+
+.ft
+  &-table
+    border-right 1px solid #ddd
+    overflow auto
+    clearfix()
+
+  &-row
+    float left
+    clearfix()
+
+    &-values
+      float left // gross hack to get flex container to stretch in width
+
+  &-col
+    &:nth-child(1)
+      width 400px
+
+    &:nth-child(2), &:nth-child(3), &:nth-child(4)
+      width 150px

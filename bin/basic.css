@@ -3,6 +3,7 @@
   border-top: 1px solid #ddd;
   border-left: 1px solid #ddd;
   font-size: 14px;
+  max-height: 500px;
 }
 .ft-row {
   border-bottom: 1px solid #ddd;
@@ -56,4 +57,40 @@
 .ft-col:nth-child(3),
 .ft-col:nth-child(4) {
   width: 16.6667%;
+}
+.ft-table {
+  border-right: 1px solid #ddd;
+  overflow: auto;
+  zoom: 1;
+}
+.ft-table:after,
+.ft-table:before {
+  content: "";
+  display: table;
+}
+.ft-table:after {
+  clear: both;
+}
+.ft-row {
+  float: left;
+  zoom: 1;
+}
+.ft-row:after,
+.ft-row:before {
+  content: "";
+  display: table;
+}
+.ft-row:after {
+  clear: both;
+}
+.ft-row-values {
+  float: left;
+}
+.ft-col:nth-child(1) {
+  width: 400px;
+}
+.ft-col:nth-child(2),
+.ft-col:nth-child(3),
+.ft-col:nth-child(4) {
+  width: 150px;
 }
