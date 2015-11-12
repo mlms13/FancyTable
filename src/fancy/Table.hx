@@ -8,24 +8,25 @@ using thx.Arrays;
 using thx.Objects;
 
 class Table {
-  var container : Element;
   var tableEl : Element;
-  var headerRows : Element;
   var options : FancyTableOptions;
   var rows : Array<Row>;
+  var grid : GridContainer;
 
   public function new(parent : Element, ?opts : FancyTableOptions) {
     this.options = createDefaultOptions(opts);
     rows = [];
 
     // create lots of dom
-    container = Dom.create("div.ft-table-container");
     tableEl = Dom.create("div.ft-table");
-    headerRows = Dom.create("div.ft-table-header-rows");
+    grid = new GridContainer();
+    tableEl.appendChild(grid.grid);
+    parent.appendChild(tableEl);
 
-    // and append everybody to everybody
-    container.appendChild(tableEl);
-    parent.appendChild(container);
+    // and fix the scrolling
+    tableEl.on("scroll", function (_) {
+      grid.positionPanes(tableEl.scrollTop, tableEl.scrollLeft);
+    });
   }
 
   function createDefaultOptions(?opts : FancyTableOptions) {
@@ -71,14 +72,7 @@ class Table {
 
   public function setFixedRow(?howMany = 1) : Table {
     // empty existing fixed-row table
-    headerRows.empty();
-    // remove it from the dom if we're un-fixing all rows
-    if (howMany == 0) {
-      // TODO: IE < 12 doesn't support this
-      headerRows.remove();
-    } else {
-      container.appendChild(headerRows);
-    }
+    grid.top.empty();
 
     // fill that table with `howMany` rows, cloned from the regular table
     rows.reducei(function (acc : Element, row : Row, index) {
@@ -90,7 +84,7 @@ class Table {
         row.el.removeClass("ft-row-fixed-header");
       }
       return acc;
-    }, headerRows);
+    }, grid.top);
 
     return this;
   }

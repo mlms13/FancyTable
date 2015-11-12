@@ -1,11 +1,11 @@
-.ft-table-container {
+.ft-table {
   background: #fafafa;
   border-top: 1px solid #ddd;
   border-left: 1px solid #ddd;
   font-size: 14px;
   position: relative;
 }
-.ft-table-header-rows {
+.ft-table-fixed-top {
   background: #fff;
   font-weight: bold;
   position: absolute;
@@ -74,23 +74,19 @@
 .ft-col:nth-child(4) {
   width: 16.6667%;
 }
-.ft-table-container {
+.ft-table {
   border-right: 1px solid #ddd;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
+  max-height: 500px;
   zoom: 1;
 }
-.ft-table-container:after,
-.ft-table-container:before {
+.ft-table:after,
+.ft-table:before {
   content: "";
   display: table;
 }
-.ft-table-container:after {
+.ft-table:after {
   clear: both;
-}
-.ft-table {
-  max-height: 500px;
-  overflow-y: auto;
 }
 .ft-row {
   clear: both;

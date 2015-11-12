@@ -73,13 +73,16 @@ Reflect.fields = function(o) {
 	return a;
 };
 var fancy_Table = function(parent,opts) {
+	var _g = this;
 	this.options = this.createDefaultOptions(opts);
 	this.rows = [];
-	this.container = fancy_browser_Dom.create("div.ft-table-container");
 	this.tableEl = fancy_browser_Dom.create("div.ft-table");
-	this.headerRows = fancy_browser_Dom.create("div.ft-table-header-rows");
-	this.container.appendChild(this.tableEl);
-	parent.appendChild(this.container);
+	this.grid = new fancy_table_GridContainer();
+	this.tableEl.appendChild(this.grid.grid);
+	parent.appendChild(this.tableEl);
+	fancy_browser_Dom.on(this.tableEl,"scroll",function(_) {
+		_g.grid.positionPanes(_g.tableEl.scrollTop,_g.tableEl.scrollLeft);
+	});
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(opts) {
@@ -96,15 +99,14 @@ fancy_Table.prototype = {
 	}
 	,setFixedRow: function(howMany) {
 		if(howMany == null) howMany = 1;
-		fancy_browser_Dom.empty(this.headerRows);
-		if(howMany == 0) this.headerRows.remove(); else this.container.appendChild(this.headerRows);
+		fancy_browser_Dom.empty(this.grid.top);
 		this.rows.reduce(function(acc,row,index) {
 			if(index < howMany) {
 				acc.appendChild(row.el.cloneNode(true));
 				fancy_browser_Dom.addClass(row.el,"ft-row-fixed-header");
 			} else fancy_browser_Dom.removeClass(row.el,"ft-row-fixed-header");
 			return acc;
-		},this.headerRows);
+		},this.grid.top);
 		return this;
 	}
 };
@@ -164,6 +166,16 @@ fancy_browser_Dom.empty = function(el) {
 };
 var fancy_table_Column = function(value) {
 	this.el = fancy_browser_Dom.create("div.ft-col",null,null,value);
+};
+var fancy_table_GridContainer = function() {
+	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
+	this.top = fancy_browser_Dom.create("div.ft-table-fixed-top");
+	this.grid.appendChild(this.top);
+};
+fancy_table_GridContainer.prototype = {
+	positionPanes: function(deltaTop,deltaLeft) {
+		this.top.style.top = "" + deltaTop + "px";
+	}
 };
 var fancy_table_Row = function(cols,colCount,options) {
 	if(colCount == null) colCount = 0;
