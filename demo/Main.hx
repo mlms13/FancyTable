@@ -61,7 +61,7 @@ class Main {
       return table.appendRow(generateRow(curr));
     }, new Table(el))
       .setFixedTop()
-      .setFixedLeft();
+      .setFixedLeft(2);
   }
 
   static function generateRow(data : RowData) : Row {

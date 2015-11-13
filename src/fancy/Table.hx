@@ -92,16 +92,17 @@ class Table {
 
   function fixColumns(howMany : Int, rows : Array<Row>) : Array<Node> {
     return rows.reducei(function (acc : Array<Node>, row, index) {
-      acc = row.cols.reducei(function (acc : Array<Node>, col, index) {
+      var valuesEl = row.cols.reducei(function (newRow : Element, col, index) {
         if (index < howMany) {
-          acc.push(Dom.create("div.ft-row", [col.el.cloneNode(true)]));
+          newRow.appendChild(col.el.cloneNode(true));
           col.el.addClass("ft-col-fixed");
         } else {
           col.el.removeClass("ft-col-fixed");
         }
-        return acc;
-      }, acc);
+        return newRow;
+      }, Dom.create("div.ft-row-values"));
 
+      acc.push(Dom.create("div.ft-row", [valuesEl]));
       acc = acc.concat(fixColumns(howMany, row.rows));
       return acc;
     }, []);

@@ -35,7 +35,7 @@ Main.main = function() {
 	var data = [{ label : "Cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
 	thx_Arrays.reduce(data,function(table,curr) {
 		return table.appendRow(Main.generateRow(curr));
-	},new fancy_Table(el)).setFixedTop().setFixedLeft();
+	},new fancy_Table(el)).setFixedTop().setFixedLeft(2);
 };
 Main.generateRow = function(data) {
 	if(data.values == null) data.values = []; else data.values = data.values;
@@ -112,13 +112,14 @@ fancy_Table.prototype = {
 	,fixColumns: function(howMany,rows) {
 		var _g = this;
 		return rows.reduce(function(acc,row,index) {
-			acc = row.cols.reduce(function(acc1,col,index1) {
+			var valuesEl = thx_Arrays.reducei(row.cols,function(newRow,col,index1) {
 				if(index1 < howMany) {
-					acc1.push(fancy_browser_Dom.create("div.ft-row",null,[col.el.cloneNode(true)]));
+					newRow.appendChild(col.el.cloneNode(true));
 					fancy_browser_Dom.addClass(col.el,"ft-col-fixed");
 				} else fancy_browser_Dom.removeClass(col.el,"ft-col-fixed");
-				return acc1;
-			},acc);
+				return newRow;
+			},fancy_browser_Dom.create("div.ft-row-values"));
+			acc.push(fancy_browser_Dom.create("div.ft-row",null,[valuesEl]));
 			acc = acc.concat(_g.fixColumns(howMany,row.rows));
 			return acc;
 		},[]);
