@@ -6,16 +6,21 @@
   position: relative;
 }
 .ft-table-fixed-top,
-.ft-table-fixed-left {
+.ft-table-fixed-left,
+.ft-table-fixed-top-left {
   position: absolute;
   top: 0;
 }
-.ft-table-fixed-top {
+.ft-table-fixed-top,
+.ft-table-fixed-top-left {
   font-weight: bold;
   background: #fff;
 }
 .ft-table-fixed-left {
   background: #fafafa;
+}
+.ft-table-fixed-top-left {
+  z-index: 1;
 }
 .ft-row-fixed,
 .ft-col-fixed {
@@ -70,7 +75,7 @@
   -webkit-flex: auto;
       -ms-flex: auto;
           flex: auto;
-  min-height: 30px;
+  line-height: 16px;
   padding: 8px;
 }
 .ft-col:nth-child(1) {

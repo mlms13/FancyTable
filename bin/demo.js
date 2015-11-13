@@ -77,6 +77,8 @@ var fancy_Table = function(parent,opts) {
 	var tableEl;
 	this.options = this.createDefaultOptions(opts);
 	this.rows = [];
+	this.fixedTop = 0;
+	this.fixedLeft = 0;
 	tableEl = fancy_browser_Dom.create("div.ft-table");
 	this.grid = new fancy_table_GridContainer();
 	tableEl.appendChild(this.grid.grid);
@@ -108,7 +110,8 @@ fancy_Table.prototype = {
 			} else fancy_browser_Dom.removeClass(row.el,"ft-row-fixed");
 			return acc;
 		},this.grid.top);
-		return this;
+		this.fixedTop = howMany;
+		return this.updateFixedTopLeft();
 	}
 	,fixColumns: function(howMany,rows) {
 		var _g = this;
@@ -133,6 +136,16 @@ fancy_Table.prototype = {
 			acc.appendChild(child);
 			return acc;
 		},this.grid.left);
+		this.fixedLeft = howMany;
+		return this.updateFixedTopLeft();
+	}
+	,updateFixedTopLeft: function() {
+		fancy_browser_Dom.empty(this.grid.topLeft);
+		var cells = this.fixColumns(this.fixedLeft,this.rows.slice(0,this.fixedTop));
+		cells.reduce(function(acc,child) {
+			acc.appendChild(child);
+			return acc;
+		},this.grid.topLeft);
 		return this;
 	}
 };
@@ -197,14 +210,17 @@ var fancy_table_Column = function(value) {
 	this.el = fancy_browser_Dom.create("div.ft-col",null,null,value);
 };
 var fancy_table_GridContainer = function() {
+	this.topLeft = fancy_browser_Dom.create("div.ft-table-fixed-top-left");
 	this.top = fancy_browser_Dom.create("div.ft-table-fixed-top");
 	this.left = fancy_browser_Dom.create("div.ft-table-fixed-left");
 	this.content = fancy_browser_Dom.create("div.ft-table-content");
 	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
-	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.content),this.left),this.top);
+	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.content),this.left),this.top),this.topLeft);
 };
 fancy_table_GridContainer.prototype = {
 	positionPanes: function(deltaTop,deltaLeft) {
+		this.topLeft.style.top = "" + deltaTop + "px";
+		this.topLeft.style.left = "" + deltaLeft + "px";
 		this.top.style.top = "" + deltaTop + "px";
 		this.left.style.left = "" + deltaLeft + "px";
 	}

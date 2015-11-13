@@ -13,10 +13,16 @@ class Table {
   var rows : Array<Row>;
   var grid : GridContainer;
 
+  // ints to track how many rows/cols are fixed in various places
+  var fixedTop : Int;
+  var fixedLeft : Int;
+
   public function new(parent : Element, ?opts : FancyTableOptions) {
     var tableEl : Element;
     this.options = createDefaultOptions(opts);
     rows = [];
+    fixedTop = 0;
+    fixedLeft = 0;
 
     // create lots of dom
     tableEl = Dom.create("div.ft-table");
@@ -89,7 +95,8 @@ class Table {
       return acc;
     }, grid.top);
 
-    return this;
+    fixedTop = howMany;
+    return updateFixedTopLeft();
   }
 
   function fixColumns(howMany : Int, rows : Array<Row>) : Array<Node> {
@@ -118,6 +125,20 @@ class Table {
       acc.appendChild(child);
       return acc;
     }, grid.left);
+
+    fixedLeft = howMany;
+    return updateFixedTopLeft();
+  }
+
+  function updateFixedTopLeft() : Table {
+    grid.topLeft.empty();
+
+    var cells = fixColumns(fixedLeft, rows.slice(0, fixedTop));
+
+    cells.reduce(function (acc, child) {
+      acc.appendChild(child);
+      return acc;
+    }, grid.topLeft);
     return this;
   }
 }
