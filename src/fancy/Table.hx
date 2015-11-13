@@ -9,12 +9,12 @@ using thx.Arrays;
 using thx.Objects;
 
 class Table {
-  var tableEl : Element;
   var options : FancyTableOptions;
   var rows : Array<Row>;
   var grid : GridContainer;
 
   public function new(parent : Element, ?opts : FancyTableOptions) {
+    var tableEl : Element;
     this.options = createDefaultOptions(opts);
     rows = [];
 
@@ -22,12 +22,14 @@ class Table {
     tableEl = Dom.create("div.ft-table");
     grid = new GridContainer();
     tableEl.appendChild(grid.grid);
-    parent.appendChild(tableEl);
 
     // and fix the scrolling
     tableEl.on("scroll", function (_) {
       grid.positionPanes(tableEl.scrollTop, tableEl.scrollLeft);
     });
+
+    // and add all of our shiny new dom to the parent
+    parent.appendChild(tableEl);
   }
 
   function createDefaultOptions(?opts : FancyTableOptions) {
@@ -43,7 +45,7 @@ class Table {
     // to the affixed header column table (where n = number of affixed cells)
     row = row == null ? new Row(options.colCount) : row;
     rows.insert(index, row);
-    tableEl.insertChildAtIndex(row.el, index);
+    grid.content.insertChildAtIndex(row.el, index);
     return this;
   }
 

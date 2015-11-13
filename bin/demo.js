@@ -35,7 +35,7 @@ Main.main = function() {
 	var data = [{ label : "Cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
 	thx_Arrays.reduce(data,function(table,curr) {
 		return table.appendRow(Main.generateRow(curr));
-	},new fancy_Table(el)).setFixedTop().setFixedLeft(2);
+	},new fancy_Table(el)).setFixedTop().setFixedLeft();
 };
 Main.generateRow = function(data) {
 	if(data.values == null) data.values = []; else data.values = data.values;
@@ -74,15 +74,16 @@ Reflect.fields = function(o) {
 };
 var fancy_Table = function(parent,opts) {
 	var _g = this;
+	var tableEl;
 	this.options = this.createDefaultOptions(opts);
 	this.rows = [];
-	this.tableEl = fancy_browser_Dom.create("div.ft-table");
+	tableEl = fancy_browser_Dom.create("div.ft-table");
 	this.grid = new fancy_table_GridContainer();
-	this.tableEl.appendChild(this.grid.grid);
-	parent.appendChild(this.tableEl);
-	fancy_browser_Dom.on(this.tableEl,"scroll",function(_) {
-		_g.grid.positionPanes(_g.tableEl.scrollTop,_g.tableEl.scrollLeft);
+	tableEl.appendChild(this.grid.grid);
+	fancy_browser_Dom.on(tableEl,"scroll",function(_) {
+		_g.grid.positionPanes(tableEl.scrollTop,tableEl.scrollLeft);
 	});
+	parent.appendChild(tableEl);
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(opts) {
@@ -91,7 +92,7 @@ fancy_Table.prototype = {
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,this.options.colCount); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(this.tableEl,row.el,index);
+		fancy_browser_Dom.insertChildAtIndex(this.grid.content,row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
@@ -198,8 +199,9 @@ var fancy_table_Column = function(value) {
 var fancy_table_GridContainer = function() {
 	this.top = fancy_browser_Dom.create("div.ft-table-fixed-top");
 	this.left = fancy_browser_Dom.create("div.ft-table-fixed-left");
+	this.content = fancy_browser_Dom.create("div.ft-table-content");
 	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
-	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.left),this.top);
+	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.content),this.left),this.top);
 };
 fancy_table_GridContainer.prototype = {
 	positionPanes: function(deltaTop,deltaLeft) {
