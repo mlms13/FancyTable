@@ -59,7 +59,9 @@ class Main {
 
     data.reduce(function (table : Table, curr : RowData) {
       return table.appendRow(generateRow(curr));
-    }, new Table(el)).setFixedRow();
+    }, new Table(el))
+      .setFixedTop()
+      .setFixedLeft();
   }
 
   static function generateRow(data : RowData) : Row {

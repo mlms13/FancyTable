@@ -11,6 +11,10 @@
   position: absolute;
   top: 0;
 }
+.ft-row-fixed,
+.ft-col-fixed {
+  visibility: hidden;
+}
 .ft-row {
   border-bottom: 1px solid #ddd;
 }
@@ -19,9 +23,6 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-}
-.ft-row.ft-row-fixed-header {
-  visibility: hidden;
 }
 .ft-row .ft-row {
   border-bottom: 0;
