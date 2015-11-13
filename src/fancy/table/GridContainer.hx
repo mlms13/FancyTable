@@ -27,5 +27,6 @@ class GridContainer {
 
   public function positionPanes(deltaTop : Int, deltaLeft : Int) {
     top.style.top = '${deltaTop}px';
+    left.style.left = '${deltaLeft}px';
   }
 }

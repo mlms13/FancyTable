@@ -5,11 +5,17 @@
   font-size: 14px;
   position: relative;
 }
-.ft-table-fixed-top {
-  background: #fff;
-  font-weight: bold;
+.ft-table-fixed-top,
+.ft-table-fixed-left {
   position: absolute;
   top: 0;
+}
+.ft-table-fixed-top {
+  font-weight: bold;
+  background: #fff;
+}
+.ft-table-fixed-left {
+  background: #fafafa;
 }
 .ft-row-fixed,
 .ft-col-fixed {

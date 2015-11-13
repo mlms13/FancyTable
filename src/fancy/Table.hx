@@ -94,7 +94,7 @@ class Table {
     return rows.reducei(function (acc : Array<Node>, row, index) {
       acc = row.cols.reducei(function (acc : Array<Node>, col, index) {
         if (index < howMany) {
-          acc.push(col.el.cloneNode(true));
+          acc.push(Dom.create("div.ft-row", [col.el.cloneNode(true)]));
           col.el.addClass("ft-col-fixed");
         } else {
           col.el.removeClass("ft-col-fixed");
@@ -102,7 +102,7 @@ class Table {
         return acc;
       }, acc);
 
-      acc.concat(fixColumns(howMany, row.rows));
+      acc = acc.concat(fixColumns(howMany, row.rows));
       return acc;
     }, []);
   }
@@ -110,7 +110,11 @@ class Table {
   public function setFixedLeft(?howMany = 1) : Table {
     grid.left.empty();
 
-    fixColumns(howMany, rows);
+    var children = fixColumns(howMany, rows);
+    children.reduce(function (acc, child) {
+      acc.appendChild(child);
+      return acc;
+    }, grid.left);
     return this;
   }
 }

@@ -114,19 +114,23 @@ fancy_Table.prototype = {
 		return rows.reduce(function(acc,row,index) {
 			acc = row.cols.reduce(function(acc1,col,index1) {
 				if(index1 < howMany) {
-					acc1.push(col.el.cloneNode(true));
+					acc1.push(fancy_browser_Dom.create("div.ft-row",null,[col.el.cloneNode(true)]));
 					fancy_browser_Dom.addClass(col.el,"ft-col-fixed");
 				} else fancy_browser_Dom.removeClass(col.el,"ft-col-fixed");
 				return acc1;
 			},acc);
-			acc.concat(_g.fixColumns(howMany,row.rows));
+			acc = acc.concat(_g.fixColumns(howMany,row.rows));
 			return acc;
 		},[]);
 	}
 	,setFixedLeft: function(howMany) {
 		if(howMany == null) howMany = 1;
 		fancy_browser_Dom.empty(this.grid.left);
-		this.fixColumns(howMany,this.rows);
+		var children = this.fixColumns(howMany,this.rows);
+		children.reduce(function(acc,child) {
+			acc.appendChild(child);
+			return acc;
+		},this.grid.left);
 		return this;
 	}
 };
@@ -199,6 +203,7 @@ var fancy_table_GridContainer = function() {
 fancy_table_GridContainer.prototype = {
 	positionPanes: function(deltaTop,deltaLeft) {
 		this.top.style.top = "" + deltaTop + "px";
+		this.left.style.left = "" + deltaLeft + "px";
 	}
 };
 var fancy_table_Row = function(cols,colCount,options) {
