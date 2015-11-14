@@ -97,7 +97,7 @@ class Row {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 
-    cols[index].el.empty().textContent = value;
+    cols[index].setValue(value);
     return this;
   }
 }

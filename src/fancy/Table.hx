@@ -79,42 +79,41 @@ class Table {
     return insertColumnAt(options.colCount);
   }
 
-  public function setFixedTop(?howMany = 1) : Table {
-    // empty existing fixed-row table
-    grid.top.empty();
-
-    // fill that table with `howMany` rows, cloned from the regular table
-    rows.reducei(function (acc : Element, row : Row, index) {
-      if (index < howMany) {
-        //mark the real rows for easy hiding
-        acc.appendChild(row.el.cloneNode(true));
-        row.el.addClass("ft-row-fixed");
-      } else {
-        row.el.removeClass("ft-row-fixed");
-      }
-      return acc;
-    }, grid.top);
-
-    fixedTop = howMany;
-    return updateFixedTopLeft();
-  }
-
+  // recursively dig through rows, finding the cells we need to affix
   function fixColumns(howMany : Int, rows : Array<Row>) : Array<Node> {
     return rows.reducei(function (acc : Array<Node>, row, index) {
-      var valuesEl = row.cols.reducei(function (newRow : Element, col, index) {
+      var newRow = row.cols.reducei(function (newRow : Row, col, index) {
         if (index < howMany) {
-          newRow.appendChild(col.el.cloneNode(true));
+          newRow.appendColumn(new Column(col.value));
           col.el.addClass("ft-col-fixed");
         } else {
           col.el.removeClass("ft-col-fixed");
         }
         return newRow;
-      }, Dom.create("div.ft-row-values"));
+      }, new Row());
 
-      acc.push(Dom.create("div.ft-row", [valuesEl]));
+      acc.push(newRow.el);
       acc = acc.concat(fixColumns(howMany, row.rows));
       return acc;
     }, []);
+  }
+
+  public function setFixedTop(?howMany = 1) : Table {
+    // empty existing fixed-row table
+    grid.top.empty();
+
+    // TODO: if howmany < the previous value, the hidden cells in the previously
+    // hidden rows will not show up. we need to go through and clean up
+
+    // ANOTHER TODO: if we consistenly update the colcount, we won't have to
+    // dig into the rows to find the number of columns here
+    fixColumns(rows[0].cols.length, rows.slice(0, howMany)).reduce(function (acc, child) {
+      acc.appendChild(child);
+      return acc;
+    }, grid.top);
+
+    fixedTop = howMany;
+    return updateFixedTopLeft();
   }
 
   public function setFixedLeft(?howMany = 1) : Table {
