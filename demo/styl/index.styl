@@ -6,7 +6,29 @@ $basePadding = 8px
     border-top 1px solid #ddd
     border-left 1px solid #ddd
     font-size 14px
-    max-height 500px
+    position relative
+
+    &-fixed-top
+    &-fixed-left
+    &-fixed-top-left
+      position absolute
+      top 0
+
+    &-fixed-top
+    &-fixed-top-left
+      font-weight bold
+      background #fff
+
+    &-fixed-left
+      background #fafafa
+
+    // make sure corner pieces are on top
+    &-fixed-top-left
+      z-index 1
+
+  &-row-fixed
+  &-col-fixed
+    visibility hidden
 
   &-row
     border-bottom 1px solid #ddd
@@ -51,7 +73,7 @@ $basePadding = 8px
     border-right 1px solid #ddd
     box-sizing border-box
     flex auto
-    min-height 30px
+    line-height 16px
     padding $basePadding
 
     &:nth-child(1)

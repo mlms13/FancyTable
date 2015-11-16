@@ -32,10 +32,10 @@ HxOverrides.iter = function(a) {
 var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ label : "Color and cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
+	var data = [{ label : "Cards", values : ["CMC","Draft Value","Price"]},{ label : "White", data : [{ label : "Mythic", data : [{ label : "Enchantment", data : [{ label : "Quarantine Field", values : ["2","5","2.52"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Hero of Goma Fada", values : ["5","3.5","0.27"]},{ label : "Felidar Sovereign", values : ["6","4","0.56"]}]}]}]},{ label : "Blue", data : [{ label : "Mythic", data : [{ label : "Sorcery", data : [{ label : "Part the Waterveil", values : ["6","2.0","1.29"]}]}]},{ label : "Rare", data : [{ label : "Creature", data : [{ label : "Guardian of Tazeem", values : ["5","4.5","0.25"]}]}]}]}];
 	thx_Arrays.reduce(data,function(table,curr) {
 		return table.appendRow(Main.generateRow(curr));
-	},new fancy_Table(el));
+	},new fancy_Table(el)).setFixedTop().setFixedLeft();
 };
 Main.generateRow = function(data) {
 	if(data.values == null) data.values = []; else data.values = data.values;
@@ -73,11 +73,19 @@ Reflect.fields = function(o) {
 	return a;
 };
 var fancy_Table = function(parent,opts) {
-	this.parent = parent;
+	var _g = this;
+	var tableEl;
 	this.options = this.createDefaultOptions(opts);
 	this.rows = [];
-	this.el = fancy_browser_Dom.create("div.ft-table");
-	parent.appendChild(this.el);
+	this.fixedTop = 0;
+	this.fixedLeft = 0;
+	tableEl = fancy_browser_Dom.create("div.ft-table");
+	this.grid = new fancy_table_GridContainer();
+	tableEl.appendChild(this.grid.grid);
+	fancy_browser_Dom.on(tableEl,"scroll",function(_) {
+		_g.grid.positionPanes(tableEl.scrollTop,tableEl.scrollLeft);
+	});
+	parent.appendChild(tableEl);
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(opts) {
@@ -86,11 +94,56 @@ fancy_Table.prototype = {
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,this.options.colCount); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(this.el,row.el,index);
+		fancy_browser_Dom.insertChildAtIndex(this.grid.content,row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
 		return this.insertRowAt(this.rows.length,row);
+	}
+	,fixColumns: function(howMany,rows) {
+		var _g = this;
+		return rows.reduce(function(acc,row,index) {
+			var newRow1 = thx_Arrays.reducei(row.cols,function(newRow,col,index1) {
+				if(index1 < howMany) {
+					newRow.appendColumn(new fancy_table_Column(col.value));
+					fancy_browser_Dom.addClass(col.el,"ft-col-fixed");
+				} else fancy_browser_Dom.removeClass(col.el,"ft-col-fixed");
+				return newRow;
+			},new fancy_table_Row());
+			acc.push(newRow1.el);
+			acc = acc.concat(_g.fixColumns(howMany,row.rows));
+			return acc;
+		},[]);
+	}
+	,setFixedTop: function(howMany) {
+		if(howMany == null) howMany = 1;
+		fancy_browser_Dom.empty(this.grid.top);
+		thx_Arrays.reduce(this.fixColumns(this.rows[0].cols.length,this.rows.slice(0,howMany)),function(acc,child) {
+			acc.appendChild(child);
+			return acc;
+		},this.grid.top);
+		this.fixedTop = howMany;
+		return this.updateFixedTopLeft();
+	}
+	,setFixedLeft: function(howMany) {
+		if(howMany == null) howMany = 1;
+		fancy_browser_Dom.empty(this.grid.left);
+		var children = this.fixColumns(howMany,this.rows);
+		children.reduce(function(acc,child) {
+			acc.appendChild(child);
+			return acc;
+		},this.grid.left);
+		this.fixedLeft = howMany;
+		return this.updateFixedTopLeft();
+	}
+	,updateFixedTopLeft: function() {
+		fancy_browser_Dom.empty(this.grid.topLeft);
+		var cells = this.fixColumns(this.fixedLeft,this.rows.slice(0,this.fixedTop));
+		cells.reduce(function(acc,child) {
+			acc.appendChild(child);
+			return acc;
+		},this.grid.topLeft);
+		return this;
 	}
 };
 var fancy_browser_Dom = function() { };
@@ -143,12 +196,38 @@ fancy_browser_Dom.insertChildAtIndex = function(el,child,index) {
 	el.insertBefore(child,el.children[index]);
 	return el;
 };
+fancy_browser_Dom.prependChild = function(el,child) {
+	return fancy_browser_Dom.insertChildAtIndex(el,child,0);
+};
 fancy_browser_Dom.empty = function(el) {
 	while(el.firstChild != null) el.removeChild(el.firstChild);
 	return el;
 };
 var fancy_table_Column = function(value) {
+	this.value = value;
 	this.el = fancy_browser_Dom.create("div.ft-col",null,null,value);
+};
+fancy_table_Column.prototype = {
+	setValue: function(value) {
+		this.value = value;
+		fancy_browser_Dom.empty(this.el).textContent = value;
+	}
+};
+var fancy_table_GridContainer = function() {
+	this.topLeft = fancy_browser_Dom.create("div.ft-table-fixed-top-left");
+	this.top = fancy_browser_Dom.create("div.ft-table-fixed-top");
+	this.left = fancy_browser_Dom.create("div.ft-table-fixed-left");
+	this.content = fancy_browser_Dom.create("div.ft-table-content");
+	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
+	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.content),this.left),this.top),this.topLeft);
+};
+fancy_table_GridContainer.prototype = {
+	positionPanes: function(deltaTop,deltaLeft) {
+		this.topLeft.style.top = "" + deltaTop + "px";
+		this.topLeft.style.left = "" + deltaLeft + "px";
+		this.top.style.top = "" + deltaTop + "px";
+		this.left.style.left = "" + deltaLeft + "px";
+	}
 };
 var fancy_table_Row = function(cols,colCount,options) {
 	if(colCount == null) colCount = 0;
@@ -183,6 +262,9 @@ fancy_table_Row.prototype = {
 		fancy_browser_Dom.insertChildAtIndex(this.cellsEl,col.el,index);
 		return this;
 	}
+	,appendColumn: function(col) {
+		return this.insertColumn(this.cols.length,col);
+	}
 	,insertRow: function(index,row) {
 		if(row == null) row = new fancy_table_Row(); else row = row;
 		this.rows.splice(index,0,row);
@@ -205,7 +287,7 @@ fancy_table_Row.prototype = {
 	}
 	,setCellValue: function(index,value) {
 		if(index >= this.cols.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
-		fancy_browser_Dom.empty(this.cols[index].el).textContent = value;
+		this.cols[index].setValue(value);
 		return this;
 	}
 };

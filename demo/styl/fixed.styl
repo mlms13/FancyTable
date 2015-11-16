@@ -11,13 +11,16 @@ clearfix()
   &-table
     border-right 1px solid #ddd
     overflow auto
+    max-height 500px
     clearfix()
 
   &-row
+    clear both
     float left
     clearfix()
 
     &-values
+      clear both
       float left // gross hack to get flex container to match width of children
 
   &-col

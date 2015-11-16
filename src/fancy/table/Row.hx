@@ -8,10 +8,10 @@ using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
+  public var rows(default, null) : Array<Row>;
+  public var cols(default, null) : Array<Column>;
   var cellsEl : Element;
   var opts : FancyRowOptions;
-  var cols : Array<Column>;
-  var rows : Array<Row>;
 
   public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
     this.cols = cols == null ? [] : cols;
@@ -97,7 +97,7 @@ class Row {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 
-    cols[index].el.empty().textContent = value;
+    cols[index].setValue(value);
     return this;
   }
 }
