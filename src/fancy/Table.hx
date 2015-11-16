@@ -4,7 +4,6 @@ import fancy.table.*;
 import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
-import js.html.Node;
 using thx.Arrays;
 using thx.Objects;
 
@@ -63,25 +62,24 @@ class Table {
     return insertRowAt(rows.length, row);
   }
 
-  public function insertColumnAt(index : Int) : Table {
-    options.colCount++;
-    rows.map(function (row) {
-      row.insertColumn(index);
-    });
-    return this;
-  }
+  // public function insertColumnAt(index : Int) : Table {
+  //   options.colCount++;
+  //   rows.map(function (row) {
+  //     row.insertColumn(index);
+  //   });
+  //   return this;
+  // }
+  //
+  // public function prependColumn() : Table {
+  //   return insertColumnAt(0);
+  // }
+  //
+  // public function appendColumn() : Table {
+  //   return insertColumnAt(options.colCount);
+  // }
 
-  public function prependColumn() : Table {
-    return insertColumnAt(0);
-  }
-
-  public function appendColumn() : Table {
-    return insertColumnAt(options.colCount);
-  }
-
-  // recursively dig through rows, finding the cells we need to affix
-  function fixColumns(howMany : Int, rows : Array<Row>) : Array<Node> {
-    return rows.reducei(function (acc : Array<Node>, row, index) {
+  function fixColumns(howMany : Int, rows : Array<Row>) : Array<Element> {
+    return rows.reducei(function (acc : Array<Element>, row, index) {
       var newRow = row.cols.reducei(function (newRow : Row, col, index) {
         if (index < howMany) {
           newRow.appendColumn(new Column(col.value));
@@ -93,7 +91,6 @@ class Table {
       }, new Row());
 
       acc.push(newRow.el);
-      acc = acc.concat(fixColumns(howMany, row.rows));
       return acc;
     }, []);
   }

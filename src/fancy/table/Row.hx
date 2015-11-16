@@ -8,13 +8,11 @@ using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
-  public var rows(default, null) : Array<Row>;
   public var cols(default, null) : Array<Column>;
   var opts : FancyRowOptions;
 
   public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
     this.cols = cols == null ? [] : cols;
-    this.rows = [];
     opts = createDefaultOptions(options);
     opts.classes = createDefaultClasses(opts.classes);
     el = Dom.create("div.ft-row");

@@ -97,7 +97,6 @@ fancy_Table.prototype = {
 		return this.insertRowAt(this.rows.length,row);
 	}
 	,fixColumns: function(howMany,rows) {
-		var _g = this;
 		return rows.reduce(function(acc,row,index) {
 			var newRow1 = thx_Arrays.reducei(row.cols,function(newRow,col,index1) {
 				if(index1 < howMany) {
@@ -107,7 +106,6 @@ fancy_Table.prototype = {
 				return newRow;
 			},new fancy_table_Row());
 			acc.push(newRow1.el);
-			acc = acc.concat(_g.fixColumns(howMany,row.rows));
 			return acc;
 		},[]);
 	}
@@ -226,7 +224,6 @@ fancy_table_GridContainer.prototype = {
 var fancy_table_Row = function(cols,colCount,options) {
 	if(colCount == null) colCount = 0;
 	if(cols == null) this.cols = []; else this.cols = cols;
-	this.rows = [];
 	this.opts = this.createDefaultOptions(options);
 	this.opts.classes = this.createDefaultClasses(this.opts.classes);
 	this.el = fancy_browser_Dom.create("div.ft-row");
