@@ -5,12 +5,15 @@ import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
 using thx.Arrays;
+using thx.Ints;
 using thx.Objects;
+using thx.Tuple;
 
 class Table {
   var options : FancyTableOptions;
   var rows : Array<Row>;
   var grid : GridContainer;
+  var folds : Array<Tuple2<Int, Int>>;
 
   // ints to track how many rows/cols are fixed in various places
   var fixedTop : Int;
@@ -90,6 +93,10 @@ class Table {
         return newRow;
       }, new Row());
 
+      // steal all row classes from the underlying row
+      // this feels dirty as f.
+      newRow.el.addClass(rows[index].el.className);
+
       acc.push(newRow.el);
       return acc;
     }, []);
@@ -136,5 +143,35 @@ class Table {
       return acc;
     }, grid.topLeft);
     return this;
+  }
+
+  public static function foldsIntersect(first : Tuple2<Int, Int>, second: Tuple2<Int, Int>) : Bool {
+    var firstRange = first.left.range(first.left + first.right + 1), // +1 because range isn't inclusive
+        secondRange = second.left.range(second.left + second.right + 1);
+
+    return false;
+  }
+
+  public function createFold(headerIndex : Int, childrenCount : Int) {
+    // check for out-of-range indexes
+    if (headerIndex >= rows.length)
+      return throw 'Cannot set fold point at $headerIndex because there are only ${rows.length} rows';
+
+    childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
+
+    // folds can contain others, but they can't partially overlap
+    // for (fold in folds) {
+    //   if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
+    //     return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
+    //   }
+    // }
+
+    // finally, if we've made it this far, set up the fold
+    for (i in (headerIndex + 1)...(childrenCount + headerIndex + 1)) {
+      rows[i].indent();
+      rows[headerIndex].addChildRow(rows[i]);
+    }
+
+    return setFixedLeft(fixedLeft);
   }
 }

@@ -9,18 +9,22 @@ using thx.Objects;
 class Row {
   public var el(default, null) : Element;
   public var cols(default, null) : Array<Column>;
+  public var indentation(default, null) : Int;
+  var rows : Array<Row>;
   var opts : FancyRowOptions;
 
   public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
     this.cols = cols == null ? [] : cols;
     opts = createDefaultOptions(options);
     opts.classes = createDefaultClasses(opts.classes);
-    el = Dom.create("div.ft-row");
+
+    rows = [];
+    indentation = 0;
 
     // append all provided columns to this row in the dom
-    this.cols.reducei(function (container : Element, col, index) {
+    el = this.cols.reducei(function (container : Element, col, index) {
       return container.insertChildAtIndex(col.el, index);
-    }, el);
+    }, Dom.create("div.ft-row"));
 
     // if the total cols is less than the provided count, add more columns
     var colDiff = colCount - this.cols.length;
@@ -42,7 +46,8 @@ class Row {
       values : "ft-row-values",
       expanded : "ft-row-expanded",
       collapsed : "ft-row-collapsed",
-      foldHeader : "ft-row-fold-header"
+      foldHeader : "ft-row-fold-header",
+      indent : "ft-row-indent-"
     }, classes == null ? {} : classes);
   }
 
@@ -57,14 +62,29 @@ class Row {
     return insertColumn(cols.length, col);
   }
 
+  public function addChildRow(child : Row) {
+    el.addClass(opts.classes.foldHeader);
+    rows.push(child);
+  }
+
+  public function indent() {
+    el.removeClass('${opts.classes.indent}$indentation');
+    indentation++;
+    el.addClass('${opts.classes.indent}$indentation');
+  }
+
   public function expand() {
     opts.expanded = true;
-    el.removeClass(opts.classes.collapsed).addClass(opts.classes.expanded);
+    rows.map(function (row) {
+      row.el.removeClass(opts.classes.collapsed).addClass(opts.classes.expanded);
+    });
   }
 
   public function collapse() {
     opts.expanded = false;
-    el.removeClass(opts.classes.expanded).addClass(opts.classes.collapsed);
+    rows.map(function (row) {
+      row.el.removeClass(opts.classes.expanded).addClass(opts.classes.collapsed);
+    });
   }
 
   public function toggle() {

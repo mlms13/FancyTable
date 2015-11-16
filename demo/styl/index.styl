@@ -45,8 +45,15 @@ $basePadding = 8px
           display inline-block
           margin-right 5px
 
-      &.ft-row-expanded > .ft-row-values > .ft-col:first-child:before
+      &.ft-row-expanded > .ft-col:first-child:before
         transform rotate(90deg)
+
+    &-indent-1 > .ft-col:first-child
+      padding-left 24px
+    &-indent-2 > .ft-col:first-child
+      padding-left 40px
+    &-indent-3 > .ft-col:first-child
+      padding-left 56px
 
     // TODO: not sure how this works in the flat structure
     &-collapsed

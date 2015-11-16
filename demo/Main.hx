@@ -59,14 +59,23 @@ class Main {
       return table.appendRow(row);
     }, new Table(el))
       .setFixedTop()
-      .setFixedLeft();
+      .setFixedLeft()
+      .createFold(1, 7)
+      .createFold(2, 2)
+      .createFold(3, 1)
+      .createFold(5, 3)
+      .createFold(6, 2)
+      .createFold(9, 6)
+      .createFold(10, 2)
+      .createFold(11, 1)
+      .createFold(13, 2)
+      .createFold(14, 1);
   }
 
   static function rectangularize(data : Array<RowData>) : Array<Array<String>> {
     return data.reduce(function (acc : Array<Array<String>>, d : RowData) {
       acc.push(d.values);
       return d.data != null ? acc.concat(rectangularize(d.data)) : acc;
-
     }, []);
   }
 }

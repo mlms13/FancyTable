@@ -45,10 +45,19 @@
   display: inline-block;
   margin-right: 5px;
 }
-.ft-row-fold-header.ft-row-expanded > .ft-row-values > .ft-col:first-child:before {
+.ft-row-fold-header.ft-row-expanded > .ft-col:first-child:before {
   -webkit-transform: rotate(90deg);
       -ms-transform: rotate(90deg);
           transform: rotate(90deg);
+}
+.ft-row-indent-1 > .ft-col:first-child {
+  padding-left: 24px;
+}
+.ft-row-indent-2 > .ft-col:first-child {
+  padding-left: 40px;
+}
+.ft-row-indent-3 > .ft-col:first-child {
+  padding-left: 56px;
 }
 .ft-row-collapsed {
   display: none;

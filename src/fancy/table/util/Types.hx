@@ -14,5 +14,6 @@ typedef FancyRowClasses = {
   ?values : String,
   ?expanded : String,
   ?collapsed : String,
-  ?foldHeader : String
+  ?foldHeader : String,
+  ?indent : String
 };
