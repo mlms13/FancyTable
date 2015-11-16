@@ -32,28 +32,11 @@ $basePadding = 8px
 
   &-row
     border-bottom 1px solid #ddd
+    display flex
 
-    &-values
-      display flex
-
-    // nested rows
-    .ft-row
-      border-bottom 0
-      border-top 1px solid #ddd
-
-    // indent first column in nested rows
-    .ft-row .ft-col:first-child
-      padding-left $basePadding + (2 * $basePadding)
-
-    .ft-row .ft-row .ft-col:first-child
-      padding-left $basePadding + (4 * $basePadding)
-
-    .ft-row .ft-row .ft-row .ft-col:first-child
-      padding-left $basePadding + (6 * $basePadding)
-
-    // rows that contain other rows show dropdown arrows
-    &-with-children
-      > .ft-row-values > .ft-col:first-child
+    // rows that start a grouping
+    &-fold-header
+      > .ft-col:first-child
         user-select none
         cursor pointer
 
@@ -65,9 +48,9 @@ $basePadding = 8px
       &.ft-row-expanded > .ft-row-values > .ft-col:first-child:before
         transform rotate(90deg)
 
+    // TODO: not sure how this works in the flat structure
     &-collapsed
-      .ft-row
-        display none
+      display none
 
   &-col
     border-right 1px solid #ddd

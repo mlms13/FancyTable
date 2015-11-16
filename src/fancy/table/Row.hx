@@ -10,7 +10,6 @@ class Row {
   public var el(default, null) : Element;
   public var rows(default, null) : Array<Row>;
   public var cols(default, null) : Array<Column>;
-  var cellsEl : Element;
   var opts : FancyRowOptions;
 
   public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
@@ -18,13 +17,12 @@ class Row {
     this.rows = [];
     opts = createDefaultOptions(options);
     opts.classes = createDefaultClasses(opts.classes);
-    cellsEl = Dom.create("div.ft-row-values");
-    el = Dom.create("div.ft-row", [cellsEl]);
+    el = Dom.create("div.ft-row");
 
     // append all provided columns to this row in the dom
     this.cols.reducei(function (container : Element, col, index) {
       return container.insertChildAtIndex(col.el, index);
-    }, cellsEl);
+    }, el);
 
     // if the total cols is less than the provided count, add more columns
     var colDiff = colCount - this.cols.length;
@@ -46,33 +44,19 @@ class Row {
       values : "ft-row-values",
       expanded : "ft-row-expanded",
       collapsed : "ft-row-collapsed",
-      withChildren : "ft-row-with-children"
+      foldHeader : "ft-row-fold-header"
     }, classes == null ? {} : classes);
   }
 
   public function insertColumn(index : Int, ?col : Column) : Row {
     col = col == null ? new Column() : col;
     cols.insert(index, col);
-    cellsEl.insertChildAtIndex(col.el, index);
+    el.insertChildAtIndex(col.el, index);
     return this;
   }
 
   public function appendColumn(?col : Column) : Row {
     return insertColumn(cols.length, col);
-  }
-
-  public function insertRow(index : Int, ?row : Row) : Row {
-    row = row == null ? new Row() : row;
-    rows.insert(index, row);
-    el
-      .addClass(opts.classes.withChildren)
-      .addClass(opts.expanded ? opts.classes.expanded : opts.classes.collapsed)
-      .insertChildAtIndex(row.el, index);
-    return this;
-  }
-
-  public function appendRow(?row : Row) : Row {
-    return insertRow(rows.length + 1, row);
   }
 
   public function expand() {

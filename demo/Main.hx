@@ -8,88 +8,70 @@ class Main {
     var el = js.Browser.document.querySelector(".table-container");
 
     var data : Array<RowData> = [{
-      label: "Cards",
-      values: ["CMC", "Draft Value", "Price"]
+      values: ["Cards", "CMC", "Draft Value", "Price"]
     }, {
-      label: "White",
+      values: ["White"],
       data: [{
-        label: "Mythic",
+        values: ["Mythic"],
         data: [{
-          label: "Enchantment",
+          values: ["Enchantment"],
           data: [{
-            label: "Quarantine Field",
-            values: ["2", "5", "2.52"]
+            values: ["Quarantine Field", "2", "5", "2.52"]
           }]
         }]
       }, {
-        label: "Rare",
+        values: ["Rare"],
         data: [{
-          label: "Creature",
+          values: ["Creature"],
           data: [{
-            label: "Hero of Goma Fada",
-            values: ["5", "3.5", "0.27"]
+            values: ["Hero of Goma Fada", "5", "3.5", "0.27"]
           }, {
-            label: "Felidar Sovereign",
-            values: ["6", "4", "0.56"]
+            values: ["Felidar Sovereign", "6", "4", "0.56"]
           }]
         }]
       }]
     }, {
-      label: "Blue",
+      values: ["Blue"],
       data: [{
-        label: "Mythic",
+        values: ["Mythic"],
         data: [{
-          label: "Sorcery",
+          values: ["Sorcery"],
           data: [{
-            label: "Part the Waterveil",
-            values: ["6", "2.0", "1.29"]
+            values: ["Part the Waterveil", "6", "2.0", "1.29"]
           }]
         }]
       }, {
-        label: "Rare",
+        values: ["Rare"],
         data: [{
-          label: "Creature",
+          values: ["Creature"],
           data: [{
-            label: "Guardian of Tazeem",
-            values: ["5", "4.5", "0.25"]
+            values: ["Guardian of Tazeem", "5", "4.5", "0.25"]
           }]
         }]
       }]
     }];
 
-    data.reduce(function (table : Table, curr : RowData) {
-      return table.appendRow(generateRow(curr));
+    rectangularize(data).reduce(function(table : Table, curr : Array<String>) {
+      var row = curr.reducei(function (row : Row, val : String, index : Int) {
+        return row.setCellValue(index, val);
+      }, new Row(4));
+
+      return table.appendRow(row);
     }, new Table(el))
       .setFixedTop()
       .setFixedLeft();
   }
 
-  static function generateRow(data : RowData) : Row {
-    // fix missing values
-    data.values = data.values == null ? [] : data.values;
+  static function rectangularize(data : Array<RowData>) : Array<Array<String>> {
+    return data.reduce(function (acc : Array<Array<String>>, d : RowData) {
+      acc.push(d.values);
+      return d.data != null ? acc.concat(rectangularize(d.data)) : acc;
 
-    // make the the first cell, which should always exist
-    var headerCell = new Column(data.label);
-
-    // create a new row and fill it with values if they exist
-    var row = data.values.reducei(function (acc : Row, curr, index) {
-      return acc.setCellValue(index + 1, curr);
-    }, new Row([headerCell], 4));
-
-    // wire up the header cell to toggle the row expansion
-    headerCell.el.on("click", function (_) {
-      row.toggle();
-    });
-
-    // return the row with sub-rows appended as necessary
-    return  data.data == null ? row : data.data.reduce(function (row : Row, curr : RowData) {
-      return row.appendRow(generateRow(curr));
-    }, row);
+    }, []);
   }
 }
 
 typedef RowData = {
-  label: String,
-  ?data: Array<RowData>,
-  ?values: Array<String>
+  values: Array<String>,
+  ?data: Array<RowData>
 };
