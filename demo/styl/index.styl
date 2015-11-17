@@ -32,28 +32,11 @@ $basePadding = 8px
 
   &-row
     border-bottom 1px solid #ddd
+    display flex
 
-    &-values
-      display flex
-
-    // nested rows
-    .ft-row
-      border-bottom 0
-      border-top 1px solid #ddd
-
-    // indent first column in nested rows
-    .ft-row .ft-col:first-child
-      padding-left $basePadding + (2 * $basePadding)
-
-    .ft-row .ft-row .ft-col:first-child
-      padding-left $basePadding + (4 * $basePadding)
-
-    .ft-row .ft-row .ft-row .ft-col:first-child
-      padding-left $basePadding + (6 * $basePadding)
-
-    // rows that contain other rows show dropdown arrows
-    &-with-children
-      > .ft-row-values > .ft-col:first-child
+    // rows that start a grouping
+    &-fold-header
+      > .ft-cell:first-child
         user-select none
         cursor pointer
 
@@ -62,14 +45,21 @@ $basePadding = 8px
           display inline-block
           margin-right 5px
 
-      &.ft-row-expanded > .ft-row-values > .ft-col:first-child:before
+      &.ft-row-expanded > .ft-cell:first-child:before
         transform rotate(90deg)
 
-    &-collapsed
-      .ft-row
-        display none
+    &-indent-1 > .ft-cell:first-child
+      padding-left 24px
+    &-indent-2 > .ft-cell:first-child
+      padding-left 40px
+    &-indent-3 > .ft-cell:first-child
+      padding-left 56px
 
-  &-col
+    // TODO: not sure how this works in the flat structure
+    &-collapsed
+      display none
+
+  &-cell
     border-right 1px solid #ddd
     box-sizing border-box
     flex auto

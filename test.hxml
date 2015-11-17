@@ -1,0 +1,10 @@
+-cp src
+-cp test
+-lib thx.core
+-lib fancybrowser
+-lib utest
+-D unittest
+-D nodejs
+-main test.TestAll
+-js bin/test/runner.js
+-cmd node bin/test/runner.js

@@ -8,28 +8,28 @@ using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
-  public var rows(default, null) : Array<Row>;
-  public var cols(default, null) : Array<Column>;
-  var cellsEl : Element;
+  public var cells(default, null) : Array<Cell>;
+  public var indentation(default, null) : Int;
+  var rows : Array<Row>;
   var opts : FancyRowOptions;
 
-  public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
-    this.cols = cols == null ? [] : cols;
-    this.rows = [];
+  public function new(?cells : Array<Cell>, ?colCount = 0, ?options : FancyRowOptions) {
+    this.cells = cells == null ? [] : cells;
     opts = createDefaultOptions(options);
     opts.classes = createDefaultClasses(opts.classes);
-    cellsEl = Dom.create("div.ft-row-values");
-    el = Dom.create("div.ft-row", [cellsEl]);
 
-    // append all provided columns to this row in the dom
-    this.cols.reducei(function (container : Element, col, index) {
+    rows = [];
+    indentation = 0;
+
+    // append all provided cells to this row in the dom
+    el = this.cells.reducei(function (container : Element, col, index) {
       return container.insertChildAtIndex(col.el, index);
-    }, cellsEl);
+    }, Dom.create("div.ft-row"));
 
-    // if the total cols is less than the provided count, add more columns
-    var colDiff = colCount - this.cols.length;
+    // if the total cell count is less than the provided count, add more cells
+    var colDiff = colCount - this.cells.length;
     if (colDiff > 0) {
-      for (i in 0...colDiff) insertColumn(i + this.cols.length);
+      for (i in 0...colDiff) insertCell(i + this.cells.length);
     }
   }
 
@@ -46,43 +46,45 @@ class Row {
       values : "ft-row-values",
       expanded : "ft-row-expanded",
       collapsed : "ft-row-collapsed",
-      withChildren : "ft-row-with-children"
+      foldHeader : "ft-row-fold-header",
+      indent : "ft-row-indent-"
     }, classes == null ? {} : classes);
   }
 
-  public function insertColumn(index : Int, ?col : Column) : Row {
-    col = col == null ? new Column() : col;
-    cols.insert(index, col);
-    cellsEl.insertChildAtIndex(col.el, index);
+  public function insertCell(index : Int, ?cell : Cell) : Row {
+    cell = cell == null ? new Cell() : cell;
+    cells.insert(index, cell);
+    el.insertChildAtIndex(cell.el, index);
     return this;
   }
 
-  public function appendColumn(?col : Column) : Row {
-    return insertColumn(cols.length, col);
+  public function appendCell(?col : Cell) : Row {
+    return insertCell(cells.length, col);
   }
 
-  public function insertRow(index : Int, ?row : Row) : Row {
-    row = row == null ? new Row() : row;
-    rows.insert(index, row);
-    el
-      .addClass(opts.classes.withChildren)
-      .addClass(opts.expanded ? opts.classes.expanded : opts.classes.collapsed)
-      .insertChildAtIndex(row.el, index);
-    return this;
+  public function addChildRow(child : Row) {
+    el.addClass(opts.classes.foldHeader);
+    rows.push(child);
   }
 
-  public function appendRow(?row : Row) : Row {
-    return insertRow(rows.length + 1, row);
+  public function indent() {
+    el.removeClass('${opts.classes.indent}$indentation');
+    indentation++;
+    el.addClass('${opts.classes.indent}$indentation');
   }
 
   public function expand() {
     opts.expanded = true;
-    el.removeClass(opts.classes.collapsed).addClass(opts.classes.expanded);
+    rows.map(function (row) {
+      row.el.removeClass(opts.classes.collapsed).addClass(opts.classes.expanded);
+    });
   }
 
   public function collapse() {
     opts.expanded = false;
-    el.removeClass(opts.classes.expanded).addClass(opts.classes.collapsed);
+    rows.map(function (row) {
+      row.el.removeClass(opts.classes.expanded).addClass(opts.classes.collapsed);
+    });
   }
 
   public function toggle() {
@@ -93,11 +95,11 @@ class Row {
   }
 
   public function setCellValue(index : Int, value : String) : Row {
-    if (index >= cols.length) {
+    if (index >= cells.length) {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 
-    cols[index].setValue(value);
+    cells[index].setValue(value);
     return this;
   }
 }

@@ -4,14 +4,16 @@ import fancy.table.*;
 import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
-import js.html.Node;
 using thx.Arrays;
+using thx.Ints;
 using thx.Objects;
+using thx.Tuple;
 
 class Table {
   var options : FancyTableOptions;
   var rows : Array<Row>;
   var grid : GridContainer;
+  var folds : Array<Tuple2<Int, Int>>;
 
   // ints to track how many rows/cols are fixed in various places
   var fixedTop : Int;
@@ -21,6 +23,7 @@ class Table {
     var tableEl : Element;
     this.options = createDefaultOptions(opts);
     rows = [];
+    folds = [];
     fixedTop = 0;
     fixedLeft = 0;
 
@@ -63,37 +66,39 @@ class Table {
     return insertRowAt(rows.length, row);
   }
 
-  public function insertColumnAt(index : Int) : Table {
-    options.colCount++;
-    rows.map(function (row) {
-      row.insertColumn(index);
-    });
-    return this;
-  }
+  // public function insertColumnAt(index : Int) : Table {
+  //   options.colCount++;
+  //   rows.map(function (row) {
+  //     row.insertColumn(index);
+  //   });
+  //   return this;
+  // }
+  //
+  // public function prependColumn() : Table {
+  //   return insertColumnAt(0);
+  // }
+  //
+  // public function appendColumn() : Table {
+  //   return insertColumnAt(options.colCount);
+  // }
 
-  public function prependColumn() : Table {
-    return insertColumnAt(0);
-  }
-
-  public function appendColumn() : Table {
-    return insertColumnAt(options.colCount);
-  }
-
-  // recursively dig through rows, finding the cells we need to affix
-  function fixColumns(howMany : Int, rows : Array<Row>) : Array<Node> {
-    return rows.reducei(function (acc : Array<Node>, row, index) {
-      var newRow = row.cols.reducei(function (newRow : Row, col, index) {
+  function fixColumns(howMany : Int, rows : Array<Row>) : Array<Element> {
+    return rows.reducei(function (acc : Array<Element>, row, index) {
+      var newRow = row.cells.reducei(function (newRow : Row, cell, index) {
         if (index < howMany) {
-          newRow.appendColumn(new Column(col.value));
-          col.el.addClass("ft-col-fixed");
+          newRow.appendCell(new Cell(cell.value));
+          cell.el.addClass("ft-col-fixed");
         } else {
-          col.el.removeClass("ft-col-fixed");
+          cell.el.removeClass("ft-col-fixed");
         }
         return newRow;
       }, new Row());
 
+      // steal all row classes from the underlying row
+      // this feels dirty as f.
+      newRow.el.addClass(rows[index].el.className);
+
       acc.push(newRow.el);
-      acc = acc.concat(fixColumns(howMany, row.rows));
       return acc;
     }, []);
   }
@@ -107,7 +112,7 @@ class Table {
 
     // ANOTHER TODO: if we consistenly update the colcount, we won't have to
     // dig into the rows to find the number of columns here
-    fixColumns(rows[0].cols.length, rows.slice(0, howMany)).reduce(function (acc, child) {
+    fixColumns(rows[0].cells.length, rows.slice(0, howMany)).reduce(function (acc, child) {
       acc.appendChild(child);
       return acc;
     }, grid.top);
@@ -139,5 +144,43 @@ class Table {
       return acc;
     }, grid.topLeft);
     return this;
+  }
+
+  public static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
+    // sort by the index of the header
+    var first = a._0 <= b._0 ? a : b,
+        second = first == a ? b : a;
+
+    return first._0 < second._0 && // no problem if they start at the same spot
+           second._0 <= first._0 + first._1 && // or if second starts after the end of first
+           second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
+  }
+
+  public function createFold(headerIndex : Int, childrenCount : Int) {
+    // check for out-of-range indexes
+    if (headerIndex >= rows.length)
+      return throw 'Cannot set fold point at $headerIndex because there are only ${rows.length} rows';
+
+
+    childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
+
+    // folds can contain others, but they can't partially overlap
+    for (fold in folds) {
+      if (fold._0 == headerIndex) {
+        return throw 'Cannot set fold point at $headerIndex because that row is already a fold header';
+      }
+      if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
+        return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
+      }
+    }
+
+    // finally, if we've made it this far, set up the fold
+    for (i in (headerIndex + 1)...(childrenCount + headerIndex + 1)) {
+      rows[i].indent();
+      rows[headerIndex].addChildRow(rows[i]);
+    }
+    folds.push(new Tuple2(headerIndex, childrenCount));
+
+    return setFixedLeft(fixedLeft);
   }
 }
