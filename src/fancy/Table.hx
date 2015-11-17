@@ -146,11 +146,14 @@ class Table {
     return this;
   }
 
-  public static function foldsIntersect(first : Tuple2<Int, Int>, second: Tuple2<Int, Int>) : Bool {
-    var firstRange = first.left.range(first.left + first.right + 1), // +1 because range isn't inclusive
-        secondRange = second.left.range(second.left + second.right + 1);
+  public static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
+    // sort by the index of the header
+    var first = a._0 <= b._0 ? a : b,
+        second = first == a ? b : a;
 
-    return false;
+    return first._0 < second._0 && // no problem if they start at the same spot
+           second._0 <= first._0 + first._1 && // or if second starts after the end of first
+           second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
   }
 
   public function createFold(headerIndex : Int, childrenCount : Int) {

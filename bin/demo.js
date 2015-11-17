@@ -100,10 +100,12 @@ var fancy_Table = function(parent,opts) {
 	});
 	parent.appendChild(tableEl);
 };
-fancy_Table.foldsIntersect = function(first,second) {
-	var firstRange = thx_Ints.range(first._0,first._0 + first._1 + 1);
-	var secondRange = thx_Ints.range(second._0,second._0 + second._1 + 1);
-	return false;
+fancy_Table.foldsIntersect = function(a,b) {
+	var first;
+	if(a._0 <= b._0) first = a; else first = b;
+	var second;
+	if(first == a) second = b; else second = a;
+	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(opts) {
@@ -333,19 +335,6 @@ thx_Arrays.reducei = function(array,callback,initial) {
 var thx_Ints = function() { };
 thx_Ints.min = function(a,b) {
 	if(a < b) return a; else return b;
-};
-thx_Ints.range = function(start,stop,step) {
-	if(step == null) step = 1;
-	if(null == stop) {
-		stop = start;
-		start = 0;
-	}
-	if((stop - start) / step == Infinity) throw new js__$Boot_HaxeError("infinite range");
-	var range = [];
-	var i = -1;
-	var j;
-	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
-	return range;
 };
 var thx_Objects = function() { };
 thx_Objects.combine = function(first,second) {
