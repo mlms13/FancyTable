@@ -172,6 +172,7 @@ fancy_Table.prototype = {
 		while(_g < _g1.length) {
 			var fold = _g1[_g];
 			++_g;
+			if(fold._0 == headerIndex) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because that row is already a fold header");
 			if(fancy_Table.foldsIntersect(fold,{ _0 : headerIndex, _1 : childrenCount})) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because it intersects with an existing fold");
 		}
 		var _g11 = headerIndex + 1;

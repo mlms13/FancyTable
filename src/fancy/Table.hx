@@ -161,10 +161,14 @@ class Table {
     if (headerIndex >= rows.length)
       return throw 'Cannot set fold point at $headerIndex because there are only ${rows.length} rows';
 
+
     childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
 
     // folds can contain others, but they can't partially overlap
     for (fold in folds) {
+      if (fold._0 == headerIndex) {
+        return throw 'Cannot set fold point at $headerIndex because that row is already a fold header';
+      }
       if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
         return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
       }
