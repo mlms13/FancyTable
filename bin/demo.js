@@ -33,12 +33,28 @@ var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
-	thx_Arrays.reduce(Main.rectangularize(data),function(table,curr) {
+	var table1 = thx_Arrays.reduce(Main.rectangularize(data),function(table,curr) {
 		var row1 = thx_Arrays.reducei(curr,function(row,val,index) {
 			return row.setCellValue(index,val);
 		},new fancy_table_Row(null,4));
 		return table.appendRow(row1);
-	},new fancy_Table(el)).setFixedTop().setFixedLeft().createFold(1,7).createFold(2,2).createFold(3,1).createFold(5,3).createFold(6,2).createFold(9,6).createFold(10,2).createFold(11,1).createFold(13,2).createFold(14,1);
+	},new fancy_Table(el)).setFixedTop().setFixedLeft();
+	thx_Arrays.reduce(Main.createFolds(data)._1,function(table2,fold) {
+		return table2.createFold(fold._0,fold._1);
+	},table1);
+};
+Main.createFolds = function(data,start) {
+	if(start == null) start = 0;
+	return data.reduce(function(acc,row,index) {
+		acc._0++;
+		if(row.data != null) {
+			var result = Main.createFolds(row.data,acc._0 + start);
+			acc._1.push({ _0 : acc._0 + start - 1, _1 : result._0});
+			acc._0 += result._0;
+			acc._1 = acc._1.concat(result._1);
+		}
+		return acc;
+	},{ _0 : 0, _1 : []});
 };
 Main.rectangularize = function(data) {
 	return data.reduce(function(acc,d) {
