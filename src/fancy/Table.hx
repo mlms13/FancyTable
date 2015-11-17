@@ -23,6 +23,7 @@ class Table {
     var tableEl : Element;
     this.options = createDefaultOptions(opts);
     rows = [];
+    folds = [];
     fixedTop = 0;
     fixedLeft = 0;
 
@@ -160,17 +161,18 @@ class Table {
     childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
 
     // folds can contain others, but they can't partially overlap
-    // for (fold in folds) {
-    //   if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
-    //     return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
-    //   }
-    // }
+    for (fold in folds) {
+      if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
+        return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
+      }
+    }
 
     // finally, if we've made it this far, set up the fold
     for (i in (headerIndex + 1)...(childrenCount + headerIndex + 1)) {
       rows[i].indent();
       rows[headerIndex].addChildRow(rows[i]);
     }
+    folds.push(new Tuple2(headerIndex, childrenCount));
 
     return setFixedLeft(fixedLeft);
   }

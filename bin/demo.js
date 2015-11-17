@@ -89,6 +89,7 @@ var fancy_Table = function(parent,opts) {
 	var tableEl;
 	this.options = this.createDefaultOptions(opts);
 	this.rows = [];
+	this.folds = [];
 	this.fixedTop = 0;
 	this.fixedLeft = 0;
 	tableEl = fancy_browser_Dom.create("div.ft-table");
@@ -98,6 +99,11 @@ var fancy_Table = function(parent,opts) {
 		_g.grid.positionPanes(tableEl.scrollTop,tableEl.scrollLeft);
 	});
 	parent.appendChild(tableEl);
+};
+fancy_Table.foldsIntersect = function(first,second) {
+	var firstRange = thx_Ints.range(first._0,first._0 + first._1 + 1);
+	var secondRange = thx_Ints.range(second._0,second._0 + second._1 + 1);
+	return false;
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(opts) {
@@ -159,13 +165,21 @@ fancy_Table.prototype = {
 	,createFold: function(headerIndex,childrenCount) {
 		if(headerIndex >= this.rows.length) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because there are only " + this.rows.length + " rows");
 		childrenCount = thx_Ints.min(childrenCount,this.rows.length - headerIndex);
-		var _g1 = headerIndex + 1;
-		var _g = childrenCount + headerIndex + 1;
-		while(_g1 < _g) {
-			var i = _g1++;
+		var _g = 0;
+		var _g1 = this.folds;
+		while(_g < _g1.length) {
+			var fold = _g1[_g];
+			++_g;
+			if(fancy_Table.foldsIntersect(fold,{ _0 : headerIndex, _1 : childrenCount})) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because it intersects with an existing fold");
+		}
+		var _g11 = headerIndex + 1;
+		var _g2 = childrenCount + headerIndex + 1;
+		while(_g11 < _g2) {
+			var i = _g11++;
 			this.rows[i].indent();
 			this.rows[headerIndex].addChildRow(this.rows[i]);
 		}
+		this.folds.push({ _0 : headerIndex, _1 : childrenCount});
 		return this.setFixedLeft(this.fixedLeft);
 	}
 };
@@ -319,6 +333,19 @@ thx_Arrays.reducei = function(array,callback,initial) {
 var thx_Ints = function() { };
 thx_Ints.min = function(a,b) {
 	if(a < b) return a; else return b;
+};
+thx_Ints.range = function(start,stop,step) {
+	if(step == null) step = 1;
+	if(null == stop) {
+		stop = start;
+		start = 0;
+	}
+	if((stop - start) / step == Infinity) throw new js__$Boot_HaxeError("infinite range");
+	var range = [];
+	var i = -1;
+	var j;
+	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
+	return range;
 };
 var thx_Objects = function() { };
 thx_Objects.combine = function(first,second) {
