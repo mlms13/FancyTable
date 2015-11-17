@@ -8,28 +8,28 @@ using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
-  public var cols(default, null) : Array<Column>;
+  public var cells(default, null) : Array<Cell>;
   public var indentation(default, null) : Int;
   var rows : Array<Row>;
   var opts : FancyRowOptions;
 
-  public function new(?cols : Array<Column>, ?colCount = 0, ?options : FancyRowOptions) {
-    this.cols = cols == null ? [] : cols;
+  public function new(?cells : Array<Cell>, ?colCount = 0, ?options : FancyRowOptions) {
+    this.cells = cells == null ? [] : cells;
     opts = createDefaultOptions(options);
     opts.classes = createDefaultClasses(opts.classes);
 
     rows = [];
     indentation = 0;
 
-    // append all provided columns to this row in the dom
-    el = this.cols.reducei(function (container : Element, col, index) {
+    // append all provided cells to this row in the dom
+    el = this.cells.reducei(function (container : Element, col, index) {
       return container.insertChildAtIndex(col.el, index);
     }, Dom.create("div.ft-row"));
 
-    // if the total cols is less than the provided count, add more columns
-    var colDiff = colCount - this.cols.length;
+    // if the total cell count is less than the provided count, add more cells
+    var colDiff = colCount - this.cells.length;
     if (colDiff > 0) {
-      for (i in 0...colDiff) insertColumn(i + this.cols.length);
+      for (i in 0...colDiff) insertCell(i + this.cells.length);
     }
   }
 
@@ -51,15 +51,15 @@ class Row {
     }, classes == null ? {} : classes);
   }
 
-  public function insertColumn(index : Int, ?col : Column) : Row {
-    col = col == null ? new Column() : col;
-    cols.insert(index, col);
-    el.insertChildAtIndex(col.el, index);
+  public function insertCell(index : Int, ?cell : Cell) : Row {
+    cell = cell == null ? new Cell() : cell;
+    cells.insert(index, cell);
+    el.insertChildAtIndex(cell.el, index);
     return this;
   }
 
-  public function appendColumn(?col : Column) : Row {
-    return insertColumn(cols.length, col);
+  public function appendCell(?col : Cell) : Row {
+    return insertCell(cells.length, col);
   }
 
   public function addChildRow(child : Row) {
@@ -95,11 +95,11 @@ class Row {
   }
 
   public function setCellValue(index : Int, value : String) : Row {
-    if (index >= cols.length) {
+    if (index >= cells.length) {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 
-    cols[index].setValue(value);
+    cells[index].setValue(value);
     return this;
   }
 }

@@ -114,11 +114,11 @@ fancy_Table.prototype = {
 	}
 	,fixColumns: function(howMany,rows) {
 		return rows.reduce(function(acc,row,index) {
-			var newRow1 = thx_Arrays.reducei(row.cols,function(newRow,col,index1) {
+			var newRow1 = thx_Arrays.reducei(row.cells,function(newRow,cell,index1) {
 				if(index1 < howMany) {
-					newRow.appendColumn(new fancy_table_Column(col.value));
-					fancy_browser_Dom.addClass(col.el,"ft-col-fixed");
-				} else fancy_browser_Dom.removeClass(col.el,"ft-col-fixed");
+					newRow.appendCell(new fancy_table_Cell(cell.value));
+					fancy_browser_Dom.addClass(cell.el,"ft-col-fixed");
+				} else fancy_browser_Dom.removeClass(cell.el,"ft-col-fixed");
 				return newRow;
 			},new fancy_table_Row());
 			fancy_browser_Dom.addClass(newRow1.el,rows[index].el.className);
@@ -129,7 +129,7 @@ fancy_Table.prototype = {
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
 		fancy_browser_Dom.empty(this.grid.top);
-		thx_Arrays.reduce(this.fixColumns(this.rows[0].cols.length,this.rows.slice(0,howMany)),function(acc,child) {
+		thx_Arrays.reduce(this.fixColumns(this.rows[0].cells.length,this.rows.slice(0,howMany)),function(acc,child) {
 			acc.appendChild(child);
 			return acc;
 		},this.grid.top);
@@ -224,11 +224,11 @@ fancy_browser_Dom.empty = function(el) {
 	while(el.firstChild != null) el.removeChild(el.firstChild);
 	return el;
 };
-var fancy_table_Column = function(value) {
+var fancy_table_Cell = function(value) {
 	this.value = value;
-	this.el = fancy_browser_Dom.create("div.ft-col",null,null,value);
+	this.el = fancy_browser_Dom.create("div.ft-cell",null,null,value);
 };
-fancy_table_Column.prototype = {
+fancy_table_Cell.prototype = {
 	setValue: function(value) {
 		this.value = value;
 		fancy_browser_Dom.empty(this.el).textContent = value;
@@ -250,22 +250,22 @@ fancy_table_GridContainer.prototype = {
 		this.left.style.left = "" + deltaLeft + "px";
 	}
 };
-var fancy_table_Row = function(cols,colCount,options) {
+var fancy_table_Row = function(cells,colCount,options) {
 	if(colCount == null) colCount = 0;
-	if(cols == null) this.cols = []; else this.cols = cols;
+	if(cells == null) this.cells = []; else this.cells = cells;
 	this.opts = this.createDefaultOptions(options);
 	this.opts.classes = this.createDefaultClasses(this.opts.classes);
 	this.rows = [];
 	this.indentation = 0;
-	this.el = thx_Arrays.reducei(this.cols,function(container,col,index) {
+	this.el = thx_Arrays.reducei(this.cells,function(container,col,index) {
 		return fancy_browser_Dom.insertChildAtIndex(container,col.el,index);
 	},fancy_browser_Dom.create("div.ft-row"));
-	var colDiff = colCount - this.cols.length;
+	var colDiff = colCount - this.cells.length;
 	if(colDiff > 0) {
 		var _g = 0;
 		while(_g < colDiff) {
 			var i = _g++;
-			this.insertColumn(i + this.cols.length);
+			this.insertCell(i + this.cells.length);
 		}
 	}
 };
@@ -276,14 +276,14 @@ fancy_table_Row.prototype = {
 	,createDefaultClasses: function(classes) {
 		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-"},classes == null?{ }:classes);
 	}
-	,insertColumn: function(index,col) {
-		if(col == null) col = new fancy_table_Column(); else col = col;
-		this.cols.splice(index,0,col);
-		fancy_browser_Dom.insertChildAtIndex(this.el,col.el,index);
+	,insertCell: function(index,cell) {
+		if(cell == null) cell = new fancy_table_Cell(); else cell = cell;
+		this.cells.splice(index,0,cell);
+		fancy_browser_Dom.insertChildAtIndex(this.el,cell.el,index);
 		return this;
 	}
-	,appendColumn: function(col) {
-		return this.insertColumn(this.cols.length,col);
+	,appendCell: function(col) {
+		return this.insertCell(this.cells.length,col);
 	}
 	,addChildRow: function(child) {
 		fancy_browser_Dom.addClass(this.el,this.opts.classes.foldHeader);
@@ -295,8 +295,8 @@ fancy_table_Row.prototype = {
 		fancy_browser_Dom.addClass(this.el,"" + this.opts.classes.indent + this.indentation);
 	}
 	,setCellValue: function(index,value) {
-		if(index >= this.cols.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
-		this.cols[index].setValue(value);
+		if(index >= this.cells.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
+		this.cells[index].setValue(value);
 		return this;
 	}
 };

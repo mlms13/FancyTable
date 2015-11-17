@@ -83,12 +83,12 @@ class Table {
 
   function fixColumns(howMany : Int, rows : Array<Row>) : Array<Element> {
     return rows.reducei(function (acc : Array<Element>, row, index) {
-      var newRow = row.cols.reducei(function (newRow : Row, col, index) {
+      var newRow = row.cells.reducei(function (newRow : Row, cell, index) {
         if (index < howMany) {
-          newRow.appendColumn(new Column(col.value));
-          col.el.addClass("ft-col-fixed");
+          newRow.appendCell(new Cell(cell.value));
+          cell.el.addClass("ft-col-fixed");
         } else {
-          col.el.removeClass("ft-col-fixed");
+          cell.el.removeClass("ft-col-fixed");
         }
         return newRow;
       }, new Row());
@@ -111,7 +111,7 @@ class Table {
 
     // ANOTHER TODO: if we consistenly update the colcount, we won't have to
     // dig into the rows to find the number of columns here
-    fixColumns(rows[0].cols.length, rows.slice(0, howMany)).reduce(function (acc, child) {
+    fixColumns(rows[0].cells.length, rows.slice(0, howMany)).reduce(function (acc, child) {
       acc.appendChild(child);
       return acc;
     }, grid.top);
