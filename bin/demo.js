@@ -36,7 +36,7 @@ Main.main = function() {
 	var table1 = thx_Arrays.reduce(Main.rectangularize(data),function(table,curr) {
 		var row1 = thx_Arrays.reducei(curr,function(row,val,index) {
 			return row.setCellValue(index,val);
-		},new fancy_table_Row(null,4));
+		},new fancy_table_Row(null,{ colCount : 4}));
 		return table.appendRow(row1);
 	},new fancy_Table(el)).setFixedTop().setFixedLeft();
 	thx_Arrays.reduce(Main.createFolds(data)._1,function(table2,fold) {
@@ -84,10 +84,10 @@ Reflect.fields = function(o) {
 	}
 	return a;
 };
-var fancy_Table = function(parent,opts) {
+var fancy_Table = function(parent,options) {
 	var _g = this;
 	var tableEl;
-	this.options = this.createDefaultOptions(opts);
+	this.settings = this.createDefaultOptions(options);
 	this.rows = [];
 	this.folds = [];
 	this.fixedTop = 0;
@@ -108,11 +108,11 @@ fancy_Table.foldsIntersect = function(a,b) {
 	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
 fancy_Table.prototype = {
-	createDefaultOptions: function(opts) {
-		return thx_Objects.combine({ colCount : 0},opts == null?{ }:opts);
+	createDefaultOptions: function(options) {
+		return thx_Objects.combine({ colCount : 0},options == null?{ }:options);
 	}
 	,insertRowAt: function(index,row) {
-		if(row == null) row = new fancy_table_Row(null,this.options.colCount); else row = row;
+		if(row == null) row = new fancy_table_Row(null,{ colCount : this.settings.colCount}); else row = row;
 		this.rows.splice(index,0,row);
 		fancy_browser_Dom.insertAtIndex(this.grid.content,row.el,index);
 		return this;
@@ -269,15 +269,13 @@ fancy_table_GridContainer.prototype = {
 		this.left.style.left = "" + deltaLeft + "px";
 	}
 };
-var fancy_table_Row = function(cells,colCount,options) {
-	if(colCount == null) colCount = 0;
+var fancy_table_Row = function(cells,options) {
 	if(cells == null) this.cells = []; else this.cells = cells;
-	this.opts = this.createDefaultOptions(options);
-	this.opts.classes = this.createDefaultClasses(this.opts.classes);
+	this.settings = this.createDefaultOptions(options);
+	this.settings.classes = this.createDefaultClasses(this.settings.classes);
 	this.rows = [];
-	this.indentation = 0;
 	this.el = this.createRowElement(this.cells);
-	var colDiff = colCount - this.cells.length;
+	var colDiff = this.settings.colCount - this.cells.length;
 	if(colDiff > 0) {
 		var _g = 0;
 		while(_g < colDiff) {
@@ -288,7 +286,7 @@ var fancy_table_Row = function(cells,colCount,options) {
 };
 fancy_table_Row.prototype = {
 	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ expanded : true, classes : { }, fixedCellCount : 0},options == null?{ }:options);
+		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
 		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-"},classes == null?{ }:classes);
@@ -297,17 +295,17 @@ fancy_table_Row.prototype = {
 		var childElements = (children != null?children:[]).map(function(_) {
 			return _.el;
 		});
-		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.opts.classes.row,{ },childElements),"" + this.opts.classes.indent + this.indentation),this.rows.length == 0?"":this.opts.classes.foldHeader);
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),"" + this.settings.classes.indent + this.settings.indentation),this.rows.length == 0?"":this.settings.classes.foldHeader);
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;
-		var _g1 = thx_Ints.min(count,this.opts.fixedCellCount);
-		var _g2 = thx_Ints.max(count,this.opts.fixedCellCount);
+		var _g1 = thx_Ints.min(count,this.settings.fixedCellCount);
+		var _g2 = thx_Ints.max(count,this.settings.fixedCellCount);
 		while(_g1 < _g2) {
 			var i = _g1++;
-			this.cells[i].set_fixed(count > this.opts.fixedCellCount);
+			this.cells[i].set_fixed(count > this.settings.fixedCellCount);
 		}
-		this.opts.fixedCellCount = count;
+		this.settings.fixedCellCount = count;
 		return thx_Arrays.reduce(thx_Ints.range(0,count),function(parent,index) {
 			var cell = _g.cells[index].copy();
 			cell.set_fixed(false);
@@ -321,13 +319,13 @@ fancy_table_Row.prototype = {
 		return this;
 	}
 	,addChildRow: function(child) {
-		fancy_browser_Dom.addClass(this.el,this.opts.classes.foldHeader);
+		fancy_browser_Dom.addClass(this.el,this.settings.classes.foldHeader);
 		this.rows.push(child);
 	}
 	,indent: function() {
-		fancy_browser_Dom.removeClass(this.el,"" + this.opts.classes.indent + this.indentation);
-		this.indentation++;
-		fancy_browser_Dom.addClass(this.el,"" + this.opts.classes.indent + this.indentation);
+		fancy_browser_Dom.removeClass(this.el,"" + this.settings.classes.indent + this.settings.indentation);
+		this.settings.indentation++;
+		fancy_browser_Dom.addClass(this.el,"" + this.settings.classes.indent + this.settings.indentation);
 	}
 	,setCellValue: function(index,value) {
 		if(index >= this.cells.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
@@ -337,7 +335,7 @@ fancy_table_Row.prototype = {
 	,copy: function() {
 		return new fancy_table_Row(this.cells.map(function(_) {
 			return _.copy();
-		}),null,this.opts);
+		}),this.settings);
 	}
 };
 var js__$Boot_HaxeError = function(val) {

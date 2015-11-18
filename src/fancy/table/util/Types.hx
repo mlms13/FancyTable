@@ -5,9 +5,11 @@ typedef FancyTableOptions = {
 };
 
 typedef FancyRowOptions = {
-  ?expanded : Bool,
   ?classes : FancyRowClasses,
-  ?fixedCellCount : Int
+  ?colCount : Int,
+  ?expanded : Bool,
+  ?fixedCellCount : Int,
+  ?indentation : Int
 };
 
 typedef FancyRowClasses = {

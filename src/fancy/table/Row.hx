@@ -11,23 +11,21 @@ using thx.Objects;
 class Row {
   public var el(default, null) : Element;
   var cells : Array<Cell>;
-  var indentation : Int;
   var rows : Array<Row>;
-  var opts : FancyRowOptions;
+  var settings : FancyRowOptions;
 
-  public function new(?cells : Array<Cell>, ?colCount = 0, ?options : FancyRowOptions) {
+  public function new(?cells : Array<Cell>, ?options : FancyRowOptions) {
     this.cells = cells == null ? [] : cells;
-    opts = createDefaultOptions(options);
-    opts.classes = createDefaultClasses(opts.classes);
+    settings = createDefaultOptions(options);
+    settings.classes = createDefaultClasses(settings.classes);
 
     rows = [];
-    indentation = 0;
 
     // append all provided cells to this row in the dom
     el = createRowElement(this.cells);
 
     // if the total cell count is less than the provided count, add more cells
-    var colDiff = colCount - this.cells.length;
+    var colDiff = settings.colCount - this.cells.length;
     if (colDiff > 0) {
       for (i in 0...colDiff) insertCell(i + this.cells.length);
     }
@@ -35,9 +33,11 @@ class Row {
 
   function createDefaultOptions(?options : FancyRowOptions) {
     return Objects.merge({
-      expanded : true,
       classes : {},
+      colCount : 0,
+      expanded : true,
       fixedCellCount : 0,
+      indentation : 0
     }, options == null ? ({} : FancyRowOptions) : options);
   }
 
@@ -54,9 +54,9 @@ class Row {
 
   function createRowElement(?children : Array<Cell>) : Element {
     var childElements = (children != null ? children : []).map.fn(_.el);
-    return Dom.create('div.${opts.classes.row}', {}, childElements)
-      .addClass('${opts.classes.indent}$indentation')
-      .addClass(rows.length == 0 ? "" : opts.classes.foldHeader);
+    return Dom.create('div.${settings.classes.row}', {}, childElements)
+      .addClass('${settings.classes.indent}${settings.indentation}')
+      .addClass(rows.length == 0 ? "" : settings.classes.foldHeader);
   }
 
   /**
@@ -67,11 +67,11 @@ class Row {
   public function updateFixedCells(count : Int) : Element {
     // iterate over the difference between the newly-fixed and the previous
     // fixed. fix or unfix as appropriate
-    for (i in Ints.min(count, opts.fixedCellCount)...Ints.max(count, opts.fixedCellCount)) {
-      cells[i].fixed = count > opts.fixedCellCount;
+    for (i in Ints.min(count, settings.fixedCellCount)...Ints.max(count, settings.fixedCellCount)) {
+      cells[i].fixed = count > settings.fixedCellCount;
     }
 
-    opts.fixedCellCount = count;
+    settings.fixedCellCount = count;
     return Ints.range(0, count).reduce(function (parent : Element, index) {
       var cell = cells[index].copy();
       cell.fixed = false;
@@ -91,32 +91,32 @@ class Row {
   }
 
   public function addChildRow(child : Row) {
-    el.addClass(opts.classes.foldHeader);
+    el.addClass(settings.classes.foldHeader);
     rows.push(child);
   }
 
   public function indent() {
-    el.removeClass('${opts.classes.indent}$indentation');
-    indentation++;
-    el.addClass('${opts.classes.indent}$indentation');
+    el.removeClass('${settings.classes.indent}${settings.indentation}');
+    settings.indentation++;
+    el.addClass('${settings.classes.indent}${settings.indentation}');
   }
 
   public function expand() {
-    opts.expanded = true;
+    settings.expanded = true;
     rows.map(function (row) {
-      row.el.removeClass(opts.classes.collapsed).addClass(opts.classes.expanded);
+      row.el.removeClass(settings.classes.collapsed).addClass(settings.classes.expanded);
     });
   }
 
   public function collapse() {
-    opts.expanded = false;
+    settings.expanded = false;
     rows.map(function (row) {
-      row.el.removeClass(opts.classes.expanded).addClass(opts.classes.collapsed);
+      row.el.removeClass(settings.classes.expanded).addClass(settings.classes.collapsed);
     });
   }
 
   public function toggle() {
-    if (opts.expanded)
+    if (settings.expanded)
       collapse();
     else
       expand();
@@ -132,6 +132,6 @@ class Row {
   }
 
   public function copy() {
-    return new Row(cells.map.fn(_.copy()), opts);
+    return new Row(cells.map.fn(_.copy()), settings);
   }
 }

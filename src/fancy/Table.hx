@@ -11,7 +11,7 @@ using thx.Objects;
 using thx.Tuple;
 
 class Table {
-  var options : FancyTableOptions;
+  var settings : FancyTableOptions;
   var rows : Array<Row>;
   var grid : GridContainer;
   var folds : Array<Tuple2<Int, Int>>;
@@ -20,9 +20,9 @@ class Table {
   var fixedTop : Int;
   var fixedLeft : Int;
 
-  public function new(parent : Element, ?opts : FancyTableOptions) {
+  public function new(parent : Element, ?options : FancyTableOptions) {
     var tableEl : Element;
-    this.options = createDefaultOptions(opts);
+    this.settings = createDefaultOptions(options);
     rows = [];
     folds = [];
     fixedTop = 0;
@@ -42,10 +42,10 @@ class Table {
     parent.appendChild(tableEl);
   }
 
-  function createDefaultOptions(?opts : FancyTableOptions) {
+  function createDefaultOptions(?options : FancyTableOptions) {
     return Objects.merge({
       colCount : 0
-    }, opts == null ? {} : opts);
+    }, options == null ? {} : options);
   }
 
   public function insertRowAt(index : Int, ?row : Row) : Table {
@@ -53,7 +53,7 @@ class Table {
     // rows, we need to re-create the header table
     // ALSO TODO: we need to grab the first n cells in the new row and add them
     // to the affixed header column table (where n = number of affixed cells)
-    row = row == null ? new Row(options.colCount) : row;
+    row = row == null ? new Row({colCount : settings.colCount}) : row;
     rows.insert(index, row);
     grid.content.insertAtIndex(row.el, index);
     return this;

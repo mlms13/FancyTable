@@ -55,7 +55,7 @@ class Main {
     var table = rectangularize(data).reduce(function(table : Table, curr : Array<String>) {
       var row = curr.reducei(function (row : Row, val : String, index : Int) {
         return row.setCellValue(index, val);
-      }, new Row(4));
+      }, new Row({ colCount : 4 }));
 
       return table.appendRow(row);
     }, new Table(el))
