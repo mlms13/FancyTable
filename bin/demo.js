@@ -136,32 +136,18 @@ fancy_Table.prototype = {
 	}
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
-		fancy_browser_Dom.empty(this.grid.top);
-		thx_Arrays.reduce(this.fixColumns(this.rows[0].cells.length,this.rows.slice(0,howMany)),function(acc,child) {
-			acc.appendChild(child);
-			return acc;
-		},this.grid.top);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.top),null,this.fixColumns(this.rows[0].cells.length,this.rows.slice(0,howMany)));
 		this.fixedTop = howMany;
 		return this.updateFixedTopLeft();
 	}
 	,setFixedLeft: function(howMany) {
 		if(howMany == null) howMany = 1;
-		fancy_browser_Dom.empty(this.grid.left);
-		var children = this.fixColumns(howMany,this.rows);
-		children.reduce(function(acc,child) {
-			acc.appendChild(child);
-			return acc;
-		},this.grid.left);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.left),null,this.fixColumns(howMany,this.rows));
 		this.fixedLeft = howMany;
 		return this.updateFixedTopLeft();
 	}
 	,updateFixedTopLeft: function() {
-		fancy_browser_Dom.empty(this.grid.topLeft);
-		var cells = this.fixColumns(this.fixedLeft,this.rows.slice(0,this.fixedTop));
-		cells.reduce(function(acc,child) {
-			acc.appendChild(child);
-			return acc;
-		},this.grid.topLeft);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.topLeft),null,this.fixColumns(this.fixedLeft,this.rows.slice(0,this.fixedTop)));
 		return this;
 	}
 	,createFold: function(headerIndex,childrenCount) {
@@ -234,9 +220,16 @@ fancy_browser_Dom.insertAtIndex = function(el,child,index) {
 	el.insertBefore(child,el.children[index]);
 	return el;
 };
-fancy_browser_Dom.append = function(el,child) {
+fancy_browser_Dom.appendChild = function(el,child) {
 	el.appendChild(child);
 	return el;
+};
+fancy_browser_Dom.appendChildren = function(el,children) {
+	return children.reduce(fancy_browser_Dom.appendChild,el);
+};
+fancy_browser_Dom.append = function(el,child,children) {
+	if(child != null) fancy_browser_Dom.appendChild(el,child);
+	return fancy_browser_Dom.appendChildren(el,children != null?children:[]);
 };
 fancy_browser_Dom.empty = function(el) {
 	while(el.firstChild != null) el.removeChild(el.firstChild);

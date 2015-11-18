@@ -104,45 +104,34 @@ class Table {
   }
 
   public function setFixedTop(?howMany = 1) : Table {
-    // empty existing fixed-row table
-    grid.top.empty();
-
     // TODO: if howmany < the previous value, the hidden cells in the previously
     // hidden rows will not show up. we need to go through and clean up
 
-    // ANOTHER TODO: if we consistenly update the colcount, we won't have to
-    // dig into the rows to find the number of columns here
-    fixColumns(rows[0].cells.length, rows.slice(0, howMany)).reduce(function (acc, child) {
-      acc.appendChild(child);
-      return acc;
-    }, grid.top);
+    // empty existing fixed-row table
+    grid.top
+      .empty()
+
+      // ANOTHER TODO: if we consistenly update the colcount, we won't have to
+      // dig into the rows to find the number of columns here
+      .append(fixColumns(rows[0].cells.length, rows.slice(0, howMany)));
 
     fixedTop = howMany;
     return updateFixedTopLeft();
   }
 
   public function setFixedLeft(?howMany = 1) : Table {
-    grid.left.empty();
-
-    var children = fixColumns(howMany, rows);
-    children.reduce(function (acc, child) {
-      acc.appendChild(child);
-      return acc;
-    }, grid.left);
+    grid.left
+      .empty()
+      .append(fixColumns(howMany, rows));
 
     fixedLeft = howMany;
     return updateFixedTopLeft();
   }
 
   function updateFixedTopLeft() : Table {
-    grid.topLeft.empty();
-
-    var cells = fixColumns(fixedLeft, rows.slice(0, fixedTop));
-
-    cells.reduce(function (acc, child) {
-      acc.appendChild(child);
-      return acc;
-    }, grid.topLeft);
+    grid.topLeft
+      .empty()
+      .append(fixColumns(fixedLeft, rows.slice(0, fixedTop)));
     return this;
   }
 
