@@ -5,27 +5,27 @@ import js.html.Element;
 
 class Cell {
   public var el(default, null) : Element;
-  public var value(default, null) : String; // TODO: just use the setter here
+  public var value(default, set) : String;
   public var fixed(default, set) : Bool;
 
   public function new(?value : String, ?fixed = false) {
-    this.value = value;
     this.el = Dom.create("div.ft-cell", value);
+    this.value = value;
     this.fixed = fixed;
   }
 
-  function set_fixed(val : Bool) : Bool {
-    if (val)
+  function set_fixed(value : Bool) : Bool {
+    if (value)
       el.addClass("ft-col-fixed");
     else
       el.removeClass("ft-col-fixed");
 
-    return val;
+    return this.fixed = value;
   }
 
-  public function setValue(value : String) {
-    this.value = value;
+  function set_value(value : String) {
     el.textContent = value;
+    return this.value = value;
   }
 
   public function copy() {

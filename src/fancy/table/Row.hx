@@ -11,7 +11,7 @@ using thx.Objects;
 class Row {
   public var el(default, null) : Element;
   public var cells(default, null) : Array<Cell>; // TODO: make private, see Table.hx:114
-  public var indentation(default, null) : Int;
+  var indentation : Int;
   var rows : Array<Row>;
   var opts : FancyRowOptions;
 
@@ -77,7 +77,9 @@ class Row {
 
     opts.fixedCellCount = count;
     return Ints.range(0, count).reduce(function (parent : Element, index) {
-      return parent.append(cells[index].copy().el);
+      var cell = cells[index].copy();
+      cell.fixed = false;
+      return parent.append(cell.el);
     }, createRowElement());
   }
 
@@ -129,7 +131,7 @@ class Row {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 
-    cells[index].setValue(value);
+    cells[index].value = value;
     return this;
   }
 }

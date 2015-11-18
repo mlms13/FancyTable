@@ -239,18 +239,18 @@ fancy_browser_Dom.empty = function(el) {
 };
 var fancy_table_Cell = function(value,fixed) {
 	if(fixed == null) fixed = false;
-	this.value = value;
 	this.el = fancy_browser_Dom.create("div.ft-cell",null,null,value);
+	this.set_value(value);
 	this.set_fixed(fixed);
 };
 fancy_table_Cell.prototype = {
-	set_fixed: function(val) {
-		if(val) fancy_browser_Dom.addClass(this.el,"ft-col-fixed"); else fancy_browser_Dom.removeClass(this.el,"ft-col-fixed");
-		return val;
+	set_fixed: function(value) {
+		if(value) fancy_browser_Dom.addClass(this.el,"ft-col-fixed"); else fancy_browser_Dom.removeClass(this.el,"ft-col-fixed");
+		return this.fixed = value;
 	}
-	,setValue: function(value) {
-		this.value = value;
+	,set_value: function(value) {
 		this.el.textContent = value;
+		return this.value = value;
 	}
 	,copy: function() {
 		return new fancy_table_Cell(this.value,this.fixed);
@@ -320,7 +320,9 @@ fancy_table_Row.prototype = {
 		}
 		this.opts.fixedCellCount = count;
 		return thx_Arrays.reduce(thx_Ints.range(0,count),function(parent,index) {
-			return fancy_browser_Dom.append(parent,_g.cells[index].copy().el);
+			var cell = _g.cells[index].copy();
+			cell.set_fixed(false);
+			return fancy_browser_Dom.append(parent,cell.el);
 		},this.createRowElement());
 	}
 	,insertCell: function(index,cell) {
@@ -343,7 +345,7 @@ fancy_table_Row.prototype = {
 	}
 	,setCellValue: function(index,value) {
 		if(index >= this.cells.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
-		this.cells[index].setValue(value);
+		this.cells[index].set_value(value);
 		return this;
 	}
 };
