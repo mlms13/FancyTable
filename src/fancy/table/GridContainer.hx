@@ -23,10 +23,10 @@ class GridContainer {
     grid = Dom.create("div.ft-table-grid-contaienr");
 
     grid
-      .prependChild(content)
-      .prependChild(left)
-      .prependChild(top)
-      .prependChild(topLeft);
+      .append(topLeft)
+      .append(top)
+      .append(left)
+      .append(content);
   }
 
   public function positionPanes(deltaTop : Int, deltaLeft : Int) {

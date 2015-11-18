@@ -23,7 +23,7 @@ class Row {
 
     // append all provided cells to this row in the dom
     el = this.cells.reducei(function (container : Element, col, index) {
-      return container.insertChildAtIndex(col.el, index);
+      return container.insertAtIndex(col.el, index);
     }, Dom.create("div.ft-row"));
 
     // if the total cell count is less than the provided count, add more cells
@@ -54,7 +54,7 @@ class Row {
   public function insertCell(index : Int, ?cell : Cell) : Row {
     cell = cell == null ? new Cell() : cell;
     cells.insert(index, cell);
-    el.insertChildAtIndex(cell.el, index);
+    el.insertAtIndex(cell.el, index);
     return this;
   }
 

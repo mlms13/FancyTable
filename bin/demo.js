@@ -114,7 +114,7 @@ fancy_Table.prototype = {
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,this.options.colCount); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(this.grid.content,row.el,index);
+		fancy_browser_Dom.insertAtIndex(this.grid.content,row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
@@ -230,12 +230,13 @@ fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(textContent != null) el.appendChild(window.document.createTextNode(textContent));
 	return el;
 };
-fancy_browser_Dom.insertChildAtIndex = function(el,child,index) {
+fancy_browser_Dom.insertAtIndex = function(el,child,index) {
 	el.insertBefore(child,el.children[index]);
 	return el;
 };
-fancy_browser_Dom.prependChild = function(el,child) {
-	return fancy_browser_Dom.insertChildAtIndex(el,child,0);
+fancy_browser_Dom.append = function(el,child) {
+	el.appendChild(child);
+	return el;
 };
 fancy_browser_Dom.empty = function(el) {
 	while(el.firstChild != null) el.removeChild(el.firstChild);
@@ -257,7 +258,7 @@ var fancy_table_GridContainer = function() {
 	this.left = fancy_browser_Dom.create("div.ft-table-fixed-left");
 	this.content = fancy_browser_Dom.create("div.ft-table-content");
 	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
-	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.content),this.left),this.top),this.topLeft);
+	fancy_browser_Dom.append(fancy_browser_Dom.append(fancy_browser_Dom.append(fancy_browser_Dom.append(this.grid,this.topLeft),this.top),this.left),this.content);
 };
 fancy_table_GridContainer.prototype = {
 	positionPanes: function(deltaTop,deltaLeft) {
@@ -275,7 +276,7 @@ var fancy_table_Row = function(cells,colCount,options) {
 	this.rows = [];
 	this.indentation = 0;
 	this.el = thx_Arrays.reducei(this.cells,function(container,col,index) {
-		return fancy_browser_Dom.insertChildAtIndex(container,col.el,index);
+		return fancy_browser_Dom.insertAtIndex(container,col.el,index);
 	},fancy_browser_Dom.create("div.ft-row"));
 	var colDiff = colCount - this.cells.length;
 	if(colDiff > 0) {
@@ -296,7 +297,7 @@ fancy_table_Row.prototype = {
 	,insertCell: function(index,cell) {
 		if(cell == null) cell = new fancy_table_Cell(); else cell = cell;
 		this.cells.splice(index,0,cell);
-		fancy_browser_Dom.insertChildAtIndex(this.el,cell.el,index);
+		fancy_browser_Dom.insertAtIndex(this.el,cell.el,index);
 		return this;
 	}
 	,appendCell: function(col) {

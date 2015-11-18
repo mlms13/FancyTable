@@ -54,7 +54,7 @@ class Table {
     // to the affixed header column table (where n = number of affixed cells)
     row = row == null ? new Row(options.colCount) : row;
     rows.insert(index, row);
-    grid.content.insertChildAtIndex(row.el, index);
+    grid.content.insertAtIndex(row.el, index);
     return this;
   }
 
@@ -160,7 +160,6 @@ class Table {
     // check for out-of-range indexes
     if (headerIndex >= rows.length)
       return throw 'Cannot set fold point at $headerIndex because there are only ${rows.length} rows';
-
 
     childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
 
