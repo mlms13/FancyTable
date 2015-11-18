@@ -4,11 +4,13 @@ using fancy.browser.Dom;
 import fancy.table.util.Types;
 import js.html.Element;
 using thx.Arrays;
+using thx.Functions;
+using thx.Ints;
 using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
-  public var cells(default, null) : Array<Cell>;
+  public var cells(default, null) : Array<Cell>; // TODO: make private, see Table.hx:114
   public var indentation(default, null) : Int;
   var rows : Array<Row>;
   var opts : FancyRowOptions;
@@ -22,9 +24,7 @@ class Row {
     indentation = 0;
 
     // append all provided cells to this row in the dom
-    el = this.cells.reducei(function (container : Element, col, index) {
-      return container.insertAtIndex(col.el, index);
-    }, Dom.create("div.ft-row"));
+    el = createRowElement(this.cells);
 
     // if the total cell count is less than the provided count, add more cells
     var colDiff = colCount - this.cells.length;
@@ -37,6 +37,7 @@ class Row {
     return Objects.merge({
       expanded : true,
       classes : {},
+      fixedCellCount : 0,
     }, options == null ? ({} : FancyRowOptions) : options);
   }
 
@@ -49,6 +50,35 @@ class Row {
       foldHeader : "ft-row-fold-header",
       indent : "ft-row-indent-"
     }, classes == null ? {} : classes);
+  }
+
+  function createRowElement(?children : Array<Cell>) : Element {
+    var childElements = (children != null ? children : []).map.fn(_.el);
+    return Dom.create('div.${opts.classes.row}', {}, childElements)
+      .addClass('${opts.classes.indent}$indentation')
+      .addClass(rows.length == 0 ? "" : opts.classes.foldHeader);
+  }
+
+  /**
+    Sets the number of fixed cells for this row. This updates the classes on
+    all contained rows as necessary and returns a new row element with all of
+    the appropriate cells appended to it.
+  **/
+  public function updateFixedCells(count : Int) : Element {
+    if (count < opts.fixedCellCount) {
+      for (i in count...opts.fixedCellCount) {
+        cells[i].fixed = false;
+      }
+    } else {
+      for (i in opts.fixedCellCount...count) {
+        cells[i].fixed = true;
+      }
+    }
+
+    opts.fixedCellCount = count;
+    return Ints.range(0, count).reduce(function (parent : Element, index) {
+      return parent.append(cells[index].copy().el);
+    }, createRowElement());
   }
 
   public function insertCell(index : Int, ?cell : Cell) : Row {

@@ -142,7 +142,9 @@ fancy_Table.prototype = {
 	}
 	,setFixedLeft: function(howMany) {
 		if(howMany == null) howMany = 1;
-		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.left),null,this.fixColumns(howMany,this.rows));
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.left),null,this.rows.map(function(row) {
+			return row.updateFixedCells(howMany);
+		}));
 		this.fixedLeft = howMany;
 		return this.updateFixedTopLeft();
 	}
@@ -235,14 +237,23 @@ fancy_browser_Dom.empty = function(el) {
 	while(el.firstChild != null) el.removeChild(el.firstChild);
 	return el;
 };
-var fancy_table_Cell = function(value) {
+var fancy_table_Cell = function(value,fixed) {
+	if(fixed == null) fixed = false;
 	this.value = value;
 	this.el = fancy_browser_Dom.create("div.ft-cell",null,null,value);
+	this.set_fixed(fixed);
 };
 fancy_table_Cell.prototype = {
-	setValue: function(value) {
+	set_fixed: function(val) {
+		if(val) fancy_browser_Dom.addClass(this.el,"ft-col-fixed"); else fancy_browser_Dom.removeClass(this.el,"ft-col-fixed");
+		return val;
+	}
+	,setValue: function(value) {
 		this.value = value;
-		fancy_browser_Dom.empty(this.el).textContent = value;
+		this.el.textContent = value;
+	}
+	,copy: function() {
+		return new fancy_table_Cell(this.value,this.fixed);
 	}
 };
 var fancy_table_GridContainer = function() {
@@ -268,9 +279,7 @@ var fancy_table_Row = function(cells,colCount,options) {
 	this.opts.classes = this.createDefaultClasses(this.opts.classes);
 	this.rows = [];
 	this.indentation = 0;
-	this.el = thx_Arrays.reducei(this.cells,function(container,col,index) {
-		return fancy_browser_Dom.insertAtIndex(container,col.el,index);
-	},fancy_browser_Dom.create("div.ft-row"));
+	this.el = this.createRowElement(this.cells);
 	var colDiff = colCount - this.cells.length;
 	if(colDiff > 0) {
 		var _g = 0;
@@ -282,10 +291,37 @@ var fancy_table_Row = function(cells,colCount,options) {
 };
 fancy_table_Row.prototype = {
 	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ expanded : true, classes : { }},options == null?{ }:options);
+		return thx_Objects.combine({ expanded : true, classes : { }, fixedCellCount : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
 		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-"},classes == null?{ }:classes);
+	}
+	,createRowElement: function(children) {
+		var childElements = (children != null?children:[]).map(function(_) {
+			return _.el;
+		});
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.opts.classes.row,{ },childElements),"" + this.opts.classes.indent + this.indentation),this.rows.length == 0?"":this.opts.classes.foldHeader);
+	}
+	,updateFixedCells: function(count) {
+		var _g = this;
+		if(count < this.opts.fixedCellCount) {
+			var _g1 = count;
+			var _g2 = this.opts.fixedCellCount;
+			while(_g1 < _g2) {
+				var i = _g1++;
+				this.cells[i].set_fixed(false);
+			}
+		} else {
+			var _g3 = this.opts.fixedCellCount;
+			while(_g3 < count) {
+				var i1 = _g3++;
+				this.cells[i1].set_fixed(true);
+			}
+		}
+		this.opts.fixedCellCount = count;
+		return thx_Arrays.reduce(thx_Ints.range(0,count),function(parent,index) {
+			return fancy_browser_Dom.append(parent,_g.cells[index].copy().el);
+		},this.createRowElement());
 	}
 	,insertCell: function(index,cell) {
 		if(cell == null) cell = new fancy_table_Cell(); else cell = cell;
@@ -331,6 +367,19 @@ var thx_Ints = function() { };
 thx_Ints.min = function(a,b) {
 	if(a < b) return a; else return b;
 };
+thx_Ints.range = function(start,stop,step) {
+	if(step == null) step = 1;
+	if(null == stop) {
+		stop = start;
+		start = 0;
+	}
+	if((stop - start) / step == Infinity) throw new js__$Boot_HaxeError("infinite range");
+	var range = [];
+	var i = -1;
+	var j;
+	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
+	return range;
+};
 var thx_Objects = function() { };
 thx_Objects.combine = function(first,second) {
 	var to = { };
@@ -349,6 +398,16 @@ thx_Objects.combine = function(first,second) {
 		Reflect.setField(to,field1,Reflect.field(second,field1));
 	}
 	return to;
+};
+if(Array.prototype.map == null) Array.prototype.map = function(f) {
+	var a = [];
+	var _g1 = 0;
+	var _g = this.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		a[i] = f(this[i]);
+	}
+	return a;
 };
 
       // Production steps of ECMA-262, Edition 5, 15.4.4.21

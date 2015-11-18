@@ -122,7 +122,9 @@ class Table {
   public function setFixedLeft(?howMany = 1) : Table {
     grid.left
       .empty()
-      .append(fixColumns(howMany, rows));
+      .append(rows.map(function (row) {
+        return row.updateFixedCells(howMany);
+      }));
 
     fixedLeft = howMany;
     return updateFixedTopLeft();
