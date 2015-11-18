@@ -5,6 +5,7 @@ import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
 using thx.Arrays;
+using thx.Functions;
 using thx.Ints;
 using thx.Objects;
 using thx.Tuple;
@@ -66,54 +67,20 @@ class Table {
     return insertRowAt(rows.length, row);
   }
 
-  // public function insertColumnAt(index : Int) : Table {
-  //   options.colCount++;
-  //   rows.map(function (row) {
-  //     row.insertColumn(index);
-  //   });
-  //   return this;
-  // }
-  //
-  // public function prependColumn() : Table {
-  //   return insertColumnAt(0);
-  // }
-  //
-  // public function appendColumn() : Table {
-  //   return insertColumnAt(options.colCount);
-  // }
-
-  function fixColumns(howMany : Int, rows : Array<Row>) : Array<Element> {
-    return rows.reducei(function (acc : Array<Element>, row, index) {
-      var newRow = row.cells.reducei(function (newRow : Row, cell, index) {
-        if (index < howMany) {
-          newRow.appendCell(new Cell(cell.value));
-          cell.el.addClass("ft-col-fixed");
-        } else {
-          cell.el.removeClass("ft-col-fixed");
-        }
-        return newRow;
-      }, new Row());
-
-      // steal all row classes from the underlying row
-      // this feels dirty as f.
-      newRow.el.addClass(rows[index].el.className);
-
-      acc.push(newRow.el);
-      return acc;
-    }, []);
-  }
-
   public function setFixedTop(?howMany = 1) : Table {
     // TODO: if howmany < the previous value, the hidden cells in the previously
     // hidden rows will not show up. we need to go through and clean up
+    for (i in Ints.min(howMany, fixedTop)...Ints.max(howMany, fixedTop)) {
+      // rows[i]
+      // cells[i].fixed = howMany > fixedTop;
+    }
 
     // empty existing fixed-row table
     grid.top
       .empty()
-
-      // ANOTHER TODO: if we consistenly update the colcount, we won't have to
-      // dig into the rows to find the number of columns here
-      .append(fixColumns(rows[0].cells.length, rows.slice(0, howMany)));
+      .append(0.range(howMany).map(function (i) {
+        return rows[i].copy().el;
+      }));
 
     fixedTop = howMany;
     return updateFixedTopLeft();
@@ -133,7 +100,9 @@ class Table {
   function updateFixedTopLeft() : Table {
     grid.topLeft
       .empty()
-      .append(fixColumns(fixedLeft, rows.slice(0, fixedTop)));
+      .append(0.range(fixedTop).map(function (i) {
+        return rows[i].copy().updateFixedCells(fixedLeft);
+      }));
     return this;
   }
 

@@ -10,7 +10,7 @@ using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
-  public var cells(default, null) : Array<Cell>; // TODO: make private, see Table.hx:114
+  var cells : Array<Cell>;
   var indentation : Int;
   var rows : Array<Row>;
   var opts : FancyRowOptions;
@@ -65,14 +65,10 @@ class Row {
     the appropriate cells appended to it.
   **/
   public function updateFixedCells(count : Int) : Element {
-    if (count < opts.fixedCellCount) {
-      for (i in count...opts.fixedCellCount) {
-        cells[i].fixed = false;
-      }
-    } else {
-      for (i in opts.fixedCellCount...count) {
-        cells[i].fixed = true;
-      }
+    // iterate over the difference between the newly-fixed and the previous
+    // fixed. fix or unfix as appropriate
+    for (i in Ints.min(count, opts.fixedCellCount)...Ints.max(count, opts.fixedCellCount)) {
+      cells[i].fixed = count > opts.fixedCellCount;
     }
 
     opts.fixedCellCount = count;
@@ -133,5 +129,9 @@ class Row {
 
     cells[index].value = value;
     return this;
+  }
+
+  public function copy() {
+    return new Row(cells.map.fn(_.copy()), opts);
   }
 }
