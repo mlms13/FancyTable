@@ -36,12 +36,15 @@ Main.main = function() {
 	var table1 = thx_Arrays.reduce(Main.rectangularize(data),function(table,curr) {
 		var row1 = thx_Arrays.reducei(curr,function(row,val,index) {
 			return row.setCellValue(index,val);
-		},new fancy_table_Row(null,4));
+		},new fancy_table_Row(null,{ colCount : 4}));
 		return table.appendRow(row1);
-	},new fancy_Table(el)).setFixedTop().setFixedLeft();
+	},new fancy_Table(el));
 	thx_Arrays.reduce(Main.createFolds(data)._1,function(table2,fold) {
+		table2.rows[fold._0].cells[0].set_onclick(function(_) {
+			table2.rows[fold._0].toggle();
+		});
 		return table2.createFold(fold._0,fold._1);
-	},table1);
+	},table1).setFixedTop().setFixedLeft();
 };
 Main.createFolds = function(data,start) {
 	if(start == null) start = 0;
@@ -84,10 +87,10 @@ Reflect.fields = function(o) {
 	}
 	return a;
 };
-var fancy_Table = function(parent,opts) {
+var fancy_Table = function(parent,options) {
 	var _g = this;
 	var tableEl;
-	this.options = this.createDefaultOptions(opts);
+	this.settings = this.createDefaultOptions(options);
 	this.rows = [];
 	this.folds = [];
 	this.fixedTop = 0;
@@ -108,60 +111,45 @@ fancy_Table.foldsIntersect = function(a,b) {
 	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
 fancy_Table.prototype = {
-	createDefaultOptions: function(opts) {
-		return thx_Objects.combine({ colCount : 0},opts == null?{ }:opts);
+	createDefaultOptions: function(options) {
+		return thx_Objects.combine({ colCount : 0},options == null?{ }:options);
 	}
 	,insertRowAt: function(index,row) {
-		if(row == null) row = new fancy_table_Row(null,this.options.colCount); else row = row;
+		if(row == null) row = new fancy_table_Row(null,{ colCount : this.settings.colCount}); else row = row;
 		this.rows.splice(index,0,row);
-		fancy_browser_Dom.insertChildAtIndex(this.grid.content,row.el,index);
+		fancy_browser_Dom.insertAtIndex(this.grid.content,row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
 		return this.insertRowAt(this.rows.length,row);
 	}
-	,fixColumns: function(howMany,rows) {
-		return rows.reduce(function(acc,row,index) {
-			var newRow1 = thx_Arrays.reducei(row.cells,function(newRow,cell,index1) {
-				if(index1 < howMany) {
-					newRow.appendCell(new fancy_table_Cell(cell.value));
-					fancy_browser_Dom.addClass(cell.el,"ft-col-fixed");
-				} else fancy_browser_Dom.removeClass(cell.el,"ft-col-fixed");
-				return newRow;
-			},new fancy_table_Row());
-			fancy_browser_Dom.addClass(newRow1.el,rows[index].el.className);
-			acc.push(newRow1.el);
-			return acc;
-		},[]);
-	}
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
-		fancy_browser_Dom.empty(this.grid.top);
-		thx_Arrays.reduce(this.fixColumns(this.rows[0].cells.length,this.rows.slice(0,howMany)),function(acc,child) {
-			acc.appendChild(child);
-			return acc;
-		},this.grid.top);
+		var _g = this;
+		var _g1 = thx_Ints.min(howMany,this.fixedTop);
+		var _g2 = thx_Ints.max(howMany,this.fixedTop);
+		while(_g1 < _g2) {
+			var i = _g1++;
+		}
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.top),null,thx_Ints.range(0,howMany).map(function(i1) {
+			return _g.rows[i1].copy().el;
+		}));
 		this.fixedTop = howMany;
 		return this.updateFixedTopLeft();
 	}
 	,setFixedLeft: function(howMany) {
 		if(howMany == null) howMany = 1;
-		fancy_browser_Dom.empty(this.grid.left);
-		var children = this.fixColumns(howMany,this.rows);
-		children.reduce(function(acc,child) {
-			acc.appendChild(child);
-			return acc;
-		},this.grid.left);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.left),null,this.rows.map(function(row) {
+			return row.updateFixedCells(howMany);
+		}));
 		this.fixedLeft = howMany;
 		return this.updateFixedTopLeft();
 	}
 	,updateFixedTopLeft: function() {
-		fancy_browser_Dom.empty(this.grid.topLeft);
-		var cells = this.fixColumns(this.fixedLeft,this.rows.slice(0,this.fixedTop));
-		cells.reduce(function(acc,child) {
-			acc.appendChild(child);
-			return acc;
-		},this.grid.topLeft);
+		var _g = this;
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.topLeft),null,thx_Ints.range(0,this.fixedTop).map(function(i) {
+			return _g.rows[i].copy().updateFixedCells(_g.fixedLeft);
+		}));
 		return this;
 	}
 	,createFold: function(headerIndex,childrenCount) {
@@ -204,6 +192,10 @@ fancy_browser_Dom.on = function(el,eventName,callback) {
 	el.addEventListener(eventName,callback);
 	return el;
 };
+fancy_browser_Dom.off = function(el,eventName,callback) {
+	el.removeEventListener(eventName,callback);
+	return el;
+};
 fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(attrs == null) attrs = { };
 	if(children == null) children = [];
@@ -230,25 +222,49 @@ fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(textContent != null) el.appendChild(window.document.createTextNode(textContent));
 	return el;
 };
-fancy_browser_Dom.insertChildAtIndex = function(el,child,index) {
+fancy_browser_Dom.insertAtIndex = function(el,child,index) {
 	el.insertBefore(child,el.children[index]);
 	return el;
 };
-fancy_browser_Dom.prependChild = function(el,child) {
-	return fancy_browser_Dom.insertChildAtIndex(el,child,0);
+fancy_browser_Dom.appendChild = function(el,child) {
+	el.appendChild(child);
+	return el;
+};
+fancy_browser_Dom.appendChildren = function(el,children) {
+	return children.reduce(fancy_browser_Dom.appendChild,el);
+};
+fancy_browser_Dom.append = function(el,child,children) {
+	if(child != null) fancy_browser_Dom.appendChild(el,child);
+	return fancy_browser_Dom.appendChildren(el,children != null?children:[]);
 };
 fancy_browser_Dom.empty = function(el) {
 	while(el.firstChild != null) el.removeChild(el.firstChild);
 	return el;
 };
-var fancy_table_Cell = function(value) {
-	this.value = value;
+var fancy_table_Cell = function(value,fixed,onclick) {
+	if(fixed == null) fixed = false;
 	this.el = fancy_browser_Dom.create("div.ft-cell",null,null,value);
+	this.set_onclick(onclick != null?onclick:function(_) {
+	});
+	this.set_value(value);
+	this.set_fixed(fixed);
 };
 fancy_table_Cell.prototype = {
-	setValue: function(value) {
-		this.value = value;
-		fancy_browser_Dom.empty(this.el).textContent = value;
+	set_fixed: function(value) {
+		if(value) fancy_browser_Dom.addClass(this.el,"ft-col-fixed"); else fancy_browser_Dom.removeClass(this.el,"ft-col-fixed");
+		return this.fixed = value;
+	}
+	,set_value: function(value) {
+		this.el.textContent = value;
+		return this.value = value;
+	}
+	,set_onclick: function(fn) {
+		fancy_browser_Dom.off(this.el,"click",this.onclick);
+		fancy_browser_Dom.on(this.el,"click",fn);
+		return this.onclick = fn;
+	}
+	,copy: function() {
+		return new fancy_table_Cell(this.value,this.fixed,this.onclick);
 	}
 };
 var fancy_table_GridContainer = function() {
@@ -257,7 +273,7 @@ var fancy_table_GridContainer = function() {
 	this.left = fancy_browser_Dom.create("div.ft-table-fixed-left");
 	this.content = fancy_browser_Dom.create("div.ft-table-content");
 	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
-	fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(fancy_browser_Dom.prependChild(this.grid,this.content),this.left),this.top),this.topLeft);
+	fancy_browser_Dom.append(fancy_browser_Dom.append(fancy_browser_Dom.append(fancy_browser_Dom.append(this.grid,this.topLeft),this.top),this.left),this.content);
 };
 fancy_table_GridContainer.prototype = {
 	positionPanes: function(deltaTop,deltaLeft) {
@@ -267,17 +283,13 @@ fancy_table_GridContainer.prototype = {
 		this.left.style.left = "" + deltaLeft + "px";
 	}
 };
-var fancy_table_Row = function(cells,colCount,options) {
-	if(colCount == null) colCount = 0;
+var fancy_table_Row = function(cells,options) {
 	if(cells == null) this.cells = []; else this.cells = cells;
-	this.opts = this.createDefaultOptions(options);
-	this.opts.classes = this.createDefaultClasses(this.opts.classes);
+	this.settings = this.createDefaultOptions(options);
+	this.settings.classes = this.createDefaultClasses(this.settings.classes);
 	this.rows = [];
-	this.indentation = 0;
-	this.el = thx_Arrays.reducei(this.cells,function(container,col,index) {
-		return fancy_browser_Dom.insertChildAtIndex(container,col.el,index);
-	},fancy_browser_Dom.create("div.ft-row"));
-	var colDiff = colCount - this.cells.length;
+	this.el = this.createRowElement(this.cells);
+	var colDiff = this.settings.colCount - this.cells.length;
 	if(colDiff > 0) {
 		var _g = 0;
 		while(_g < colDiff) {
@@ -288,33 +300,86 @@ var fancy_table_Row = function(cells,colCount,options) {
 };
 fancy_table_Row.prototype = {
 	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ expanded : true, classes : { }},options == null?{ }:options);
+		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
-		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-"},classes == null?{ }:classes);
+		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-"},classes == null?{ }:classes);
+	}
+	,createRowElement: function(children) {
+		var childElements = (children != null?children:[]).map(function(_) {
+			return _.el;
+		});
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),"" + this.settings.classes.indent + this.settings.indentation),this.rows.length == 0?"":this.settings.classes.foldHeader);
+	}
+	,updateFixedCells: function(count) {
+		var _g = this;
+		var _g1 = thx_Ints.min(count,this.settings.fixedCellCount);
+		var _g2 = thx_Ints.max(count,this.settings.fixedCellCount);
+		while(_g1 < _g2) {
+			var i = _g1++;
+			this.cells[i].set_fixed(count > this.settings.fixedCellCount);
+		}
+		this.settings.fixedCellCount = count;
+		this.fixedEl = thx_Arrays.reduce(thx_Ints.range(0,count),function(parent,index) {
+			var cell = _g.cells[index].copy();
+			cell.set_fixed(false);
+			return fancy_browser_Dom.append(parent,cell.el);
+		},this.createRowElement());
+		return this.fixedEl;
 	}
 	,insertCell: function(index,cell) {
 		if(cell == null) cell = new fancy_table_Cell(); else cell = cell;
 		this.cells.splice(index,0,cell);
-		fancy_browser_Dom.insertChildAtIndex(this.el,cell.el,index);
+		fancy_browser_Dom.insertAtIndex(this.el,cell.el,index);
 		return this;
 	}
-	,appendCell: function(col) {
-		return this.insertCell(this.cells.length,col);
+	,addRowClass: function(className) {
+		fancy_browser_Dom.addClass(this.el,className);
+		if(this.fixedEl != null) fancy_browser_Dom.addClass(this.fixedEl,className);
+		return this;
+	}
+	,removeRowClass: function(className) {
+		fancy_browser_Dom.removeClass(this.el,className);
+		if(this.fixedEl != null) fancy_browser_Dom.removeClass(this.fixedEl,className);
+		return this;
 	}
 	,addChildRow: function(child) {
-		fancy_browser_Dom.addClass(this.el,this.opts.classes.foldHeader);
+		this.addRowClass(this.settings.classes.foldHeader);
 		this.rows.push(child);
 	}
 	,indent: function() {
-		fancy_browser_Dom.removeClass(this.el,"" + this.opts.classes.indent + this.indentation);
-		this.indentation++;
-		fancy_browser_Dom.addClass(this.el,"" + this.opts.classes.indent + this.indentation);
+		this.removeRowClass("" + this.settings.classes.indent + this.settings.indentation);
+		this.settings.indentation++;
+		this.addRowClass("" + this.settings.classes.indent + this.settings.indentation);
+	}
+	,expand: function() {
+		var _g = this;
+		this.settings.expanded = true;
+		this.removeRowClass(this.settings.classes.collapsed).addRowClass(this.settings.classes.expanded);
+		this.rows.map(function(row) {
+			row.removeRowClass(_g.settings.classes.hidden);
+		});
+	}
+	,collapse: function() {
+		var _g = this;
+		this.settings.expanded = false;
+		this.removeRowClass(this.settings.classes.expanded).addRowClass(this.settings.classes.collapsed);
+		this.rows.map(function(row) {
+			row.addRowClass(_g.settings.classes.hidden);
+		});
+	}
+	,toggle: function() {
+		if(this.settings.expanded) this.collapse(); else this.expand();
 	}
 	,setCellValue: function(index,value) {
 		if(index >= this.cells.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
-		this.cells[index].setValue(value);
+		this.cells[index].set_value(value);
 		return this;
+	}
+	,copy: function() {
+		return new fancy_table_Row(this.cells.map(function(_) {
+			return _.copy();
+		}),this.settings);
 	}
 };
 var js__$Boot_HaxeError = function(val) {
@@ -334,8 +399,24 @@ thx_Arrays.reducei = function(array,callback,initial) {
 	return array.reduce(callback,initial);
 };
 var thx_Ints = function() { };
+thx_Ints.max = function(a,b) {
+	if(a > b) return a; else return b;
+};
 thx_Ints.min = function(a,b) {
 	if(a < b) return a; else return b;
+};
+thx_Ints.range = function(start,stop,step) {
+	if(step == null) step = 1;
+	if(null == stop) {
+		stop = start;
+		start = 0;
+	}
+	if((stop - start) / step == Infinity) throw new js__$Boot_HaxeError("infinite range");
+	var range = [];
+	var i = -1;
+	var j;
+	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
+	return range;
 };
 var thx_Objects = function() { };
 thx_Objects.combine = function(first,second) {
@@ -355,6 +436,16 @@ thx_Objects.combine = function(first,second) {
 		Reflect.setField(to,field1,Reflect.field(second,field1));
 	}
 	return to;
+};
+if(Array.prototype.map == null) Array.prototype.map = function(f) {
+	var a = [];
+	var _g1 = 0;
+	var _g = this.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		a[i] = f(this[i]);
+	}
+	return a;
 };
 
       // Production steps of ECMA-262, Edition 5, 15.4.4.21

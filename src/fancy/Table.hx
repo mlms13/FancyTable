@@ -5,13 +5,14 @@ import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
 using thx.Arrays;
+using thx.Functions;
 using thx.Ints;
 using thx.Objects;
 using thx.Tuple;
 
 class Table {
-  var options : FancyTableOptions;
-  var rows : Array<Row>;
+  public var rows(default, null) : Array<Row>;
+  var settings : FancyTableOptions;
   var grid : GridContainer;
   var folds : Array<Tuple2<Int, Int>>;
 
@@ -19,9 +20,9 @@ class Table {
   var fixedTop : Int;
   var fixedLeft : Int;
 
-  public function new(parent : Element, ?opts : FancyTableOptions) {
+  public function new(parent : Element, ?options : FancyTableOptions) {
     var tableEl : Element;
-    this.options = createDefaultOptions(opts);
+    this.settings = createDefaultOptions(options);
     rows = [];
     folds = [];
     fixedTop = 0;
@@ -41,10 +42,10 @@ class Table {
     parent.appendChild(tableEl);
   }
 
-  function createDefaultOptions(?opts : FancyTableOptions) {
+  function createDefaultOptions(?options : FancyTableOptions) {
     return Objects.merge({
       colCount : 0
-    }, opts == null ? {} : opts);
+    }, options == null ? {} : options);
   }
 
   public function insertRowAt(index : Int, ?row : Row) : Table {
@@ -52,9 +53,9 @@ class Table {
     // rows, we need to re-create the header table
     // ALSO TODO: we need to grab the first n cells in the new row and add them
     // to the affixed header column table (where n = number of affixed cells)
-    row = row == null ? new Row(options.colCount) : row;
+    row = row == null ? new Row({colCount : settings.colCount}) : row;
     rows.insert(index, row);
-    grid.content.insertChildAtIndex(row.el, index);
+    grid.content.insertAtIndex(row.el, index);
     return this;
   }
 
@@ -66,83 +67,42 @@ class Table {
     return insertRowAt(rows.length, row);
   }
 
-  // public function insertColumnAt(index : Int) : Table {
-  //   options.colCount++;
-  //   rows.map(function (row) {
-  //     row.insertColumn(index);
-  //   });
-  //   return this;
-  // }
-  //
-  // public function prependColumn() : Table {
-  //   return insertColumnAt(0);
-  // }
-  //
-  // public function appendColumn() : Table {
-  //   return insertColumnAt(options.colCount);
-  // }
-
-  function fixColumns(howMany : Int, rows : Array<Row>) : Array<Element> {
-    return rows.reducei(function (acc : Array<Element>, row, index) {
-      var newRow = row.cells.reducei(function (newRow : Row, cell, index) {
-        if (index < howMany) {
-          newRow.appendCell(new Cell(cell.value));
-          cell.el.addClass("ft-col-fixed");
-        } else {
-          cell.el.removeClass("ft-col-fixed");
-        }
-        return newRow;
-      }, new Row());
-
-      // steal all row classes from the underlying row
-      // this feels dirty as f.
-      newRow.el.addClass(rows[index].el.className);
-
-      acc.push(newRow.el);
-      return acc;
-    }, []);
-  }
-
   public function setFixedTop(?howMany = 1) : Table {
-    // empty existing fixed-row table
-    grid.top.empty();
-
     // TODO: if howmany < the previous value, the hidden cells in the previously
     // hidden rows will not show up. we need to go through and clean up
+    for (i in Ints.min(howMany, fixedTop)...Ints.max(howMany, fixedTop)) {
+      // rows[i]
+      // cells[i].fixed = howMany > fixedTop;
+    }
 
-    // ANOTHER TODO: if we consistenly update the colcount, we won't have to
-    // dig into the rows to find the number of columns here
-    fixColumns(rows[0].cells.length, rows.slice(0, howMany)).reduce(function (acc, child) {
-      acc.appendChild(child);
-      return acc;
-    }, grid.top);
+    // empty existing fixed-row table
+    grid.top
+      .empty()
+      .append(0.range(howMany).map(function (i) {
+        return rows[i].copy().el;
+      }));
 
     fixedTop = howMany;
     return updateFixedTopLeft();
   }
 
   public function setFixedLeft(?howMany = 1) : Table {
-    grid.left.empty();
-
-    var children = fixColumns(howMany, rows);
-    children.reduce(function (acc, child) {
-      acc.appendChild(child);
-      return acc;
-    }, grid.left);
+    grid.left
+      .empty()
+      .append(rows.map(function (row) {
+        return row.updateFixedCells(howMany);
+      }));
 
     fixedLeft = howMany;
     return updateFixedTopLeft();
   }
 
   function updateFixedTopLeft() : Table {
-    grid.topLeft.empty();
-
-    var cells = fixColumns(fixedLeft, rows.slice(0, fixedTop));
-
-    cells.reduce(function (acc, child) {
-      acc.appendChild(child);
-      return acc;
-    }, grid.topLeft);
+    grid.topLeft
+      .empty()
+      .append(0.range(fixedTop).map(function (i) {
+        return rows[i].copy().updateFixedCells(fixedLeft);
+      }));
     return this;
   }
 
@@ -160,7 +120,6 @@ class Table {
     // check for out-of-range indexes
     if (headerIndex >= rows.length)
       return throw 'Cannot set fold point at $headerIndex because there are only ${rows.length} rows';
-
 
     childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
 
