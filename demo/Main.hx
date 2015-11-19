@@ -58,13 +58,19 @@ class Main {
       }, new Row({ colCount : 4 }));
 
       return table.appendRow(row);
-    }, new Table(el))
-      .setFixedTop()
-      .setFixedLeft();
+    }, new Table(el));
 
     createFolds(data)._1.reduce(function (table : Table, fold : Tuple2<Int, Int>) {
+      table.rows[fold._0].cells[0].onclick = function (_) {
+        table.rows[fold._0].toggle();
+      };
       return table.createFold(fold.left, fold.right);
-    }, table);
+    }, table)
+      // TODO: Currently affixing has to be done after setting cell click
+      // handlers. Otherwise the cell gets cloned before the handler is set.
+      // We could "fix" this by
+      .setFixedTop()
+      .setFixedLeft();
   }
 
   // recursively dig through all the rows in the nested data, and return a tuple

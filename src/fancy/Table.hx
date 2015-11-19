@@ -11,8 +11,8 @@ using thx.Objects;
 using thx.Tuple;
 
 class Table {
+  public var rows(default, null) : Array<Row>;
   var settings : FancyTableOptions;
-  var rows : Array<Row>;
   var grid : GridContainer;
   var folds : Array<Tuple2<Int, Int>>;
 

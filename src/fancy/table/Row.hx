@@ -10,9 +10,10 @@ using thx.Objects;
 
 class Row {
   public var el(default, null) : Element;
-  var cells : Array<Cell>;
+  public var cells(default, null) : Array<Cell>;
   var rows : Array<Row>;
   var settings : FancyRowOptions;
+  var fixedEl : Element;
 
   public function new(?cells : Array<Cell>, ?options : FancyRowOptions) {
     this.cells = cells == null ? [] : cells;
@@ -74,11 +75,13 @@ class Row {
     }
 
     settings.fixedCellCount = count;
-    return Ints.range(0, count).reduce(function (parent : Element, index) {
+    fixedEl = Ints.range(0, count).reduce(function (parent : Element, index) {
       var cell = cells[index].copy();
       cell.fixed = false;
       return parent.append(cell.el);
     }, createRowElement());
+
+    return fixedEl;
   }
 
   public function insertCell(index : Int, ?cell : Cell) : Row {
@@ -88,34 +91,48 @@ class Row {
     return this;
   }
 
+  public function addRowClass(className : String) {
+    el.addClass(className);
+    if (fixedEl != null)
+      fixedEl.addClass(className);
+    return this;
+  }
+
+  public function removeRowClass(className : String) {
+    el.removeClass(className);
+    if (fixedEl != null)
+      fixedEl.removeClass(className);
+    return this;
+  }
+
   public function appendCell(?col : Cell) : Row {
     return insertCell(cells.length, col);
   }
 
   public function addChildRow(child : Row) {
-    el.addClass(settings.classes.foldHeader);
+    addRowClass(settings.classes.foldHeader);
     rows.push(child);
   }
 
   public function indent() {
-    el.removeClass('${settings.classes.indent}${settings.indentation}');
+    removeRowClass('${settings.classes.indent}${settings.indentation}');
     settings.indentation++;
-    el.addClass('${settings.classes.indent}${settings.indentation}');
+    addRowClass('${settings.classes.indent}${settings.indentation}');
   }
 
   public function expand() {
     settings.expanded = true;
-    el.removeClass(settings.classes.collapsed).addClass(settings.classes.expanded);
+    removeRowClass(settings.classes.collapsed).addRowClass(settings.classes.expanded);
     rows.map(function (row) {
-      row.el.removeClass(settings.classes.hidden);
+      row.removeRowClass(settings.classes.hidden);
     });
   }
 
   public function collapse() {
     settings.expanded = false;
-    el.removeClass(settings.classes.expanded).addClass(settings.classes.collapsed);
+    removeRowClass(settings.classes.expanded).addRowClass(settings.classes.collapsed);
     rows.map(function (row) {
-      row.el.addClass(settings.classes.hidden);
+      row.addRowClass(settings.classes.hidden);
     });
   }
 
