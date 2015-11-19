@@ -289,13 +289,13 @@ fancy_table_Row.prototype = {
 		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
-		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-"},classes == null?{ }:classes);
+		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-"},classes == null?{ }:classes);
 	}
 	,createRowElement: function(children) {
 		var childElements = (children != null?children:[]).map(function(_) {
 			return _.el;
 		});
-		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),"" + this.settings.classes.indent + this.settings.indentation),this.rows.length == 0?"":this.settings.classes.foldHeader);
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),"" + this.settings.classes.indent + this.settings.indentation),this.rows.length == 0?"":this.settings.classes.foldHeader);
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;

@@ -59,7 +59,7 @@
 .ft-row-indent-3 > .ft-cell:first-child {
   padding-left: 56px;
 }
-.ft-row-collapsed {
+.ft-row-hidden {
   display: none;
 }
 .ft-cell {

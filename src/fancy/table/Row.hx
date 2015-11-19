@@ -48,6 +48,7 @@ class Row {
       expanded : "ft-row-expanded",
       collapsed : "ft-row-collapsed",
       foldHeader : "ft-row-fold-header",
+      hidden : "ft-row-hidden",
       indent : "ft-row-indent-"
     }, classes == null ? {} : classes);
   }
@@ -55,6 +56,7 @@ class Row {
   function createRowElement(?children : Array<Cell>) : Element {
     var childElements = (children != null ? children : []).map.fn(_.el);
     return Dom.create('div.${settings.classes.row}', {}, childElements)
+      .addClass(settings.expanded ? settings.classes.expanded : settings.classes.collapsed)
       .addClass('${settings.classes.indent}${settings.indentation}')
       .addClass(rows.length == 0 ? "" : settings.classes.foldHeader);
   }
@@ -103,15 +105,17 @@ class Row {
 
   public function expand() {
     settings.expanded = true;
+    el.removeClass(settings.classes.collapsed).addClass(settings.classes.expanded);
     rows.map(function (row) {
-      row.el.removeClass(settings.classes.collapsed).addClass(settings.classes.expanded);
+      row.el.removeClass(settings.classes.hidden);
     });
   }
 
   public function collapse() {
     settings.expanded = false;
+    el.removeClass(settings.classes.expanded).addClass(settings.classes.collapsed);
     rows.map(function (row) {
-      row.el.removeClass(settings.classes.expanded).addClass(settings.classes.collapsed);
+      row.el.addClass(settings.classes.hidden);
     });
   }
 
