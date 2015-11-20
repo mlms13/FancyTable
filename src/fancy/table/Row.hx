@@ -45,7 +45,6 @@ class Row {
   function createDefaultClasses(?classes : FancyRowClasses) : FancyRowClasses {
     return Objects.merge({
       row : "ft-row",
-      values : "ft-row-values",
       expanded : "ft-row-expanded",
       collapsed : "ft-row-collapsed",
       foldHeader : "ft-row-fold-header",

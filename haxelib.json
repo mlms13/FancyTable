@@ -1,0 +1,11 @@
+{
+  "name" : "fancytable",
+  "url" : "https://github.com/mlms13/FancyTable",
+  "license" : "MIT",
+  "classPath" : "src",
+  "tags" : ["browser", "js", "table", "finance"],
+  "description" : "",
+  "releasenote" : "",
+  "version" : "0.0.1",
+  "contributors" : ["mlms13"]
+}

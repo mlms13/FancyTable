@@ -303,7 +303,7 @@ fancy_table_Row.prototype = {
 		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
-		return thx_Objects.combine({ row : "ft-row", values : "ft-row-values", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-"},classes == null?{ }:classes);
+		return thx_Objects.combine({ row : "ft-row", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-"},classes == null?{ }:classes);
 	}
 	,createRowElement: function(children) {
 		var childElements = (children != null?children:[]).map(function(_) {
