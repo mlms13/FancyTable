@@ -1,6 +1,6 @@
 {
   "name": "fancytable",
-  "version": "0.0.1",
+  "version": "0.1.0-alpha.1",
   "description": "Tables with folding, fixed headers, and more",
   "main": "bin/demo.js",
   "bin": {
