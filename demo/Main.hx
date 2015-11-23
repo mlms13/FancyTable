@@ -53,9 +53,9 @@ class Main {
     }];
 
     var table = rectangularize(data).reduce(function(table : Table, curr : Array<String>) {
-      var row = curr.reducei(function (row : Row, val : String, index : Int) {
-        return row.setCellValue(index, val);
-      }, new Row({ colCount : 4 }));
+      var row = curr.reduce(function (row : Row, val : String) {
+        return row.appendCell(new Cell(val));
+      }, new Row());
 
       return table.appendRow(row);
     }, new Table(el));
@@ -68,7 +68,8 @@ class Main {
     }, table)
       // TODO: Currently affixing has to be done after setting cell click
       // handlers. Otherwise the cell gets cloned before the handler is set.
-      // We could "fix" this by
+      // We could "fix" this by keeping a reference to each copied cell or
+      // by handling event setting at the Table level
       .setFixedTop()
       .setFixedLeft();
   }

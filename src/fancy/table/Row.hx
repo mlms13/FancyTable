@@ -26,10 +26,8 @@ class Row {
     el = createRowElement(this.cells);
 
     // if the total cell count is less than the provided count, add more cells
-    var colDiff = settings.colCount - this.cells.length;
-    if (colDiff > 0) {
-      for (i in 0...colDiff) insertCell(i + this.cells.length);
-    }
+    var colDiff = Ints.max(0, settings.colCount - this.cells.length);
+    fillWithCells(colDiff);
   }
 
   function createDefaultOptions(?options : FancyRowOptions) {
@@ -106,6 +104,12 @@ class Row {
 
   public function appendCell(?col : Cell) : Row {
     return insertCell(cells.length, col);
+  }
+
+  public function fillWithCells(howMany : Int) : Row {
+    return 0.range(howMany).reduce(function (_, _) {
+      return appendCell();
+    }, this);
   }
 
   public function addChildRow(child : Row) {

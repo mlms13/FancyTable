@@ -54,6 +54,13 @@ class Table {
     // ALSO TODO: we need to grab the first n cells in the new row and add them
     // to the affixed header column table (where n = number of affixed cells)
     row = row == null ? new Row({colCount : settings.colCount}) : row;
+
+    // if our new row has fewer cols than everybody else, fill it
+    row.fillWithCells(Ints.max(0, settings.colCount - row.cells.length));
+
+    // but if it has more than everybody else, fill those and increase our count
+    setColCount(row.cells.length);
+
     rows.insert(index, row);
     grid.content.insertAtIndex(row.el, index);
     return this;
@@ -65,6 +72,16 @@ class Table {
 
   public function appendRow(?row : Row) : Table {
     return insertRowAt(rows.length, row);
+  }
+
+  function setColCount(howMany : Int) {
+    if (howMany > settings.colCount) {
+      rows.map(function(row) {
+        row.fillWithCells(howMany - settings.colCount);
+      });
+
+      settings.colCount = howMany;
+    }
   }
 
   public function setFixedTop(?howMany = 1) : Table {

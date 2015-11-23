@@ -34,9 +34,9 @@ Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
 	var table1 = thx_Arrays.reduce(Main.rectangularize(data),function(table,curr) {
-		var row1 = thx_Arrays.reducei(curr,function(row,val,index) {
-			return row.setCellValue(index,val);
-		},new fancy_table_Row(null,{ colCount : 4}));
+		var row1 = thx_Arrays.reduce(curr,function(row,val) {
+			return row.appendCell(new fancy_table_Cell(val));
+		},new fancy_table_Row());
 		return table.appendRow(row1);
 	},new fancy_Table(el));
 	thx_Arrays.reduce(Main.createFolds(data)._1,function(table2,fold) {
@@ -116,12 +116,23 @@ fancy_Table.prototype = {
 	}
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,{ colCount : this.settings.colCount}); else row = row;
+		row.fillWithCells(thx_Ints.max(0,this.settings.colCount - row.cells.length));
+		this.setColCount(row.cells.length);
 		this.rows.splice(index,0,row);
 		fancy_browser_Dom.insertAtIndex(this.grid.content,row.el,index);
 		return this;
 	}
 	,appendRow: function(row) {
 		return this.insertRowAt(this.rows.length,row);
+	}
+	,setColCount: function(howMany) {
+		var _g = this;
+		if(howMany > this.settings.colCount) {
+			this.rows.map(function(row) {
+				row.fillWithCells(howMany - _g.settings.colCount);
+			});
+			this.settings.colCount = howMany;
+		}
 	}
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
@@ -289,14 +300,8 @@ var fancy_table_Row = function(cells,options) {
 	this.settings.classes = this.createDefaultClasses(this.settings.classes);
 	this.rows = [];
 	this.el = this.createRowElement(this.cells);
-	var colDiff = this.settings.colCount - this.cells.length;
-	if(colDiff > 0) {
-		var _g = 0;
-		while(_g < colDiff) {
-			var i = _g++;
-			this.insertCell(i + this.cells.length);
-		}
-	}
+	var colDiff = thx_Ints.max(0,this.settings.colCount - this.cells.length);
+	this.fillWithCells(colDiff);
 };
 fancy_table_Row.prototype = {
 	createDefaultOptions: function(options) {
@@ -343,6 +348,15 @@ fancy_table_Row.prototype = {
 		if(this.fixedEl != null) fancy_browser_Dom.removeClass(this.fixedEl,className);
 		return this;
 	}
+	,appendCell: function(col) {
+		return this.insertCell(this.cells.length,col);
+	}
+	,fillWithCells: function(howMany) {
+		var _g = this;
+		return thx_Arrays.reduce(thx_Ints.range(0,howMany),function(_,_1) {
+			return _g.appendCell();
+		},this);
+	}
 	,addChildRow: function(child) {
 		this.addRowClass(this.settings.classes.foldHeader);
 		this.rows.push(child);
@@ -371,11 +385,6 @@ fancy_table_Row.prototype = {
 	,toggle: function() {
 		if(this.settings.expanded) this.collapse(); else this.expand();
 	}
-	,setCellValue: function(index,value) {
-		if(index >= this.cells.length) throw new js__$Boot_HaxeError("Cannot set \"" + value + "\" for cell at index " + index + ", which does not exist");
-		this.cells[index].set_value(value);
-		return this;
-	}
 	,copy: function() {
 		return new fancy_table_Row(this.cells.map(function(_) {
 			return _.copy();
@@ -393,9 +402,6 @@ js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
 });
 var thx_Arrays = function() { };
 thx_Arrays.reduce = function(array,callback,initial) {
-	return array.reduce(callback,initial);
-};
-thx_Arrays.reducei = function(array,callback,initial) {
 	return array.reduce(callback,initial);
 };
 var thx_Ints = function() { };
