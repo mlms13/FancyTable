@@ -89,19 +89,19 @@ Reflect.fields = function(o) {
 };
 var fancy_Table = function(parent,options) {
 	var _g = this;
-	var tableEl;
 	this.settings = this.createDefaultOptions(options);
+	this.setColCount(this.settings.colCount);
 	this.rows = [];
 	this.folds = [];
 	this.fixedTop = 0;
 	this.fixedLeft = 0;
-	tableEl = fancy_browser_Dom.create("div.ft-table");
+	this.tableEl = fancy_browser_Dom.create("div.ft-table");
 	this.grid = new fancy_table_GridContainer();
-	tableEl.appendChild(this.grid.grid);
-	fancy_browser_Dom.on(tableEl,"scroll",function(_) {
-		_g.grid.positionPanes(tableEl.scrollTop,tableEl.scrollLeft);
+	this.tableEl.appendChild(this.grid.grid);
+	fancy_browser_Dom.on(this.tableEl,"scroll",function(_) {
+		_g.grid.positionPanes(_g.tableEl.scrollTop,_g.tableEl.scrollLeft);
 	});
-	parent.appendChild(tableEl);
+	parent.appendChild(this.tableEl);
 };
 fancy_Table.foldsIntersect = function(a,b) {
 	var first;
@@ -131,6 +131,7 @@ fancy_Table.prototype = {
 			this.rows.map(function(row) {
 				row.fillWithCells(howMany - _g.settings.colCount);
 			});
+			fancy_browser_Dom.addClass(fancy_browser_Dom.removeClass(this.tableEl,"ft-table-" + this.settings.colCount + "-col"),"ft-table-" + howMany + "-col");
 			this.settings.colCount = howMany;
 		}
 	}

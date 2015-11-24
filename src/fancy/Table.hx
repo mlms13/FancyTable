@@ -12,6 +12,7 @@ using thx.Tuple;
 
 class Table {
   public var rows(default, null) : Array<Row>;
+  var tableEl : Element;
   var settings : FancyTableOptions;
   var grid : GridContainer;
   var folds : Array<Tuple2<Int, Int>>;
@@ -21,8 +22,10 @@ class Table {
   var fixedLeft : Int;
 
   public function new(parent : Element, ?options : FancyTableOptions) {
-    var tableEl : Element;
     this.settings = createDefaultOptions(options);
+
+    // we do this to trigger the class-setting, which smells a little
+    setColCount(settings.colCount);
     rows = [];
     folds = [];
     fixedTop = 0;
@@ -80,6 +83,7 @@ class Table {
         row.fillWithCells(howMany - settings.colCount);
       });
 
+      tableEl.removeClass('ft-table-${settings.colCount}-col').addClass('ft-table-$howMany-col');
       settings.colCount = howMany;
     }
   }
