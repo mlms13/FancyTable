@@ -33,18 +33,13 @@ var Main = function() { };
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
-	var table1 = thx_Arrays.reduce(Main.rectangularize(data),function(table,curr) {
-		var row1 = thx_Arrays.reduce(curr,function(row,val) {
-			return row.appendCell(new fancy_table_Cell(val));
-		},new fancy_table_Row());
-		return table.appendRow(row1);
-	},new fancy_Table(el));
-	thx_Arrays.reduce(Main.createFolds(data)._1,function(table2,fold) {
-		table2.rows[fold._0].cells[0].set_onclick(function(_) {
-			table2.rows[fold._0].toggle();
+	var table = new fancy_Table(el,{ data : Main.rectangularize(data)});
+	thx_Arrays.reduce(Main.createFolds(data)._1,function(table1,fold) {
+		table1.rows[fold._0].cells[0].set_onclick(function(_) {
+			table1.rows[fold._0].toggle();
 		});
-		return table2.createFold(fold._0,fold._1);
-	},table1).setFixedTop().setFixedLeft();
+		return table1.createFold(fold._0,fold._1);
+	},table).setFixedTop().setFixedLeft();
 };
 Main.createFolds = function(data,start) {
 	if(start == null) start = 0;
@@ -101,6 +96,7 @@ var fancy_Table = function(parent,options) {
 	fancy_browser_Dom.on(this.tableEl,"scroll",function(_) {
 		_g.grid.positionPanes(_g.tableEl.scrollTop,_g.tableEl.scrollLeft);
 	});
+	this.setData(this.settings.data);
 	parent.appendChild(this.tableEl);
 };
 fancy_Table.foldsIntersect = function(a,b) {
@@ -112,7 +108,17 @@ fancy_Table.foldsIntersect = function(a,b) {
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ colCount : 0},options == null?{ }:options);
+		return thx_Objects.combine({ colCount : 0, data : [[]]},options == null?{ }:options);
+	}
+	,setData: function(data) {
+		this.rows = [];
+		this.settings.data = data;
+		return data.reduce(function(table,curr) {
+			var row1 = thx_Arrays.reduce(curr,function(row,val) {
+				return row.appendCell(new fancy_table_Cell(val));
+			},new fancy_table_Row());
+			return table.appendRow(row1);
+		},this);
 	}
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,{ colCount : this.settings.colCount}); else row = row;

@@ -41,14 +41,31 @@ class Table {
       grid.positionPanes(tableEl.scrollTop, tableEl.scrollLeft);
     });
 
+    // fill with any data
+    setData(settings.data);
+
     // and add all of our shiny new dom to the parent
     parent.appendChild(tableEl);
   }
 
   function createDefaultOptions(?options : FancyTableOptions) {
     return Objects.merge({
-      colCount : 0
+      colCount : 0,
+      data : ([[]] : Array<Array<String>>)
     }, options == null ? {} : options);
+  }
+
+  public function setData(data : Array<Array<String>>) : Table {
+    this.rows = [];
+    this.settings.data = data;
+
+    return data.reduce(function(table : Table, curr : Array<String>) {
+      var row = curr.reduce(function (row : Row, val : String) {
+        return row.appendCell(new Cell(val));
+      }, new Row());
+
+      return table.appendRow(row);
+    }, this);
   }
 
   public function insertRowAt(index : Int, ?row : Row) : Table {

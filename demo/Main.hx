@@ -52,13 +52,9 @@ class Main {
       }]
     }];
 
-    var table = rectangularize(data).reduce(function(table : Table, curr : Array<String>) {
-      var row = curr.reduce(function (row : Row, val : String) {
-        return row.appendCell(new Cell(val));
-      }, new Row());
-
-      return table.appendRow(row);
-    }, new Table(el));
+    var table = new Table(el, {
+      data : rectangularize(data)
+    });
 
     createFolds(data)._1.reduce(function (table : Table, fold : Tuple2<Int, Int>) {
       table.rows[fold._0].cells[0].onclick = function (_) {

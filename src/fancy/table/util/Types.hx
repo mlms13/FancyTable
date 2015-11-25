@@ -1,7 +1,8 @@
 package fancy.table.util;
 
 typedef FancyTableOptions = {
-  ?colCount : Int
+  ?colCount : Int,
+  ?data : Array<Array<String>>
 };
 
 typedef FancyRowOptions = {
