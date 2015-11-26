@@ -180,4 +180,9 @@ class Table {
 
     return setFixedLeft(fixedLeft);
   }
+
+  public function setCellValue(row : Int, cell : Int, value : String) : Table {
+    rows[row].setCellValue(cell, value);
+    return this;
+  }
 }
