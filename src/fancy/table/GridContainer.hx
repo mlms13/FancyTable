@@ -35,4 +35,11 @@ class GridContainer {
     top.style.top = '${deltaTop}px';
     left.style.left = '${deltaLeft}px';
   }
+
+  public function empty() {
+    topLeft.empty();
+    top.empty();
+    left.empty();
+    content.empty();
+  }
 }

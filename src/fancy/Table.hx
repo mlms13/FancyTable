@@ -24,13 +24,6 @@ class Table {
   public function new(parent : Element, ?options : FancyTableOptions) {
     this.settings = createDefaultOptions(options);
 
-    // we do this to trigger the class-setting, which smells a little
-    setColCount(settings.colCount);
-    rows = [];
-    folds = [];
-    fixedTop = 0;
-    fixedLeft = 0;
-
     // create lots of dom
     tableEl = Dom.create("div.ft-table");
     grid = new GridContainer();
@@ -55,9 +48,18 @@ class Table {
     }, options == null ? {} : options);
   }
 
+  public function empty() : Table {
+    grid.empty();
+    rows = [];
+    folds = [];
+    fixedTop = 0;
+    fixedLeft = 0;
+    this.settings.data = [];
+    return setColCount(0);
+  }
+
   public function setData(data : Array<Array<String>>) : Table {
-    this.rows = [];
-    this.settings.data = data;
+    empty();
 
     return data.reduce(function(table : Table, curr : Array<String>) {
       var row = curr.reduce(function (row : Row, val : String) {
@@ -94,7 +96,7 @@ class Table {
     return insertRowAt(rows.length, row);
   }
 
-  function setColCount(howMany : Int) {
+  function setColCount(howMany : Int) : Table {
     if (howMany > settings.colCount) {
       rows.map(function(row) {
         row.fillWithCells(howMany - settings.colCount);
@@ -103,6 +105,7 @@ class Table {
       tableEl.removeClass('ft-table-${settings.colCount}-col').addClass('ft-table-$howMany-col');
       settings.colCount = howMany;
     }
+    return this;
   }
 
   public function setFixedTop(?howMany = 1) : Table {
