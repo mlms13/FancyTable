@@ -10,6 +10,12 @@ using thx.Ints;
 using thx.Objects;
 using thx.Tuple;
 
+/**
+  Create a new FancyTable by instantiating the `Table` class. A table instance
+  provides you with read-only access to its rows, as well as methods for adding
+  rows, modifying data, creating folds, and more. Instance methods generally
+  return the instance of the table for easy chaining.
+**/
 class Table {
   public var rows(default, null) : Array<Row>;
   var tableEl : Element;
@@ -21,6 +27,11 @@ class Table {
   var fixedTop : Int;
   var fixedLeft : Int;
 
+  /**
+    A container element must be provided to the constructor. You may also
+    provide an options object, though the only property you may wish to set with
+    this object is the initial data.
+  **/
   public function new(parent : Element, ?options : FancyTableOptions) {
     this.settings = createDefaultOptions(options);
 
@@ -48,6 +59,11 @@ class Table {
     }, options == null ? {} : options);
   }
 
+  /**
+    Emptying a table removes all cells (both from memory and the DOM), and
+    resets all fixed and folded rows. This operation is automatically performed
+    when setting new data.
+  **/
   public function empty() : Table {
     grid.empty();
     rows = [];
@@ -58,6 +74,11 @@ class Table {
     return setColCount(0);
   }
 
+  /**
+    Used for filling the table with entirely new data, this method empties the
+    table and creates new rows and columns given the provided data. Note that
+    this will remove any existing folds and fixed headers.
+  **/
   public function setData(data : Array<Array<String>>) : Table {
     empty();
 
@@ -184,6 +205,10 @@ class Table {
     return setFixedLeft(fixedLeft);
   }
 
+  /**
+    Set the string value of a cell given the 0-based index of the row and the
+    0-based index of the cell within that row.
+  **/
   public function setCellValue(row : Int, cell : Int, value : String) : Table {
     rows[row].setCellValue(cell, value);
     return this;
