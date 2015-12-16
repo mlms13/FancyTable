@@ -123,6 +123,7 @@ fancy_Table.prototype = {
 	}
 	,setData: function(data) {
 		this.empty();
+		if(data != null) data = data; else data = [];
 		return data.reduce(function(table,curr) {
 			var row1 = thx_Arrays.reduce(curr,function(row,val) {
 				return row.appendCell(new fancy_table_Cell(val));

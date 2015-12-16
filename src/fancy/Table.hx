@@ -59,12 +59,7 @@ class Table {
     }, options == null ? {} : options);
   }
 
-  /**
-    Emptying a table removes all cells (both from memory and the DOM), and
-    resets all fixed and folded rows. This operation is automatically performed
-    when setting new data.
-  **/
-  public function empty() : Table {
+  function empty() : Table {
     grid.empty();
     rows = [];
     folds = [];
@@ -75,12 +70,16 @@ class Table {
   }
 
   /**
-    Used for filling the table with entirely new data, this method empties the
-    table and creates new rows and columns given the provided data. Note that
-    this will remove any existing folds and fixed headers.
+    Fills the table with entirely new data. This method completely empties the
+    table and creates new rows and columns given the provided data.
+
+    Note that this will remove any existing folds and fixed headers. It will
+    also empty all table elements from the DOM and recreate them.
   **/
-  public function setData(data : Array<Array<String>>) : Table {
+  public function setData(?data : Array<Array<String>>) : Table {
     empty();
+
+    data = data != null ? data : [];
 
     return data.reduce(function(table : Table, curr : Array<String>) {
       var row = curr.reduce(function (row : Row, val : String) {
@@ -91,6 +90,14 @@ class Table {
     }, this);
   }
 
+  /**
+    Inserts a new row at any given index. If no row is provided, an empty row
+    will be created.
+
+    Note that for now, the inserted row won't obey any existing fixed row/col
+    instructions you provided. If possible, add all rows before setting fixed
+    headers.
+  **/
   public function insertRowAt(index : Int, ?row : Row) : Table {
     // TODO: if you're inserting a row within the range of the affixed header
     // rows, we need to re-create the header table
@@ -109,10 +116,18 @@ class Table {
     return this;
   }
 
+  /**
+    Inserts a new row before all existing rows. If no row is provided, an empty
+    row will be created.
+  **/
   public function prependRow(?row : Row) : Table {
     return insertRowAt(0, row);
   }
 
+  /**
+    Inserts a new row after all existing rows. If no row is provided, an empty
+    row will be created.
+  **/
   public function appendRow(?row : Row) : Table {
     return insertRowAt(rows.length, row);
   }
@@ -129,6 +144,11 @@ class Table {
     return this;
   }
 
+  /**
+    Creates a fixed header row at the top. Note that it's your responsibility
+    to make sure things don't get weird if you also fold rows at the top. Any
+    folded child rows won't automatically become affixed if you fix the parent.
+  **/
   public function setFixedTop(?howMany = 1) : Table {
     // TODO: if howmany < the previous value, the hidden cells in the previously
     // hidden rows will not show up. we need to go through and clean up
@@ -148,6 +168,10 @@ class Table {
     return updateFixedTopLeft();
   }
 
+  /**
+    Creates a fixed header column on the left. You can optionally specify more
+    than one column to be fixed.
+  **/
   public function setFixedLeft(?howMany = 1) : Table {
     grid.left
       .empty()
@@ -168,7 +192,7 @@ class Table {
     return this;
   }
 
-  public static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
+  static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
     // sort by the index of the header
     var first = a._0 <= b._0 ? a : b,
         second = first == a ? b : a;
@@ -178,6 +202,16 @@ class Table {
            second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
   }
 
+  /**
+    While data in your table is structurally rectangular, you can use folds to
+    imply nesting. Specify an index of the header row (the one that will still
+    be visible when the content is folded), as well as a count of how many rows
+    following the header will be nested below it.
+
+    Folds can be infinitely nested, but they can't intersect (e.g. you can't
+    specify a fold from 0-4 and another from 2-6, because that doesn't make
+    sense).
+  **/
   public function createFold(headerIndex : Int, childrenCount : Int) {
     // check for out-of-range indexes
     if (headerIndex >= rows.length)
@@ -206,7 +240,7 @@ class Table {
   }
 
   /**
-    Set the string value of a cell given the 0-based index of the row and the
+    Sets the string value of a cell given the 0-based index of the row and the
     0-based index of the cell within that row.
   **/
   public function setCellValue(row : Int, cell : Int, value : String) : Table {
