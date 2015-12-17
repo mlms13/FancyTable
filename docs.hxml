@@ -1,0 +1,12 @@
+# build without output
+-cp src
+-cp docs
+-lib thx.core
+-lib fancybrowser
+-D doc-gen
+-D dox
+-dce no
+--no-output
+ImportFancyTable
+-xml docs/xml/fancy.xml
+-js _
