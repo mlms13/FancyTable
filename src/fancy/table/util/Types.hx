@@ -33,6 +33,6 @@ typedef RowData = {
   values : Array<String>,
   ?data : Array<RowData>,
   ?meta : {
-    classes : Array<String>
+    ?classes : Array<String>
   }
 };

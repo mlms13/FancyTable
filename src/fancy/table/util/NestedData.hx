@@ -17,6 +17,22 @@ class NestedData {
   }
 
   /**
+    Recursively iterates over the nested data in the given array of `RowData`,
+    calling the provided callback function for each value. The callback receives
+    the `RowData` value at this point, as well as the total count of rows that
+    have been encountered so far.
+  **/
+  public static function iterate(data : Array<RowData>, fn : RowData -> Int -> Void, ?start = 0) {
+    return data.reducei(function (acc : Int, row : RowData, i : Int) {
+      fn(row, acc);
+
+      acc++;
+      return row.data != null ? iterate(row.data, fn, acc) : acc;
+    }, start);
+  }
+
+
+  /**
     Given an array of (nested) row data, this function returns a tuple with fold
     information. The left side of the resulting tuple is the number of rows
     processed. The right side of the tuple is an array of fold tuples. The left

@@ -104,6 +104,12 @@ class Row {
     return this;
   }
 
+  public function setCustomClass(className : String) {
+    removeRowClass(settings.classes.custom);
+    settings.classes.custom = className;
+    return addRowClass(className);
+  }
+
   public function appendCell(?col : Cell) : Row {
     return insertCell(cells.length, col);
   }

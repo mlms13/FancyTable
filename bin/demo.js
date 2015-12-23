@@ -37,7 +37,7 @@ var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
+	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"], meta : { classes : ["foo","bar"]}}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
 	var table1 = fancy_Table.createFromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
 		table.rows[rowIndex].cells[0].set_onclick(function(_) {
 			table.rows[rowIndex].toggle();
@@ -95,6 +95,9 @@ fancy_Table.foldsIntersect = function(a,b) {
 };
 fancy_Table.createFromNestedData = function(parent,options) {
 	var instance = new fancy_Table(parent,{ data : fancy_table_util_NestedData.rectangularize(options.data)});
+	fancy_table_util_NestedData.iterate(options.data,function(row,index) {
+		if(row.meta != null && row.meta.classes != null) instance.rows[index].setCustomClass(row.meta.classes.join(" "));
+	});
 	var folds;
 	var this1 = fancy_table_util_NestedData.generateFolds(options.data);
 	folds = this1._1;
@@ -376,6 +379,11 @@ fancy_table_Row.prototype = {
 		if(this.fixedEl != null) fancy_browser_Dom.removeClass(this.fixedEl,className);
 		return this;
 	}
+	,setCustomClass: function(className) {
+		this.removeRowClass(this.settings.classes.custom);
+		this.settings.classes.custom = className;
+		return this.addRowClass(className);
+	}
 	,appendCell: function(col) {
 		return this.insertCell(this.cells.length,col);
 	}
@@ -427,6 +435,14 @@ fancy_table_util_NestedData.rectangularize = function(data) {
 		acc.push(d.values);
 		if(d.data != null) return acc.concat(fancy_table_util_NestedData.rectangularize(d.data)); else return acc;
 	},[]);
+};
+fancy_table_util_NestedData.iterate = function(data,fn,start) {
+	if(start == null) start = 0;
+	return data.reduce(function(acc,row,i) {
+		fn(row,acc);
+		acc++;
+		if(row.data != null) return fancy_table_util_NestedData.iterate(row.data,fn,acc); else return acc;
+	},start);
 };
 fancy_table_util_NestedData.generateFolds = function(data,start) {
 	if(start == null) start = 0;

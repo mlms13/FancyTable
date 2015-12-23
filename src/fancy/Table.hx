@@ -1,7 +1,7 @@
 package fancy;
 
 import fancy.table.*;
-import fancy.table.util.NestedData;
+using fancy.table.util.NestedData;
 import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
@@ -193,7 +193,7 @@ class Table {
     return this;
   }
 
-  static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
+  public static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
     // sort by the index of the header
     var first = a._0 <= b._0 ? a : b,
         second = first == a ? b : a;
@@ -249,13 +249,27 @@ class Table {
     return this;
   }
 
+  /**
+    Creates a table instance from nested data, rather than rectangular data.
+    This automatically digs through the nested structure, creating folds as
+    needed.
+  **/
   public static function createFromNestedData(parent : Element, options : FancyNestedTableOptions) {
     var instance = new Table(parent, {
       data : NestedData.rectangularize(options.data)
     });
 
+    // iterate over the nested data structure, setting all of the classes
+    // provided in the nested options.data meta field
+    options.data.iterate(function (row : RowData, index : Int) {
+      if (row.meta != null && row.meta.classes != null) {
+        // TODO: someday we won't be able to pass a space-separated list
+        instance.rows[index].setCustomClass(row.meta.classes.join(" "));
+      }
+    });
+
     // find all folds needed for the nested data
-    var folds = NestedData.generateFolds(options.data).right;
+    var folds = options.data.generateFolds().right;
 
     // accumulate the folds, calling the callback for each one
     return folds.reduce(function (table : Table, fold) {
