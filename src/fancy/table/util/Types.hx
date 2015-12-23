@@ -22,3 +22,11 @@ typedef FancyRowClasses = {
   ?indent : String,
   ?custom : String
 };
+
+typedef RowData = {
+  values : Array<String>,
+  ?data : Array<RowData>,
+  ?meta : {
+    classes : Array<String>
+  }
+};

@@ -38,32 +38,13 @@ Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
-	var table = new fancy_Table(el,{ data : Main.rectangularize(data)});
-	thx_Arrays.reduce(Main.createFolds(data)._1,function(table1,fold) {
+	var table = new fancy_Table(el,{ data : fancy_table_util_NestedData.rectangularize(data)});
+	thx_Arrays.reduce(fancy_table_util_NestedData.generateFolds(data)._1,function(table1,fold) {
 		table1.rows[fold._0].cells[0].set_onclick(function(_) {
 			table1.rows[fold._0].toggle();
 		});
 		return table1.createFold(fold._0,fold._1);
 	},table).setFixedTop().setFixedLeft();
-};
-Main.createFolds = function(data,start) {
-	if(start == null) start = 0;
-	return data.reduce(function(acc,row,index) {
-		acc._0++;
-		if(row.data != null) {
-			var result = Main.createFolds(row.data,acc._0 + start);
-			acc._1.push({ _0 : acc._0 + start - 1, _1 : result._0});
-			acc._0 += result._0;
-			acc._1 = acc._1.concat(result._1);
-		}
-		return acc;
-	},{ _0 : 0, _1 : []});
-};
-Main.rectangularize = function(data) {
-	return data.reduce(function(acc,d) {
-		acc.push(d.values);
-		if(d.data != null) return acc.concat(Main.rectangularize(d.data)); else return acc;
-	},[]);
 };
 Math.__name__ = true;
 var Reflect = function() { };
@@ -346,13 +327,13 @@ fancy_table_Row.prototype = {
 		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
-		return thx_Objects.combine({ row : "ft-row", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-"},classes == null?{ }:classes);
+		return thx_Objects.combine({ row : "ft-row", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-", custom : ""},classes == null?{ }:classes);
 	}
 	,createRowElement: function(children) {
 		var childElements = (children != null?children:[]).map(function(_) {
 			return _.el;
 		});
-		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),"" + this.settings.classes.indent + this.settings.indentation),this.rows.length == 0?"":this.settings.classes.foldHeader);
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;
@@ -429,6 +410,27 @@ fancy_table_Row.prototype = {
 		}),this.settings);
 	}
 	,__class__: fancy_table_Row
+};
+var fancy_table_util_NestedData = function() { };
+fancy_table_util_NestedData.__name__ = true;
+fancy_table_util_NestedData.rectangularize = function(data) {
+	return data.reduce(function(acc,d) {
+		acc.push(d.values);
+		if(d.data != null) return acc.concat(fancy_table_util_NestedData.rectangularize(d.data)); else return acc;
+	},[]);
+};
+fancy_table_util_NestedData.generateFolds = function(data,start) {
+	if(start == null) start = 0;
+	return data.reduce(function(acc,row,index) {
+		acc._0++;
+		if(row.data != null) {
+			var result = fancy_table_util_NestedData.generateFolds(row.data,acc._0 + start);
+			acc._1.push({ _0 : acc._0 + start - 1, _1 : result._0});
+			acc._0 += result._0;
+			acc._1 = acc._1.concat(result._1);
+		}
+		return acc;
+	},{ _0 : 0, _1 : []});
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);

@@ -1,6 +1,8 @@
 using fancy.browser.Dom;
 import fancy.Table;
 import fancy.table.*;
+import fancy.table.util.Types;
+import fancy.table.util.NestedData;
 using thx.Arrays;
 using thx.Tuple;
 
@@ -53,10 +55,10 @@ class Main {
     }];
 
     var table = new Table(el, {
-      data : rectangularize(data)
+      data : NestedData.rectangularize(data)
     });
 
-    createFolds(data)._1.reduce(function (table : Table, fold : Tuple2<Int, Int>) {
+    NestedData.generateFolds(data)._1.reduce(function (table : Table, fold : Tuple2<Int, Int>) {
       table.rows[fold._0].cells[0].onclick = function (_) {
         table.rows[fold._0].toggle();
       };
@@ -69,35 +71,4 @@ class Main {
       .setFixedTop()
       .setFixedLeft();
   }
-
-  // recursively dig through all the rows in the nested data, and return a tuple
-  // with the total row count and an array of fold tuples
-  static function createFolds(data : Array<RowData>, ?start = 0) {
-    return data.reducei(function (acc : Tuple2<Int, Array<Tuple2<Int, Int>>>, row : RowData, index) {
-      // always increment the row count
-      acc._0++;
-
-      // if there's nested data, dig deep
-      if (row.data != null) {
-        var result = createFolds(row.data, acc._0 + start);
-        acc._1.push(new Tuple2(acc._0 + start - 1, result._0));
-        acc._0 += result._0;
-        acc._1 = acc._1.concat(result._1);
-      }
-
-      return acc;
-    }, new Tuple2(0, []));
-  }
-
-  static function rectangularize(data : Array<RowData>) : Array<Array<String>> {
-    return data.reduce(function (acc : Array<Array<String>>, d : RowData) {
-      acc.push(d.values);
-      return d.data != null ? acc.concat(rectangularize(d.data)) : acc;
-    }, []);
-  }
 }
-
-typedef RowData = {
-  values: Array<String>,
-  ?data: Array<RowData>
-};
