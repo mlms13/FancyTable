@@ -54,16 +54,14 @@ class Main {
       }]
     }];
 
-    var table = new Table(el, {
-      data : NestedData.rectangularize(data)
-    });
-
-    NestedData.generateFolds(data)._1.reduce(function (table : Table, fold : Tuple2<Int, Int>) {
-      table.rows[fold._0].cells[0].onclick = function (_) {
-        table.rows[fold._0].toggle();
-      };
-      return table.createFold(fold.left, fold.right);
-    }, table)
+    var table = Table.createFromNestedData(el, {
+      data : data,
+      eachFold : function (table, rowIndex) {
+        table.rows[rowIndex].cells[0].onclick = function (_) {
+          table.rows[rowIndex].toggle();
+        }
+      }
+    })
       // TODO: Currently affixing has to be done after setting cell click
       // handlers. Otherwise the cell gets cloned before the handler is set.
       // We could "fix" this by keeping a reference to each copied cell or

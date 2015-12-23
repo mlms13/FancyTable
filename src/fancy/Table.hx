@@ -1,6 +1,7 @@
 package fancy;
 
 import fancy.table.*;
+import fancy.table.util.NestedData;
 import fancy.table.util.Types;
 using fancy.browser.Dom;
 import js.html.Element;
@@ -246,5 +247,23 @@ class Table {
   public function setCellValue(row : Int, cell : Int, value : String) : Table {
     rows[row].setCellValue(cell, value);
     return this;
+  }
+
+  public static function createFromNestedData(parent : Element, options : FancyNestedTableOptions) {
+    var instance = new Table(parent, {
+      data : NestedData.rectangularize(options.data)
+    });
+
+    // find all folds needed for the nested data
+    var folds = NestedData.generateFolds(options.data).right;
+
+    // accumulate the folds, calling the callback for each one
+    return folds.reduce(function (table : Table, fold) {
+      if (options.eachFold != null)
+        options.eachFold(table, fold.left);
+
+      return table.createFold(fold.left, fold.right);
+    }, instance);
+    return instance;
   }
 }

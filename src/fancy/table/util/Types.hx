@@ -5,6 +5,12 @@ typedef FancyTableOptions = {
   ?data : Array<Array<String>>
 };
 
+typedef FancyNestedTableOptions = {
+  data : Array<RowData>,
+  ?colCount : Int,
+  ?eachFold : fancy.Table -> Int -> Void
+}
+
 typedef FancyRowOptions = {
   ?classes : FancyRowClasses,
   ?colCount : Int,

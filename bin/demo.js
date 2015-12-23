@@ -38,13 +38,11 @@ Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
-	var table = new fancy_Table(el,{ data : fancy_table_util_NestedData.rectangularize(data)});
-	thx_Arrays.reduce(fancy_table_util_NestedData.generateFolds(data)._1,function(table1,fold) {
-		table1.rows[fold._0].cells[0].set_onclick(function(_) {
-			table1.rows[fold._0].toggle();
+	var table1 = fancy_Table.createFromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
+		table.rows[rowIndex].cells[0].set_onclick(function(_) {
+			table.rows[rowIndex].toggle();
 		});
-		return table1.createFold(fold._0,fold._1);
-	},table).setFixedTop().setFixedLeft();
+	}}).setFixedTop().setFixedLeft();
 };
 Math.__name__ = true;
 var Reflect = function() { };
@@ -94,6 +92,17 @@ fancy_Table.foldsIntersect = function(a,b) {
 	var second;
 	if(first == a) second = b; else second = a;
 	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
+};
+fancy_Table.createFromNestedData = function(parent,options) {
+	var instance = new fancy_Table(parent,{ data : fancy_table_util_NestedData.rectangularize(options.data)});
+	var folds;
+	var this1 = fancy_table_util_NestedData.generateFolds(options.data);
+	folds = this1._1;
+	return folds.reduce(function(table,fold) {
+		if(options.eachFold != null) options.eachFold(table,fold._0);
+		return table.createFold(fold._0,fold._1);
+	},instance);
+	return instance;
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(options) {
