@@ -47,7 +47,8 @@ class Row {
       collapsed : "ft-row-collapsed",
       foldHeader : "ft-row-fold-header",
       hidden : "ft-row-hidden",
-      indent : "ft-row-indent-"
+      indent : "ft-row-indent-",
+      custom : ""
     }, classes == null ? {} : classes);
   }
 
@@ -56,6 +57,7 @@ class Row {
     return Dom.create('div.${settings.classes.row}', {}, childElements)
       .addClass(settings.expanded ? settings.classes.expanded : settings.classes.collapsed)
       .addClass('${settings.classes.indent}${settings.indentation}')
+      .addClass(settings.classes.custom)
       .addClass(rows.length == 0 ? "" : settings.classes.foldHeader);
   }
 
