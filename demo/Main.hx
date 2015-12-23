@@ -54,7 +54,7 @@ class Main {
       }]
     }];
 
-    var table = Table.createFromNestedData(el, {
+    var table = Table.fromNestedData(el, {
       data : data,
       eachFold : function (table, rowIndex) {
         table.rows[rowIndex].cells[0].onclick = function (_) {

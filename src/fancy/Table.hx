@@ -237,7 +237,7 @@ class Table {
     }
     folds.push(new Tuple2(headerIndex, childrenCount));
 
-    return setFixedLeft(fixedLeft);
+    return fixedLeft > 0 ? setFixedLeft(fixedLeft) : this;
   }
 
   /**
@@ -254,7 +254,7 @@ class Table {
     This automatically digs through the nested structure, creating folds as
     needed.
   **/
-  public static function createFromNestedData(parent : Element, options : FancyNestedTableOptions) {
+  public static function fromNestedData(parent : Element, options : FancyNestedTableOptions) {
     var instance = new Table(parent, {
       data : NestedData.rectangularize(options.data)
     });

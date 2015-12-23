@@ -37,8 +37,8 @@ var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"], meta : { classes : ["foo","bar"]}}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
-	var table1 = fancy_Table.createFromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
+	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
+	var table1 = fancy_Table.fromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
 		table.rows[rowIndex].cells[0].set_onclick(function(_) {
 			table.rows[rowIndex].toggle();
 		});
@@ -93,7 +93,7 @@ fancy_Table.foldsIntersect = function(a,b) {
 	if(first == a) second = b; else second = a;
 	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
-fancy_Table.createFromNestedData = function(parent,options) {
+fancy_Table.fromNestedData = function(parent,options) {
 	var instance = new fancy_Table(parent,{ data : fancy_table_util_NestedData.rectangularize(options.data)});
 	fancy_table_util_NestedData.iterate(options.data,function(row,index) {
 		if(row.meta != null && row.meta.classes != null) instance.rows[index].setCustomClass(row.meta.classes.join(" "));
@@ -200,7 +200,7 @@ fancy_Table.prototype = {
 			this.rows[headerIndex].addChildRow(this.rows[i]);
 		}
 		this.folds.push({ _0 : headerIndex, _1 : childrenCount});
-		return this.setFixedLeft(this.fixedLeft);
+		if(this.fixedLeft > 0) return this.setFixedLeft(this.fixedLeft); else return this;
 	}
 	,__class__: fancy_Table
 };
