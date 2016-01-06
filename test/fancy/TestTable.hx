@@ -1,4 +1,4 @@
-package test.fancy;
+package fancy;
 
 import fancy.Table;
 import thx.Tuple;

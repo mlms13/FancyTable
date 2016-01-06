@@ -5,6 +5,6 @@
 -lib utest
 -D unittest
 -D nodejs
--main test.TestAll
+-main TestAll
 -js bin/test/runner.js
 -cmd node bin/test/runner.js

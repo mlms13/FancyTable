@@ -1,4 +1,4 @@
-package test.fancy.table.util;
+package fancy.table.util;
 
 import fancy.table.util.NestedData;
 import fancy.table.util.Types;

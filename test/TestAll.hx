@@ -1,7 +1,5 @@
-package test;
-
-import test.fancy.*;
-import test.fancy.table.util.*;
+import fancy.*;
+import fancy.table.util.*;
 import utest.Runner;
 import utest.ui.Report;
 
