@@ -94,18 +94,7 @@ fancy_Table.foldsIntersect = function(a,b) {
 	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
 fancy_Table.fromNestedData = function(parent,options) {
-	var instance = new fancy_Table(parent,{ data : fancy_table_util_NestedData.rectangularize(options.data)});
-	fancy_table_util_NestedData.iterate(options.data,function(row,index) {
-		if(row.meta != null && row.meta.classes != null) instance.rows[index].setCustomClass(row.meta.classes.join(" "));
-	});
-	var folds;
-	var this1 = fancy_table_util_NestedData.generateFolds(options.data);
-	folds = this1._1;
-	return folds.reduce(function(table,fold) {
-		if(options.eachFold != null) options.eachFold(table,fold._0);
-		return table.createFold(fold._0,fold._1);
-	},instance);
-	return instance;
+	return new fancy_Table(parent).setNestedData(options.data,options.eachFold);
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(options) {
@@ -128,6 +117,20 @@ fancy_Table.prototype = {
 				return row.appendCell(new fancy_table_Cell(val));
 			},new fancy_table_Row());
 			return table.appendRow(row1);
+		},this);
+	}
+	,setNestedData: function(data,eachFold) {
+		var _g = this;
+		this.setData(fancy_table_util_NestedData.rectangularize(data));
+		fancy_table_util_NestedData.iterate(data,function(row,index) {
+			if(row.meta != null && row.meta.classes != null) _g.rows[index].setCustomClass(row.meta.classes.join(" "));
+		});
+		var folds;
+		var this1 = fancy_table_util_NestedData.generateFolds(data);
+		folds = this1._1;
+		return folds.reduce(function(table,fold) {
+			if(eachFold != null) eachFold(table,fold._0);
+			return table.createFold(fold._0,fold._1);
 		},this);
 	}
 	,insertRowAt: function(index,row) {
@@ -438,7 +441,7 @@ fancy_table_util_NestedData.rectangularize = function(data) {
 };
 fancy_table_util_NestedData.iterate = function(data,fn,start) {
 	if(start == null) start = 0;
-	return data.reduce(function(acc,row,i) {
+	return data.reduce(function(acc,row) {
 		fn(row,acc);
 		acc++;
 		if(row.data != null) return fancy_table_util_NestedData.iterate(row.data,fn,acc); else return acc;

@@ -92,6 +92,34 @@ class Table {
   }
 
   /**
+    Uses `setData()` internally, but also adds classes and creates folds given
+    nested data instead of just strings.
+  **/
+  public function setNestedData(data : Array<RowData>, ?eachFold : Table -> Int -> Void) {
+    setData(NestedData.rectangularize(data));
+
+    // iterate over the nested data structure, setting all of the classes
+    // provided in the nested options.data meta field
+    data.iterate(function (row : RowData, index : Int) {
+      if (row.meta != null && row.meta.classes != null) {
+        // TODO: someday we won't be able to pass a space-separated list
+        this.rows[index].setCustomClass(row.meta.classes.join(" "));
+      }
+    });
+
+    // find all folds needed for the nested data
+    var folds = data.generateFolds().right;
+
+    // accumulate the folds, calling the callback for each one
+    return folds.reduce(function (table : Table, fold) {
+      if (eachFold != null)
+        eachFold(table, fold.left);
+
+      return table.createFold(fold.left, fold.right);
+    }, this);
+  }
+
+  /**
     Inserts a new row at any given index. If no row is provided, an empty row
     will be created.
 
@@ -254,30 +282,7 @@ class Table {
     This automatically digs through the nested structure, creating folds as
     needed.
   **/
-  public static function fromNestedData(parent : Element, options : FancyNestedTableOptions) {
-    var instance = new Table(parent, {
-      data : NestedData.rectangularize(options.data)
-    });
-
-    // iterate over the nested data structure, setting all of the classes
-    // provided in the nested options.data meta field
-    options.data.iterate(function (row : RowData, index : Int) {
-      if (row.meta != null && row.meta.classes != null) {
-        // TODO: someday we won't be able to pass a space-separated list
-        instance.rows[index].setCustomClass(row.meta.classes.join(" "));
-      }
-    });
-
-    // find all folds needed for the nested data
-    var folds = options.data.generateFolds().right;
-
-    // accumulate the folds, calling the callback for each one
-    return folds.reduce(function (table : Table, fold) {
-      if (options.eachFold != null)
-        options.eachFold(table, fold.left);
-
-      return table.createFold(fold.left, fold.right);
-    }, instance);
-    return instance;
+  public static function fromNestedData(parent : Element, options : FancyNestedTableOptions) : Table {
+    return new Table(parent).setNestedData(options.data, options.eachFold);
   }
 }

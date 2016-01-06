@@ -23,7 +23,7 @@ class NestedData {
     have been encountered so far.
   **/
   public static function iterate(data : Array<RowData>, fn : RowData -> Int -> Void, ?start = 0) {
-    return data.reducei(function (acc : Int, row : RowData, i : Int) {
+    return data.reduce(function (acc : Int, row : RowData) {
       fn(row, acc);
 
       acc++;
