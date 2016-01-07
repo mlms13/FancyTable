@@ -308,7 +308,7 @@ var fancy_table_GridContainer = function() {
 	this.top = fancy_browser_Dom.create("div.ft-table-fixed-top");
 	this.left = fancy_browser_Dom.create("div.ft-table-fixed-left");
 	this.content = fancy_browser_Dom.create("div.ft-table-content");
-	this.grid = fancy_browser_Dom.create("div.ft-table-grid-contaienr");
+	this.grid = fancy_browser_Dom.create("div.ft-table-grid-container");
 	fancy_browser_Dom.append(fancy_browser_Dom.append(fancy_browser_Dom.append(fancy_browser_Dom.append(this.grid,this.topLeft),this.top),this.left),this.content);
 };
 fancy_table_GridContainer.__name__ = true;

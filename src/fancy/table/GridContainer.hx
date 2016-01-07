@@ -20,7 +20,7 @@ class GridContainer {
     top = Dom.create("div.ft-table-fixed-top");
     left = Dom.create("div.ft-table-fixed-left");
     content = Dom.create("div.ft-table-content");
-    grid = Dom.create("div.ft-table-grid-contaienr");
+    grid = Dom.create("div.ft-table-grid-container");
 
     grid
       .append(topLeft)
