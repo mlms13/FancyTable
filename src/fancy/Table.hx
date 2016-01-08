@@ -34,16 +34,23 @@ class Table {
     this object is the initial data.
   **/
   public function new(parent : Element, ?options : FancyTableOptions) {
-    this.settings = createDefaultOptions(options);
+    settings = createDefaultOptions(options);
+    settings.classes = createDefaultClasses(settings.classes);
 
     // create lots of dom
-    tableEl = Dom.create("div.ft-table");
+    tableEl = Dom.create("div").addClass(settings.classes.table);
     grid = new GridContainer();
     tableEl.appendChild(grid.grid);
 
     // and fix the scrolling
     tableEl.on("scroll", function (_) {
       grid.positionPanes(tableEl.scrollTop, tableEl.scrollLeft);
+
+      if (tableEl.scrollTop == 0) tableEl.removeClass(settings.classes.scrollV);
+      else tableEl.addClass(settings.classes.scrollV);
+
+      if (tableEl.scrollLeft == 0) tableEl.removeClass(settings.classes.scrollH);
+      else tableEl.addClass(settings.classes.scrollH);
     });
 
     // fill with any data
@@ -53,11 +60,20 @@ class Table {
     parent.appendChild(tableEl);
   }
 
-  function createDefaultOptions(?options : FancyTableOptions) {
+  function createDefaultOptions(?options : FancyTableOptions) : FancyTableOptions {
     return Objects.merge({
+      classes : {},
       colCount : 0,
-      data : ([[]] : Array<Array<String>>)
-    }, options == null ? {} : options);
+      data : []
+    }, options == null ? ({} : FancyTableOptions) : options);
+  }
+
+  function createDefaultClasses(?classes : FancyTableClasses) {
+    return Objects.merge({
+      table : "ft-table",
+      scrollH : "ft-table-scroll-horizontal",
+      scrollV : "ft-table-scroll-vertical"
+    }, classes == null ? {} : classes);
   }
 
   function empty() : Table {

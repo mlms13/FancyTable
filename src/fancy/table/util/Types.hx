@@ -1,8 +1,15 @@
 package fancy.table.util;
 
 typedef FancyTableOptions = {
+  ?classes : FancyTableClasses,
   ?colCount : Int,
   ?data : Array<Array<String>>
+};
+
+typedef FancyTableClasses = {
+  ?table : String,
+  ?scrollH : String,
+  ?scrollV : String
 };
 
 typedef FancyNestedTableOptions = {

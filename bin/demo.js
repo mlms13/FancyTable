@@ -76,11 +76,14 @@ Std.string = function(s) {
 var fancy_Table = function(parent,options) {
 	var _g = this;
 	this.settings = this.createDefaultOptions(options);
-	this.tableEl = fancy_browser_Dom.create("div.ft-table");
+	this.settings.classes = this.createDefaultClasses(this.settings.classes);
+	this.tableEl = fancy_browser_Dom.addClass(fancy_browser_Dom.create("div"),this.settings.classes.table);
 	this.grid = new fancy_table_GridContainer();
 	this.tableEl.appendChild(this.grid.grid);
 	fancy_browser_Dom.on(this.tableEl,"scroll",function(_) {
 		_g.grid.positionPanes(_g.tableEl.scrollTop,_g.tableEl.scrollLeft);
+		if(_g.tableEl.scrollTop == 0) fancy_browser_Dom.removeClass(_g.tableEl,_g.settings.classes.scrollV); else fancy_browser_Dom.addClass(_g.tableEl,_g.settings.classes.scrollV);
+		if(_g.tableEl.scrollLeft == 0) fancy_browser_Dom.removeClass(_g.tableEl,_g.settings.classes.scrollH); else fancy_browser_Dom.addClass(_g.tableEl,_g.settings.classes.scrollH);
 	});
 	this.setData(this.settings.data);
 	parent.appendChild(this.tableEl);
@@ -98,7 +101,10 @@ fancy_Table.fromNestedData = function(parent,options) {
 };
 fancy_Table.prototype = {
 	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ colCount : 0, data : [[]]},options == null?{ }:options);
+		return thx_Objects.combine({ classes : { }, colCount : 0, data : []},options == null?{ }:options);
+	}
+	,createDefaultClasses: function(classes) {
+		return thx_Objects.combine({ table : "ft-table", scrollH : "ft-table-scroll-horizontal", scrollV : "ft-table-scroll-vertical"},classes == null?{ }:classes);
 	}
 	,empty: function() {
 		this.grid.empty();
