@@ -114,25 +114,27 @@ class Table {
   public function setNestedData(data : Array<RowData>, ?eachFold : Table -> Int -> Void) {
     setData(NestedData.rectangularize(data));
 
-    // iterate over the nested data structure, setting all of the classes
-    // provided in the nested options.data meta field
-    data.iterate(function (row : RowData, index : Int) {
-      if (row.meta != null && row.meta.classes != null) {
-        // TODO: someday we won't be able to pass a space-separated list
-        this.rows[index].setCustomClass(row.meta.classes.join(" "));
-      }
-    });
-
-    // find all folds needed for the nested data
-    var folds = data.generateFolds().right;
-
-    // accumulate the folds, calling the callback for each one
-    return folds.reduce(function (table : Table, fold) {
+    // find and accumulate all folds, calling the callback for each one
+    data.generateFolds().right.reduce(function (table : Table, fold) {
       if (eachFold != null)
         eachFold(table, fold.left);
 
       return table.createFold(fold.left, fold.right);
     }, this);
+
+    // iterate over the nested data structure, collapsing rows and setting all
+    // of the classes provided in the nested options.data meta field
+    data.iterate(function (row : RowData, index : Int) {
+      if (row.meta != null && row.meta.classes != null) {
+        // TODO: someday we won't be able to pass a space-separated list
+        this.rows[index].setCustomClass(row.meta.classes.join(" "));
+      }
+      if (row.meta != null && row.meta.collapsed) {
+        this.rows[index].collapse();
+      }
+    });
+
+    return this;
   }
 
   /**
@@ -247,6 +249,13 @@ class Table {
            second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
   }
 
+  // TODO: make public and test it good
+  static function findExistingFolds(a : Tuple2<Int, Int>, b : Tuple2<Int, Int>) {
+    return Ints.range(b.left + 1, b.left + b.right + 1).map(function (index : Int) {
+      return (index > a.left && index <= a.right + a.left) ? new Tuple2(a.left, index) : null;
+    }).filterNull();
+  }
+
   /**
     While data in your table is structurally rectangular, you can use folds to
     imply nesting. Specify an index of the header row (the one that will still
@@ -272,6 +281,10 @@ class Table {
       if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
         return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
       }
+
+      findExistingFolds(fold, new Tuple2(headerIndex, childrenCount)).map(function (fold) {
+        rows[fold.left].removeChildRow(rows[fold.right]);
+      });
     }
 
     // finally, if we've made it this far, set up the fold

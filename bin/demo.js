@@ -26,6 +26,24 @@ EReg.prototype = {
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
+HxOverrides.indexOf = function(a,obj,i) {
+	var len = a.length;
+	if(i < 0) {
+		i += len;
+		if(i < 0) i = 0;
+	}
+	while(i < len) {
+		if(a[i] === obj) return i;
+		i++;
+	}
+	return -1;
+};
+HxOverrides.remove = function(a,obj) {
+	var i = HxOverrides.indexOf(a,obj,0);
+	if(i == -1) return false;
+	a.splice(i,1);
+	return true;
+};
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
 		return this.cur < this.arr.length;
@@ -96,6 +114,11 @@ fancy_Table.foldsIntersect = function(a,b) {
 	if(first == a) second = b; else second = a;
 	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
+fancy_Table.findExistingFolds = function(a,b) {
+	return thx_Arrays.filterNull(thx_Ints.range(b._0 + 1,b._0 + b._1 + 1).map(function(index) {
+		if(index > a._0 && index <= a._1 + a._0) return { _0 : a._0, _1 : index}; else return null;
+	}));
+};
 fancy_Table.fromNestedData = function(parent,options) {
 	return new fancy_Table(parent).setNestedData(options.data,options.eachFold);
 };
@@ -128,16 +151,20 @@ fancy_Table.prototype = {
 	,setNestedData: function(data,eachFold) {
 		var _g = this;
 		this.setData(fancy_table_util_NestedData.rectangularize(data));
-		fancy_table_util_NestedData.iterate(data,function(row,index) {
-			if(row.meta != null && row.meta.classes != null) _g.rows[index].setCustomClass(row.meta.classes.join(" "));
-		});
-		var folds;
-		var this1 = fancy_table_util_NestedData.generateFolds(data);
-		folds = this1._1;
-		return folds.reduce(function(table,fold) {
+		thx_Arrays.reduce((function($this) {
+			var $r;
+			var this1 = fancy_table_util_NestedData.generateFolds(data);
+			$r = this1._1;
+			return $r;
+		}(this)),function(table,fold) {
 			if(eachFold != null) eachFold(table,fold._0);
 			return table.createFold(fold._0,fold._1);
 		},this);
+		fancy_table_util_NestedData.iterate(data,function(row,index) {
+			if(row.meta != null && row.meta.classes != null) _g.rows[index].setCustomClass(row.meta.classes.join(" "));
+			if(row.meta != null && row.meta.collapsed) _g.rows[index].collapse();
+		});
+		return this;
 	}
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,{ colCount : this.settings.colCount}); else row = row;
@@ -191,6 +218,7 @@ fancy_Table.prototype = {
 		return this;
 	}
 	,createFold: function(headerIndex,childrenCount) {
+		var _g2 = this;
 		if(headerIndex >= this.rows.length) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because there are only " + this.rows.length + " rows");
 		childrenCount = thx_Ints.min(childrenCount,this.rows.length - headerIndex);
 		var _g = 0;
@@ -200,10 +228,13 @@ fancy_Table.prototype = {
 			++_g;
 			if(fold._0 == headerIndex) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because that row is already a fold header");
 			if(fancy_Table.foldsIntersect(fold,{ _0 : headerIndex, _1 : childrenCount})) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because it intersects with an existing fold");
+			fancy_Table.findExistingFolds(fold,{ _0 : headerIndex, _1 : childrenCount}).map(function(fold1) {
+				_g2.rows[fold1._0].removeChildRow(_g2.rows[fold1._1]);
+			});
 		}
 		var _g11 = headerIndex + 1;
-		var _g2 = childrenCount + headerIndex + 1;
-		while(_g11 < _g2) {
+		var _g3 = childrenCount + headerIndex + 1;
+		while(_g11 < _g3) {
 			var i = _g11++;
 			this.rows[i].indent();
 			this.rows[headerIndex].addChildRow(this.rows[i]);
@@ -345,7 +376,7 @@ var fancy_table_Row = function(cells,options) {
 fancy_table_Row.__name__ = true;
 fancy_table_Row.prototype = {
 	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
+		return thx_Objects.combine({ classes : { }, colCount : 0, expanded : true, hidden : false, fixedCellCount : 0, indentation : 0},options == null?{ }:options);
 	}
 	,createDefaultClasses: function(classes) {
 		return thx_Objects.combine({ row : "ft-row", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", hidden : "ft-row-hidden", indent : "ft-row-indent-", custom : ""},classes == null?{ }:classes);
@@ -354,7 +385,7 @@ fancy_table_Row.prototype = {
 		var childElements = (children != null?children:[]).map(function(_) {
 			return _.el;
 		});
-		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),this.settings.hidden?this.settings.classes.hidden:""),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;
@@ -406,29 +437,45 @@ fancy_table_Row.prototype = {
 		this.addRowClass(this.settings.classes.foldHeader);
 		this.rows.push(child);
 	}
+	,removeChildRow: function(child) {
+		HxOverrides.remove(this.rows,child);
+		if(this.rows.length == 0) this.removeRowClass(this.settings.classes.foldHeader);
+	}
 	,indent: function() {
 		this.removeRowClass("" + this.settings.classes.indent + this.settings.indentation);
 		this.settings.indentation++;
 		this.addRowClass("" + this.settings.classes.indent + this.settings.indentation);
 	}
 	,expand: function() {
-		var _g = this;
 		this.settings.expanded = true;
 		this.removeRowClass(this.settings.classes.collapsed).addRowClass(this.settings.classes.expanded);
-		this.rows.map(function(row) {
-			row.removeRowClass(_g.settings.classes.hidden);
+		this.rows.map(function(_) {
+			return _.show();
 		});
 	}
 	,collapse: function() {
-		var _g = this;
 		this.settings.expanded = false;
 		this.removeRowClass(this.settings.classes.expanded).addRowClass(this.settings.classes.collapsed);
-		this.rows.map(function(row) {
-			row.addRowClass(_g.settings.classes.hidden);
+		this.rows.map(function(_) {
+			return _.hide();
 		});
 	}
 	,toggle: function() {
 		if(this.settings.expanded) this.collapse(); else this.expand();
+	}
+	,hide: function() {
+		this.settings.hidden = true;
+		this.rows.map(function(_) {
+			return _.hide();
+		});
+		return this.addRowClass(this.settings.classes.hidden);
+	}
+	,show: function() {
+		this.settings.hidden = false;
+		if(this.settings.expanded) this.rows.map(function(_) {
+			return _.show();
+		});
+		return this.removeRowClass(this.settings.classes.hidden);
 	}
 	,copy: function() {
 		return new fancy_table_Row(this.cells.map(function(_) {
@@ -702,6 +749,15 @@ js_html_compat_Uint8Array._subarray = function(start,end) {
 };
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = true;
+thx_Arrays.filterNull = function(a) {
+	var arr = [];
+	var $it0 = HxOverrides.iter(a);
+	while( $it0.hasNext() ) {
+		var v = $it0.next();
+		if(null != v) arr.push(v);
+	}
+	return arr;
+};
 thx_Arrays.reduce = function(array,callback,initial) {
 	return array.reduce(callback,initial);
 };
@@ -748,6 +804,9 @@ thx_Objects.combine = function(first,second) {
 		Reflect.setField(to,field1,Reflect.field(second,field1));
 	}
 	return to;
+};
+if(Array.prototype.indexOf) HxOverrides.indexOf = function(a,o,i) {
+	return Array.prototype.indexOf.call(a,o,i);
 };
 String.prototype.__class__ = String;
 String.__name__ = true;
