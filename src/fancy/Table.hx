@@ -249,8 +249,14 @@ class Table {
            second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
   }
 
-  // TODO: make public and test it good
-  static function findExistingFolds(a : Tuple2<Int, Int>, b : Tuple2<Int, Int>) {
+  /**
+    Given an existing fold (a) and a new fold (b), iterate over each row that
+    will become folded in `b` and determine whether that row was already included
+    in the `a` fold. This returns an array of tuples, where the right of each
+    tuple is the row's index, and the left of each tuple is the row it is
+    currently folded under.
+  **/
+  public static function findExistingFolds(a : Tuple2<Int, Int>, b : Tuple2<Int, Int>) {
     return Ints.range(b.left + 1, b.left + b.right + 1).map(function (index : Int) {
       return (index > a.left && index <= a.right + a.left) ? new Tuple2(a.left, index) : null;
     }).filterNull();
