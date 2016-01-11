@@ -55,7 +55,7 @@ var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ values : [fancy_browser_Dom.create("span.",null,null,"Cards"),fancy_browser_Dom.create("span.",null,null,"CMC"),fancy_browser_Dom.create("span.",null,null,"Draft Value"),fancy_browser_Dom.create("span.",null,null,"Price")]},{ values : [fancy_browser_Dom.create("span.",null,null,"White")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Mythic")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Enchantment")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Quarantine Field"),fancy_browser_Dom.create("span.",null,null,"2"),fancy_browser_Dom.create("span.",null,null,"5"),fancy_browser_Dom.create("span.",null,null,"2.52")]}]}]},{ values : [fancy_browser_Dom.create("span.",null,null,"Rare")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Creature")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Hero of Goma Fada"),fancy_browser_Dom.create("span.",null,null,"5"),fancy_browser_Dom.create("span.",null,null,"3.5"),fancy_browser_Dom.create("span.",null,null,"0.27")]},{ values : [fancy_browser_Dom.create("span.",null,null,"Felidar Sovereign"),fancy_browser_Dom.create("span.",null,null,"6"),fancy_browser_Dom.create("span.",null,null,"4"),fancy_browser_Dom.create("span.",null,null,"0.56")]}]}]}]},{ values : [fancy_browser_Dom.create("span.",null,null,"Blue")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Mythic")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Sorcery")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Part the Waterveil"),fancy_browser_Dom.create("span.",null,null,"6"),fancy_browser_Dom.create("span.",null,null,"2.0"),fancy_browser_Dom.create("span.",null,null,"1.29")]}]}]},{ values : [fancy_browser_Dom.create("span.",null,null,"Rare")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Creature")], data : [{ values : [fancy_browser_Dom.create("span.",null,null,"Guardian of Tazeem"),fancy_browser_Dom.create("span.",null,null,"5"),fancy_browser_Dom.create("span.",null,null,"4.5"),fancy_browser_Dom.create("span.",null,null,"0.25")]}]}]}]}];
+	var data = [{ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]},{ values : [fancy_browser_Dom.create("span",null,null,"White")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Mythic")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Enchantment")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Quarantine Field"),fancy_browser_Dom.create("span",null,null,"2"),fancy_browser_Dom.create("span",null,null,"5"),fancy_browser_Dom.create("span",null,null,"2.52")]}]}]},{ values : [fancy_browser_Dom.create("span",null,null,"Rare")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Creature")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Hero of Goma Fada"),fancy_browser_Dom.create("span",null,null,"5"),fancy_browser_Dom.create("span",null,null,"3.5"),fancy_browser_Dom.create("span",null,null,"0.27")]},{ values : [fancy_browser_Dom.create("span",null,null,"Felidar Sovereign"),fancy_browser_Dom.create("span",null,null,"6"),fancy_browser_Dom.create("span",null,null,"4"),fancy_browser_Dom.create("span",null,null,"0.56")]}]}]}]},{ values : [fancy_browser_Dom.create("span",null,null,"Blue")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Mythic")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Sorcery")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Part the Waterveil"),fancy_browser_Dom.create("span",null,null,"6"),fancy_browser_Dom.create("span",null,null,"2.0"),fancy_browser_Dom.create("span",null,null,"1.29")]}]}]},{ values : [fancy_browser_Dom.create("span",null,null,"Rare")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Creature")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Guardian of Tazeem"),fancy_browser_Dom.create("span",null,null,"5"),fancy_browser_Dom.create("span",null,null,"4.5"),fancy_browser_Dom.create("span",null,null,"0.25")]}]}]}]}];
 	var table1 = fancy_Table.fromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
 		table.rows[rowIndex].cells[0].set_onclick(function(_) {
 			table.rows[rowIndex].toggle();
@@ -190,14 +190,13 @@ fancy_Table.prototype = {
 	}
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
-		var _g = this;
 		var _g1 = thx_Ints.min(howMany,this.fixedTop);
-		var _g2 = thx_Ints.max(howMany,this.fixedTop);
-		while(_g1 < _g2) {
+		var _g = thx_Ints.max(howMany,this.fixedTop);
+		while(_g1 < _g) {
 			var i = _g1++;
 		}
-		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.top),null,thx_Ints.range(0,howMany).map(function(i1) {
-			return _g.rows[i1].copy().el;
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.top),null,this.rows.slice(0,howMany).map(function(row) {
+			return row.copy().el;
 		}));
 		this.fixedTop = howMany;
 		return this.updateFixedTopLeft();
@@ -212,8 +211,8 @@ fancy_Table.prototype = {
 	}
 	,updateFixedTopLeft: function() {
 		var _g = this;
-		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.topLeft),null,thx_Ints.range(0,this.fixedTop).map(function(i) {
-			return _g.rows[i].copy().updateFixedCells(_g.fixedLeft);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.topLeft),null,this.rows.slice(0,this.fixedTop).map(function(row) {
+			return row.copy().updateFixedCells(_g.fixedLeft);
 		}));
 		return this;
 	}
@@ -317,7 +316,7 @@ var fancy_table_Cell = function(value,fixed,onclick) {
 	this.el = fancy_browser_Dom.create("div.ft-cell");
 	this.set_onclick(onclick != null?onclick:function(_) {
 	});
-	this.set_value(value != null?value:fancy_browser_Dom.create("span.",null,null,""));
+	this.set_value(value != null?value:fancy_browser_Dom.create("span",null,null,""));
 	this.set_fixed(fixed);
 };
 fancy_table_Cell.__name__ = true;
@@ -327,7 +326,7 @@ fancy_table_Cell.prototype = {
 		return this.fixed = value;
 	}
 	,set_value: function(value) {
-		fancy_browser_Dom.empty(this.el).appendChild(value);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.el),value);
 		return this.value = value;
 	}
 	,set_onclick: function(fn) {

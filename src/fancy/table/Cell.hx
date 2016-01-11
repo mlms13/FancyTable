@@ -29,7 +29,7 @@ class Cell {
   }
 
   function set_value(value : CellContent) {
-    el.empty().appendChild(value);
+    el.empty().append(value);
     return this.value = value;
   }
 

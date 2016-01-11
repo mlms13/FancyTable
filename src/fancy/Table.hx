@@ -208,8 +208,8 @@ class Table {
     // empty existing fixed-row table
     grid.top
       .empty()
-      .append(0.range(howMany).map(function (i) {
-        return rows[i].copy().el;
+      .append(rows.slice(0, howMany).map(function (row) {
+        return row.copy().el;
       }));
 
     fixedTop = howMany;
@@ -234,8 +234,10 @@ class Table {
   function updateFixedTopLeft() : Table {
     grid.topLeft
       .empty()
-      .append(0.range(fixedTop).map(function (i) {
-        return rows[i].copy().updateFixedCells(fixedLeft);
+      .append(rows.slice(0, fixedTop).map(function (row) {
+        // FIXME: this copies all rows in `fixedTop`, even if nothing needs
+        // to be fixed left
+        return row.copy().updateFixedCells(fixedLeft);
       }));
     return this;
   }
