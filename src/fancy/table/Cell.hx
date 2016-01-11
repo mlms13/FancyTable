@@ -1,20 +1,21 @@
 package fancy.table;
 
 using fancy.browser.Dom;
+import fancy.table.util.CellContent;
 import js.html.Element;
 import js.html.Event;
 
 class Cell {
   public var el(default, null) : Element;
-  public var value(default, set) : String;
+  public var value(default, set) : CellContent;
   public var fixed(default, set) : Bool;
   // TODO: consider making this an eventemitter instead
   public var onclick(default, set) : Event -> Void;
 
-  public function new(?value : String, ?fixed = false, ?onclick : Event -> Void) {
-    this.el = Dom.create("div.ft-cell", value);
+  public function new(?value : CellContent, ?fixed = false, ?onclick : Event -> Void) {
+    this.el = Dom.create("div.ft-cell");
     this.onclick = onclick != null ? onclick : function (_){};
-    this.value = value;
+    this.value = value != null ? value : "";
     this.fixed = fixed;
   }
 
@@ -27,8 +28,8 @@ class Cell {
     return this.fixed = value;
   }
 
-  function set_value(value : String) {
-    el.textContent = value;
+  function set_value(value : CellContent) {
+    el.empty().appendChild(value);
     return this.value = value;
   }
 

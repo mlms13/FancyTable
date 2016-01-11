@@ -3,6 +3,7 @@ package fancy;
 import fancy.table.*;
 using fancy.table.util.NestedData;
 import fancy.table.util.Types;
+import fancy.table.util.CellContent;
 using fancy.browser.Dom;
 import js.html.Element;
 using thx.Arrays;
@@ -93,13 +94,13 @@ class Table {
     Note that this will remove any existing folds and fixed headers. It will
     also empty all table elements from the DOM and recreate them.
   **/
-  public function setData(?data : Array<Array<String>>) : Table {
+  public function setData(?data : Array<Array<CellContent>>) : Table {
     empty();
 
     data = data != null ? data : [];
 
-    return data.reduce(function(table : Table, curr : Array<String>) {
-      var row = curr.reduce(function (row : Row, val : String) {
+    return data.reduce(function(table : Table, curr : Array<CellContent>) {
+      var row = curr.reduce(function (row : Row, val : CellContent) {
         return row.appendCell(new Cell(val));
       }, new Row());
 
@@ -301,7 +302,7 @@ class Table {
     Sets the string value of a cell given the 0-based index of the row and the
     0-based index of the cell within that row.
   **/
-  public function setCellValue(row : Int, cell : Int, value : String) : Table {
+  public function setCellValue(row : Int, cell : Int, value : CellContent) : Table {
     rows[row].setCellValue(cell, value);
     return this;
   }

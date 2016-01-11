@@ -2,6 +2,7 @@ package fancy.table;
 
 using fancy.browser.Dom;
 import fancy.table.util.Types;
+import fancy.table.util.CellContent;
 import js.html.Element;
 using thx.Arrays;
 using thx.Functions;
@@ -177,7 +178,7 @@ class Row {
     return removeRowClass(settings.classes.hidden);
   }
 
-  public function setCellValue(index : Int, value : String) : Row {
+  public function setCellValue(index : Int, value : CellContent) : Row {
     if (index >= cells.length) {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }

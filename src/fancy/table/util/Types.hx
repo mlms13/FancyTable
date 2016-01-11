@@ -3,7 +3,7 @@ package fancy.table.util;
 typedef FancyTableOptions = {
   ?classes : FancyTableClasses,
   ?colCount : Int,
-  ?data : Array<Array<String>>
+  ?data : Array<Array<CellContent>>
 };
 
 typedef FancyTableClasses = {
@@ -38,7 +38,7 @@ typedef FancyRowClasses = {
 };
 
 typedef RowData = {
-  values : Array<String>,
+  values : Array<CellContent>,
   ?data : Array<RowData>,
   ?meta : {
     ?classes : Array<String>,
