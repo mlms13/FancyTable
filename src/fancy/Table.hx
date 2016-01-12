@@ -6,6 +6,7 @@ import fancy.table.util.Types;
 import fancy.table.util.CellContent;
 using fancy.browser.Dom;
 import js.html.Element;
+import js.html.Node;
 using thx.Arrays;
 using thx.Functions;
 using thx.Ints;
@@ -208,7 +209,7 @@ class Table {
     // empty existing fixed-row table
     grid.top
       .empty()
-      .append(rows.slice(0, howMany).map(function (row) {
+      .append(rows.slice(0, howMany).map(function (row) : Node {
         return row.copy().el;
       }));
 
@@ -223,7 +224,7 @@ class Table {
   public function setFixedLeft(?howMany = 1) : Table {
     grid.left
       .empty()
-      .append(rows.map(function (row) {
+      .append(rows.map(function (row) : Node {
         return row.updateFixedCells(howMany);
       }));
 
@@ -234,7 +235,7 @@ class Table {
   function updateFixedTopLeft() : Table {
     grid.topLeft
       .empty()
-      .append(rows.slice(0, fixedTop).map(function (row) {
+      .append(rows.slice(0, fixedTop).map(function (row) : Node {
         // FIXME: this copies all rows in `fixedTop`, even if nothing needs
         // to be fixed left
         return row.copy().updateFixedCells(fixedLeft);

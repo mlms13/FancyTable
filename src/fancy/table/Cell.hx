@@ -3,6 +3,7 @@ package fancy.table;
 using fancy.browser.Dom;
 import fancy.table.util.CellContent;
 import js.html.Element;
+import js.html.Node;
 import js.html.Event;
 
 class Cell {
@@ -39,7 +40,25 @@ class Cell {
     return this.onclick = fn;
   }
 
-  public function copy() {
-    return new Cell(value, fixed, onclick);
+  /**
+    Returns a new cell with all the same settings and content. If the optional
+    `returnOriginalElement` flag is `true` (default), the returned cell will have
+    the original value element (including all bound event handlers). If the flag
+    is `false`, the returned cell will have a copy of value element, without
+    event handlers.
+
+    If you plan to place the returned copy above the original (on the z-axis),
+    stick to the default `true`, so that the cell on top is the first to receive
+    mouse events.
+  **/
+  public function copy(returnOriginalElement = true) {
+    var cloned = value.cloneNode(true),
+        instance = new Cell(returnOriginalElement ? value : cloned, fixed, onclick);
+
+    if (returnOriginalElement) {
+      this.value = cloned;
+    }
+
+    return instance;
   }
 }

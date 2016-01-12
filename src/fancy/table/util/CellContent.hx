@@ -1,10 +1,11 @@
 package fancy.table.util;
 
 import fancy.browser.Dom;
-import js.html.Element;
+import js.html.Node;
 using thx.Strings;
 
-abstract CellContent(Element) from Element to Element {
+@:forward(cloneNode)
+abstract CellContent(Node) from Node to Node {
   @:from
   public static inline function fromString(s : String) : CellContent {
     return Dom.create("span", s);
