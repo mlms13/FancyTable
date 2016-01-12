@@ -9,8 +9,8 @@ class NestedData {
     Converts a nested `RowData` structure into a flat array of array of strings,
     which can be used to set complete table data from scratch.
   **/
-  public static function rectangularize(data : Array<RowData>) : Array<Array<String>> {
-    return data.reduce(function (acc : Array<Array<String>>, d : RowData) {
+  public static function rectangularize(data : Array<RowData>) : Array<Array<CellContent>> {
+    return data.reduce(function (acc : Array<Array<CellContent>>, d : RowData) {
       acc.push(d.values);
       return d.data != null ? acc.concat(rectangularize(d.data)) : acc;
     }, []);

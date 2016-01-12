@@ -55,8 +55,34 @@ var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ values : ["Cards","CMC","Draft Value","Price"]},{ values : ["White"], data : [{ values : ["Mythic"], data : [{ values : ["Enchantment"], data : [{ values : ["Quarantine Field","2","5","2.52"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Hero of Goma Fada","5","3.5","0.27"]},{ values : ["Felidar Sovereign","6","4","0.56"]}]}]}]},{ values : ["Blue"], data : [{ values : ["Mythic"], data : [{ values : ["Sorcery"], data : [{ values : ["Part the Waterveil","6","2.0","1.29"]}]}]},{ values : ["Rare"], data : [{ values : ["Creature"], data : [{ values : ["Guardian of Tazeem","5","4.5","0.25"]}]}]}]}];
-	var table1 = fancy_Table.fromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
+	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
+	var cardsToRowData;
+	var cardsToRowData1 = null;
+	cardsToRowData1 = function(cards2,groupBy) {
+		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
+			var restOfGroupBys = groupBy.slice(1);
+			if(restOfGroupBys.length == 0) return { values : thx_Arrays.flatten(tuple._1.map(function(card4) {
+				var attrs = new haxe_ds_StringMap();
+				attrs.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
+				return [fancy_browser_Dom.create("a",attrs,null,card4.name),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
+			})), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
+		});
+	};
+	cardsToRowData = cardsToRowData1;
+	var toRowData = function(cards1) {
+		var data = cardsToRowData(cards1,[function(card) {
+			return card.color;
+		},function(card1) {
+			return card1.rarity;
+		},function(card2) {
+			return card2.type;
+		},function(card3) {
+			return card3.name;
+		}]);
+		data.unshift({ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]});
+		return data;
+	};
+	var table1 = fancy_Table.fromNestedData(el,{ data : toRowData(cards), eachFold : function(table,rowIndex) {
 		table.rows[rowIndex].cells[0].set_onclick(function(_) {
 			table.rows[rowIndex].toggle();
 		});
@@ -190,14 +216,13 @@ fancy_Table.prototype = {
 	}
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
-		var _g = this;
 		var _g1 = thx_Ints.min(howMany,this.fixedTop);
-		var _g2 = thx_Ints.max(howMany,this.fixedTop);
-		while(_g1 < _g2) {
+		var _g = thx_Ints.max(howMany,this.fixedTop);
+		while(_g1 < _g) {
 			var i = _g1++;
 		}
-		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.top),null,thx_Ints.range(0,howMany).map(function(i1) {
-			return _g.rows[i1].copy().el;
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.top),null,this.rows.slice(0,howMany).map(function(row) {
+			return row.copy().el;
 		}));
 		this.fixedTop = howMany;
 		return this.updateFixedTopLeft();
@@ -212,8 +237,8 @@ fancy_Table.prototype = {
 	}
 	,updateFixedTopLeft: function() {
 		var _g = this;
-		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.topLeft),null,thx_Ints.range(0,this.fixedTop).map(function(i) {
-			return _g.rows[i].copy().updateFixedCells(_g.fixedLeft);
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.grid.topLeft),null,this.rows.slice(0,this.fixedTop).map(function(row) {
+			return row.copy().updateFixedCells(_g.fixedLeft);
 		}));
 		return this;
 	}
@@ -268,26 +293,23 @@ fancy_browser_Dom.off = function(el,eventName,callback) {
 	return el;
 };
 fancy_browser_Dom.create = function(name,attrs,children,textContent) {
-	if(attrs == null) attrs = { };
+	if(attrs == null) attrs = new haxe_ds_StringMap();
 	if(children == null) children = [];
 	var classNames;
-	if(Object.prototype.hasOwnProperty.call(attrs,"class")) classNames = Reflect.field(attrs,"class"); else classNames = "";
+	if(__map_reserved["class"] != null?attrs.existsReserved("class"):attrs.h.hasOwnProperty("class")) classNames = __map_reserved["class"] != null?attrs.getReserved("class"):attrs.h["class"]; else classNames = "";
 	var nameParts = name.split(".");
 	name = nameParts.shift();
 	if(nameParts.length > 0) classNames += " " + nameParts.join(" ");
 	var el = window.document.createElement(name);
-	var _g = 0;
-	var _g1 = Reflect.fields(attrs);
-	while(_g < _g1.length) {
-		var att = _g1[_g];
-		++_g;
-		el.setAttribute(att,Reflect.field(attrs,att));
-	}
+	thx_Iterators.reduce(attrs.keys(),function(acc,key) {
+		acc.setAttribute(key,__map_reserved[key] != null?attrs.getReserved(key):attrs.h[key]);
+		return acc;
+	},el);
 	el.className = classNames;
-	var _g2 = 0;
-	while(_g2 < children.length) {
-		var child = children[_g2];
-		++_g2;
+	var _g = 0;
+	while(_g < children.length) {
+		var child = children[_g];
+		++_g;
 		el.appendChild(child);
 	}
 	if(textContent != null) el.appendChild(window.document.createTextNode(textContent));
@@ -314,10 +336,10 @@ fancy_browser_Dom.empty = function(el) {
 };
 var fancy_table_Cell = function(value,fixed,onclick) {
 	if(fixed == null) fixed = false;
-	this.el = fancy_browser_Dom.create("div.ft-cell",null,null,value);
+	this.el = fancy_browser_Dom.create("div.ft-cell");
 	this.set_onclick(onclick != null?onclick:function(_) {
 	});
-	this.set_value(value);
+	this.set_value(value != null?value:fancy_browser_Dom.create("span",null,null,""));
 	this.set_fixed(fixed);
 };
 fancy_table_Cell.__name__ = true;
@@ -327,7 +349,7 @@ fancy_table_Cell.prototype = {
 		return this.fixed = value;
 	}
 	,set_value: function(value) {
-		this.el.textContent = value;
+		fancy_browser_Dom.append(fancy_browser_Dom.empty(this.el),value);
 		return this.value = value;
 	}
 	,set_onclick: function(fn) {
@@ -335,8 +357,12 @@ fancy_table_Cell.prototype = {
 		fancy_browser_Dom.on(this.el,"click",fn);
 		return this.onclick = fn;
 	}
-	,copy: function() {
-		return new fancy_table_Cell(this.value,this.fixed,this.onclick);
+	,copy: function(returnOriginalElement) {
+		if(returnOriginalElement == null) returnOriginalElement = true;
+		var cloned = this.value.cloneNode(true);
+		var instance = new fancy_table_Cell(returnOriginalElement?this.value:cloned,this.fixed,this.onclick);
+		if(returnOriginalElement) this.set_value(cloned);
+		return instance;
 	}
 	,__class__: fancy_table_Cell
 };
@@ -385,7 +411,7 @@ fancy_table_Row.prototype = {
 		var childElements = (children != null?children:[]).map(function(_) {
 			return _.el;
 		});
-		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),this.settings.hidden?this.settings.classes.hidden:""),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,null,childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),this.settings.hidden?this.settings.classes.hidden:""),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;
@@ -484,6 +510,11 @@ fancy_table_Row.prototype = {
 	}
 	,__class__: fancy_table_Row
 };
+var fancy_table_util__$CellContent_CellContent_$Impl_$ = {};
+fancy_table_util__$CellContent_CellContent_$Impl_$.__name__ = true;
+fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
+	return fancy_browser_Dom.create("span",null,null,s);
+};
 var fancy_table_util_NestedData = function() { };
 fancy_table_util_NestedData.__name__ = true;
 fancy_table_util_NestedData.rectangularize = function(data) {
@@ -512,6 +543,53 @@ fancy_table_util_NestedData.generateFolds = function(data,start) {
 		}
 		return acc;
 	},{ _0 : 0, _1 : []});
+};
+var haxe_IMap = function() { };
+haxe_IMap.__name__ = true;
+haxe_IMap.prototype = {
+	__class__: haxe_IMap
+};
+var haxe_ds_StringMap = function() {
+	this.h = { };
+};
+haxe_ds_StringMap.__name__ = true;
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	set: function(key,value) {
+		if(__map_reserved[key] != null) this.setReserved(key,value); else this.h[key] = value;
+	}
+	,get: function(key) {
+		if(__map_reserved[key] != null) return this.getReserved(key);
+		return this.h[key];
+	}
+	,setReserved: function(key,value) {
+		if(this.rh == null) this.rh = { };
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) return null; else return this.rh["$" + key];
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) return false;
+		return this.rh.hasOwnProperty("$" + key);
+	}
+	,keys: function() {
+		var _this = this.arrayKeys();
+		return HxOverrides.iter(_this);
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) out.push(key);
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) out.push(key.substr(1));
+			}
+		}
+		return out;
+	}
+	,__class__: haxe_ds_StringMap
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);
@@ -758,6 +836,20 @@ thx_Arrays.filterNull = function(a) {
 	}
 	return arr;
 };
+thx_Arrays.flatten = function(array) {
+	return Array.prototype.concat.apply([],array);
+};
+thx_Arrays.groupByAppend = function(arr,resolver,map) {
+	arr.map(function(v) {
+		var key = resolver(v);
+		var arr1 = map.get(key);
+		if(null == arr1) {
+			arr1 = [v];
+			map.set(key,arr1);
+		} else arr1.push(v);
+	});
+	return map;
+};
 thx_Arrays.reduce = function(array,callback,initial) {
 	return array.reduce(callback,initial);
 };
@@ -784,6 +876,30 @@ thx_Ints.range = function(start,stop,step) {
 	var j;
 	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
 	return range;
+};
+var thx_Iterators = function() { };
+thx_Iterators.__name__ = true;
+thx_Iterators.map = function(it,f) {
+	var acc = [];
+	while( it.hasNext() ) {
+		var v = it.next();
+		acc.push(f(v));
+	}
+	return acc;
+};
+thx_Iterators.reduce = function(it,callback,initial) {
+	thx_Iterators.map(it,function(v) {
+		initial = callback(initial,v);
+	});
+	return initial;
+};
+var thx_Maps = function() { };
+thx_Maps.__name__ = true;
+thx_Maps.tuples = function(map) {
+	return thx_Iterators.map(map.keys(),function(key) {
+		var _1 = map.get(key);
+		return { _0 : key, _1 : _1};
+	});
 };
 var thx_Objects = function() { };
 thx_Objects.__name__ = true;
@@ -829,6 +945,7 @@ if(Array.prototype.map == null) Array.prototype.map = function(f) {
 	}
 	return a;
 };
+var __map_reserved = {}
 var ArrayBuffer = $global.ArrayBuffer || js_html_compat_ArrayBuffer;
 if(ArrayBuffer.prototype.slice == null) ArrayBuffer.prototype.slice = js_html_compat_ArrayBuffer.sliceImpl;
 var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;

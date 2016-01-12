@@ -3,8 +3,10 @@ package fancy;
 import fancy.table.*;
 using fancy.table.util.NestedData;
 import fancy.table.util.Types;
+import fancy.table.util.CellContent;
 using fancy.browser.Dom;
 import js.html.Element;
+import js.html.Node;
 using thx.Arrays;
 using thx.Functions;
 using thx.Ints;
@@ -93,13 +95,13 @@ class Table {
     Note that this will remove any existing folds and fixed headers. It will
     also empty all table elements from the DOM and recreate them.
   **/
-  public function setData(?data : Array<Array<String>>) : Table {
+  public function setData(?data : Array<Array<CellContent>>) : Table {
     empty();
 
     data = data != null ? data : [];
 
-    return data.reduce(function(table : Table, curr : Array<String>) {
-      var row = curr.reduce(function (row : Row, val : String) {
+    return data.reduce(function(table : Table, curr : Array<CellContent>) {
+      var row = curr.reduce(function (row : Row, val : CellContent) {
         return row.appendCell(new Cell(val));
       }, new Row());
 
@@ -207,8 +209,8 @@ class Table {
     // empty existing fixed-row table
     grid.top
       .empty()
-      .append(0.range(howMany).map(function (i) {
-        return rows[i].copy().el;
+      .append(rows.slice(0, howMany).map(function (row) : Node {
+        return row.copy().el;
       }));
 
     fixedTop = howMany;
@@ -222,7 +224,7 @@ class Table {
   public function setFixedLeft(?howMany = 1) : Table {
     grid.left
       .empty()
-      .append(rows.map(function (row) {
+      .append(rows.map(function (row) : Node {
         return row.updateFixedCells(howMany);
       }));
 
@@ -233,8 +235,10 @@ class Table {
   function updateFixedTopLeft() : Table {
     grid.topLeft
       .empty()
-      .append(0.range(fixedTop).map(function (i) {
-        return rows[i].copy().updateFixedCells(fixedLeft);
+      .append(rows.slice(0, fixedTop).map(function (row) : Node {
+        // FIXME: this copies all rows in `fixedTop`, even if nothing needs
+        // to be fixed left
+        return row.copy().updateFixedCells(fixedLeft);
       }));
     return this;
   }
@@ -307,7 +311,7 @@ class Table {
     Sets the string value of a cell given the 0-based index of the row and the
     0-based index of the cell within that row.
   **/
-  public function setCellValue(row : Int, cell : Int, value : String) : Table {
+  public function setCellValue(row : Int, cell : Int, value : CellContent) : Table {
     rows[row].setCellValue(cell, value);
     return this;
   }
