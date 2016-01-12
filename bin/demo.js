@@ -55,8 +55,33 @@ var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var data = [{ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]},{ values : [fancy_browser_Dom.create("span",null,null,"White")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Mythic")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Enchantment")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Quarantine Field"),fancy_browser_Dom.create("span",null,null,"2"),fancy_browser_Dom.create("span",null,null,"5"),fancy_browser_Dom.create("span",null,null,"2.52")]}]}]},{ values : [fancy_browser_Dom.create("span",null,null,"Rare")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Creature")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Hero of Goma Fada"),fancy_browser_Dom.create("span",null,null,"5"),fancy_browser_Dom.create("span",null,null,"3.5"),fancy_browser_Dom.create("span",null,null,"0.27")]},{ values : [fancy_browser_Dom.create("span",null,null,"Felidar Sovereign"),fancy_browser_Dom.create("span",null,null,"6"),fancy_browser_Dom.create("span",null,null,"4"),fancy_browser_Dom.create("span",null,null,"0.56")]}]}]}]},{ values : [fancy_browser_Dom.create("span",null,null,"Blue")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Mythic")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Sorcery")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Part the Waterveil"),fancy_browser_Dom.create("span",null,null,"6"),fancy_browser_Dom.create("span",null,null,"2.0"),fancy_browser_Dom.create("span",null,null,"1.29")]}]}]},{ values : [fancy_browser_Dom.create("span",null,null,"Rare")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Creature")], data : [{ values : [fancy_browser_Dom.create("span",null,null,"Guardian of Tazeem"),fancy_browser_Dom.create("span",null,null,"5"),fancy_browser_Dom.create("span",null,null,"4.5"),fancy_browser_Dom.create("span",null,null,"0.25")]}]}]}]}];
-	var table1 = fancy_Table.fromNestedData(el,{ data : data, eachFold : function(table,rowIndex) {
+	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
+	var cardsToRowData;
+	var cardsToRowData1 = null;
+	cardsToRowData1 = function(cards2,groupBy) {
+		var grouped = thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap());
+		return thx_Maps.tuples(grouped).map(function(tuple) {
+			var restOfGroupBys = groupBy.slice(1);
+			if(restOfGroupBys.length == 0) return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)].concat(thx_Arrays.flatten(tuple._1.map(function(card4) {
+				return [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
+			}))), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
+		});
+	};
+	cardsToRowData = cardsToRowData1;
+	var toRowData = function(cards1) {
+		var data = cardsToRowData(cards1,[function(card) {
+			return card.color;
+		},function(card1) {
+			return card1.rarity;
+		},function(card2) {
+			return card2.type;
+		},function(card3) {
+			return card3.name;
+		}]);
+		data.unshift({ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]});
+		return data;
+	};
+	var table1 = fancy_Table.fromNestedData(el,{ data : toRowData(cards), eachFold : function(table,rowIndex) {
 		table.rows[rowIndex].cells[0].set_onclick(function(_) {
 			table.rows[rowIndex].toggle();
 		});
@@ -334,8 +359,12 @@ fancy_table_Cell.prototype = {
 		fancy_browser_Dom.on(this.el,"click",fn);
 		return this.onclick = fn;
 	}
-	,copy: function() {
-		return new fancy_table_Cell(this.value,this.fixed,this.onclick);
+	,copy: function(returnOriginalElement) {
+		if(returnOriginalElement == null) returnOriginalElement = true;
+		var cloned = this.value.cloneNode(true);
+		var instance = new fancy_table_Cell(returnOriginalElement?this.value:cloned,this.fixed,this.onclick);
+		if(returnOriginalElement) this.set_value(cloned);
+		return instance;
 	}
 	,__class__: fancy_table_Cell
 };
@@ -483,6 +512,11 @@ fancy_table_Row.prototype = {
 	}
 	,__class__: fancy_table_Row
 };
+var fancy_table_util__$CellContent_CellContent_$Impl_$ = {};
+fancy_table_util__$CellContent_CellContent_$Impl_$.__name__ = true;
+fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
+	return fancy_browser_Dom.create("span",null,null,s);
+};
 var fancy_table_util_NestedData = function() { };
 fancy_table_util_NestedData.__name__ = true;
 fancy_table_util_NestedData.rectangularize = function(data) {
@@ -511,6 +545,49 @@ fancy_table_util_NestedData.generateFolds = function(data,start) {
 		}
 		return acc;
 	},{ _0 : 0, _1 : []});
+};
+var haxe_IMap = function() { };
+haxe_IMap.__name__ = true;
+haxe_IMap.prototype = {
+	__class__: haxe_IMap
+};
+var haxe_ds_StringMap = function() {
+	this.h = { };
+};
+haxe_ds_StringMap.__name__ = true;
+haxe_ds_StringMap.__interfaces__ = [haxe_IMap];
+haxe_ds_StringMap.prototype = {
+	set: function(key,value) {
+		if(__map_reserved[key] != null) this.setReserved(key,value); else this.h[key] = value;
+	}
+	,get: function(key) {
+		if(__map_reserved[key] != null) return this.getReserved(key);
+		return this.h[key];
+	}
+	,setReserved: function(key,value) {
+		if(this.rh == null) this.rh = { };
+		this.rh["$" + key] = value;
+	}
+	,getReserved: function(key) {
+		if(this.rh == null) return null; else return this.rh["$" + key];
+	}
+	,keys: function() {
+		var _this = this.arrayKeys();
+		return HxOverrides.iter(_this);
+	}
+	,arrayKeys: function() {
+		var out = [];
+		for( var key in this.h ) {
+		if(this.h.hasOwnProperty(key)) out.push(key);
+		}
+		if(this.rh != null) {
+			for( var key in this.rh ) {
+			if(key.charCodeAt(0) == 36) out.push(key.substr(1));
+			}
+		}
+		return out;
+	}
+	,__class__: haxe_ds_StringMap
 };
 var js__$Boot_HaxeError = function(val) {
 	Error.call(this);
@@ -757,6 +834,20 @@ thx_Arrays.filterNull = function(a) {
 	}
 	return arr;
 };
+thx_Arrays.flatten = function(array) {
+	return Array.prototype.concat.apply([],array);
+};
+thx_Arrays.groupByAppend = function(arr,resolver,map) {
+	arr.map(function(v) {
+		var key = resolver(v);
+		var arr1 = map.get(key);
+		if(null == arr1) {
+			arr1 = [v];
+			map.set(key,arr1);
+		} else arr1.push(v);
+	});
+	return map;
+};
 thx_Arrays.reduce = function(array,callback,initial) {
 	return array.reduce(callback,initial);
 };
@@ -783,6 +874,24 @@ thx_Ints.range = function(start,stop,step) {
 	var j;
 	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
 	return range;
+};
+var thx_Iterators = function() { };
+thx_Iterators.__name__ = true;
+thx_Iterators.map = function(it,f) {
+	var acc = [];
+	while( it.hasNext() ) {
+		var v = it.next();
+		acc.push(f(v));
+	}
+	return acc;
+};
+var thx_Maps = function() { };
+thx_Maps.__name__ = true;
+thx_Maps.tuples = function(map) {
+	return thx_Iterators.map(map.keys(),function(key) {
+		var _1 = map.get(key);
+		return { _0 : key, _1 : _1};
+	});
 };
 var thx_Objects = function() { };
 thx_Objects.__name__ = true;
@@ -828,6 +937,7 @@ if(Array.prototype.map == null) Array.prototype.map = function(f) {
 	}
 	return a;
 };
+var __map_reserved = {}
 var ArrayBuffer = $global.ArrayBuffer || js_html_compat_ArrayBuffer;
 if(ArrayBuffer.prototype.slice == null) ArrayBuffer.prototype.slice = js_html_compat_ArrayBuffer.sliceImpl;
 var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
