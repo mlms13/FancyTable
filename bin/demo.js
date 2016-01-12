@@ -62,15 +62,19 @@ Main.main = function() {
 		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
 			var restOfGroupBys = groupBy.slice(1);
 			if(restOfGroupBys.length == 0) return { values : thx_Arrays.flatten(tuple._1.map(function(card4) {
-				var attrs = new haxe_ds_StringMap();
-				attrs.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
-				return [fancy_browser_Dom.create("a",attrs,null,card4.name),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
+				return [fancy_browser_Dom.create("a",(function($this) {
+					var $r;
+					var _g = new haxe_ds_StringMap();
+					_g.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
+					$r = _g;
+					return $r;
+				}(this)),null,card4.name),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
 			})), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
 		});
 	};
 	cardsToRowData = cardsToRowData1;
 	var toRowData = function(cards1) {
-		var data = cardsToRowData(cards1,[function(card) {
+		return [{ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]}].concat(cardsToRowData(cards1,[function(card) {
 			return card.color;
 		},function(card1) {
 			return card1.rarity;
@@ -78,9 +82,7 @@ Main.main = function() {
 			return card2.type;
 		},function(card3) {
 			return card3.name;
-		}]);
-		data.unshift({ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]});
-		return data;
+		}]));
 	};
 	var table1 = fancy_Table.fromNestedData(el,{ data : toRowData(cards), eachFold : function(table,rowIndex) {
 		table.rows[rowIndex].cells[0].set_onclick(function(_) {

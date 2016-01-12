@@ -69,11 +69,10 @@ class Main {
           // if there are no more groupBys, we're rendering actual cards
           return restOfGroupBys.length == 0 ? {
             values : tuple.right.map(function (card) : Array<CellContent> {
-              var attrs = new Map();
-              attrs.set('href', 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}');
-
               return [
-                Dom.create("a", attrs, card.name),
+                Dom.create("a", [
+                  'href' => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
+                ], card.name),
                 card.cmc, card.draftval, card.tcgprice
               ];
             }).flatten(),
@@ -86,18 +85,14 @@ class Main {
     }
 
     function toRowData(cards : Array<Card>) : Array<RowData> {
-      var data = cardsToRowData(cards, [
+      return ([{
+        values : ["Cards", "CMC", "Draft Value", "Price"]
+      }] : Array<RowData>).concat(cardsToRowData(cards, [
         function (card) return card.color,
         function (card) return card.rarity,
         function (card) return card.type,
         function (card) return card.name
-      ]);
-
-      data.unshift({
-        values : ["Cards", "CMC", "Draft Value", "Price"]
-      });
-
-      return data;
+      ]));
     }
 
     var table = Table.fromNestedData(el, {
