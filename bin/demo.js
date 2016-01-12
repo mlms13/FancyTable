@@ -55,16 +55,17 @@ var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
-	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
+	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
 	var cardsToRowData;
 	var cardsToRowData1 = null;
 	cardsToRowData1 = function(cards2,groupBy) {
-		var grouped = thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap());
-		return thx_Maps.tuples(grouped).map(function(tuple) {
+		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
 			var restOfGroupBys = groupBy.slice(1);
-			if(restOfGroupBys.length == 0) return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)].concat(thx_Arrays.flatten(tuple._1.map(function(card4) {
-				return [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
-			}))), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
+			if(restOfGroupBys.length == 0) return { values : thx_Arrays.flatten(tuple._1.map(function(card4) {
+				var attrs = new haxe_ds_StringMap();
+				attrs.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
+				return [fancy_browser_Dom.create("a",attrs,null,card4.name),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
+			})), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
 		});
 	};
 	cardsToRowData = cardsToRowData1;
@@ -292,26 +293,23 @@ fancy_browser_Dom.off = function(el,eventName,callback) {
 	return el;
 };
 fancy_browser_Dom.create = function(name,attrs,children,textContent) {
-	if(attrs == null) attrs = { };
+	if(attrs == null) attrs = new haxe_ds_StringMap();
 	if(children == null) children = [];
 	var classNames;
-	if(Object.prototype.hasOwnProperty.call(attrs,"class")) classNames = Reflect.field(attrs,"class"); else classNames = "";
+	if(__map_reserved["class"] != null?attrs.existsReserved("class"):attrs.h.hasOwnProperty("class")) classNames = __map_reserved["class"] != null?attrs.getReserved("class"):attrs.h["class"]; else classNames = "";
 	var nameParts = name.split(".");
 	name = nameParts.shift();
 	if(nameParts.length > 0) classNames += " " + nameParts.join(" ");
 	var el = window.document.createElement(name);
-	var _g = 0;
-	var _g1 = Reflect.fields(attrs);
-	while(_g < _g1.length) {
-		var att = _g1[_g];
-		++_g;
-		el.setAttribute(att,Reflect.field(attrs,att));
-	}
+	thx_Iterators.reduce(attrs.keys(),function(acc,key) {
+		acc.setAttribute(key,__map_reserved[key] != null?attrs.getReserved(key):attrs.h[key]);
+		return acc;
+	},el);
 	el.className = classNames;
-	var _g2 = 0;
-	while(_g2 < children.length) {
-		var child = children[_g2];
-		++_g2;
+	var _g = 0;
+	while(_g < children.length) {
+		var child = children[_g];
+		++_g;
 		el.appendChild(child);
 	}
 	if(textContent != null) el.appendChild(window.document.createTextNode(textContent));
@@ -413,7 +411,7 @@ fancy_table_Row.prototype = {
 		var childElements = (children != null?children:[]).map(function(_) {
 			return _.el;
 		});
-		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,{ },childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),this.settings.hidden?this.settings.classes.hidden:""),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
+		return fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.addClass(fancy_browser_Dom.create("div." + this.settings.classes.row,null,childElements),this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed),this.settings.hidden?this.settings.classes.hidden:""),"" + this.settings.classes.indent + this.settings.indentation),this.settings.classes.custom),this.rows.length == 0?"":this.settings.classes.foldHeader);
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;
@@ -570,6 +568,10 @@ haxe_ds_StringMap.prototype = {
 	}
 	,getReserved: function(key) {
 		if(this.rh == null) return null; else return this.rh["$" + key];
+	}
+	,existsReserved: function(key) {
+		if(this.rh == null) return false;
+		return this.rh.hasOwnProperty("$" + key);
 	}
 	,keys: function() {
 		var _this = this.arrayKeys();
@@ -884,6 +886,12 @@ thx_Iterators.map = function(it,f) {
 		acc.push(f(v));
 	}
 	return acc;
+};
+thx_Iterators.reduce = function(it,callback,initial) {
+	thx_Iterators.map(it,function(v) {
+		initial = callback(initial,v);
+	});
+	return initial;
 };
 var thx_Maps = function() { };
 thx_Maps.__name__ = true;

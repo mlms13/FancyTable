@@ -56,7 +56,7 @@ class Row {
 
   function createRowElement(?children : Array<Cell>) : Element {
     var childElements = (children != null ? children : []).map.fn(_.el);
-    return Dom.create('div.${settings.classes.row}', {}, childElements)
+    return Dom.create('div.${settings.classes.row}', childElements)
       .addClass(settings.expanded ? settings.classes.expanded : settings.classes.collapsed)
       .addClass(settings.hidden ? settings.classes.hidden : "")
       .addClass('${settings.classes.indent}${settings.indentation}')

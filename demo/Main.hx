@@ -19,6 +19,7 @@ class Main {
       color : "White",
       type : "Enchantment",
       rarity : "Mythic",
+      multiverseId : "402001",
       cmc : 2,
       draftval : 5,
       tcgprice : 2.52
@@ -27,6 +28,7 @@ class Main {
       color : "White",
       type : "Creature",
       rarity : "Rare",
+      multiverseId : "401913",
       cmc : 5,
       draftval : 3.5,
       tcgprice : 0.25
@@ -35,6 +37,7 @@ class Main {
       color : "White",
       type : "Creature",
       rarity : "Rare",
+      multiverseId : "401878",
       cmc : 6,
       draftval : 4,
       tcgprice : 0.56
@@ -43,6 +46,7 @@ class Main {
       color : "Blue",
       type : "Sorcery",
       rarity : "Mythic",
+      multiverseId : "401982",
       cmc : 6,
       draftval : 2.0,
       tcgprice : 1.29
@@ -51,22 +55,28 @@ class Main {
       color : "Blue",
       type : "Creature",
       rarity : "Rare",
+      multiverseId : "401906",
       cmc : 5,
       draftval : 4.5,
       tcgprice : 0.25
     }];
 
-    function cardsToRowData(cards : Array<Card>, groupBy : Array<Card -> Dynamic>) : Array<RowData> {
-      var grouped : Map<String, Array<Card>> = cards.groupByAppend(groupBy[0], new Map());
-      return grouped.tuples()
+    function cardsToRowData(cards : Array<Card>, groupBy : Array<Card -> String>) : Array<RowData> {
+      return cards.groupByAppend(groupBy[0], new Map()).tuples()
         .map(function (tuple) : RowData {
           var restOfGroupBys = groupBy.rest();
 
           // if there are no more groupBys, we're rendering actual cards
           return restOfGroupBys.length == 0 ? {
-            values : ([tuple.left] : Array<CellContent>).concat(tuple.right.map(function (card) : Array<CellContent> {
-              return [card.cmc, card.draftval, card.tcgprice];
-            }).flatten()),
+            values : tuple.right.map(function (card) : Array<CellContent> {
+              var attrs = new Map();
+              attrs.set('href', 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}');
+
+              return [
+                Dom.create("a", attrs, card.name),
+                card.cmc, card.draftval, card.tcgprice
+              ];
+            }).flatten(),
             data : []
           } : {
             values : [tuple.left],
@@ -112,6 +122,7 @@ typedef Card = {
   color : String,
   type : String,
   rarity : String,
+  multiverseId : String,
   cmc : Int,
   draftval : Float,
   tcgprice : Float
