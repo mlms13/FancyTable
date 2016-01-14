@@ -62,13 +62,13 @@ Main.main = function() {
 		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
 			var restOfGroupBys = groupBy.slice(1);
 			if(restOfGroupBys.length == 0) return { values : thx_Arrays.flatten(tuple._1.map(function(card4) {
-				return [fancy_browser_Dom.create("a",(function($this) {
+				return [fancy_browser_Dom.create("span",null,[fancy_browser_Dom.create("span",null,null,card4.name),fancy_browser_Dom.create("a",(function($this) {
 					var $r;
-					var _g = new haxe_ds_StringMap();
-					_g.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
-					$r = _g;
+					var _g1 = new haxe_ds_StringMap();
+					_g1.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
+					$r = _g1;
 					return $r;
-				}(this)),null,card4.name),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
+				}(this)),[fancy_browser_Dom.create("i.fa.fa-external-link-square")])]),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
 			})), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
 		});
 	};

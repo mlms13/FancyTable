@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Fancy Table Demo</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="./basic.css">
     <style media="screen">
       body {
@@ -15,6 +16,21 @@
         max-width: 800px;
         position: relative;
         width: 60%;
+      }
+      .ft-cell .fa-external-link-square {
+        color: #bbb;
+        position: absolute;
+        right: 30px;
+        opacity: 0;
+        transition: 300ms color, 300ms opacity;
+      }
+
+      .ft-cell:hover .fa-external-link-square {
+        opacity: 1;
+      }
+
+      .ft-cell:hover .fa-external-link-square:hover {
+        color: #0ad;
       }
     </style>
   </head>

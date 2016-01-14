@@ -70,9 +70,14 @@ class Main {
           return restOfGroupBys.length == 0 ? {
             values : tuple.right.map(function (card) : Array<CellContent> {
               return [
-                Dom.create("a", [
-                  'href' => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
-                ], card.name),
+                Dom.create("span", [
+                  Dom.create("span", card.name),
+                  Dom.create("a", [
+                    "href" => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
+                  ], [
+                    Dom.create("i.fa.fa-external-link-square")
+                  ])
+                ]),
                 card.cmc, card.draftval, card.tcgprice
               ];
             }).flatten(),

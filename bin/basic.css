@@ -47,7 +47,6 @@
 }
 .ft-row-fold-header.ft-row-expanded > .ft-cell:first-child:before {
   -webkit-transform: rotate(90deg);
-      -ms-transform: rotate(90deg);
           transform: rotate(90deg);
 }
 .ft-row-indent-1 > .ft-cell:first-child {
@@ -81,7 +80,6 @@
   width: 16.6667%;
 }
 .ft-table {
-  border-right: 1px solid #ddd;
   overflow: auto;
   max-height: 500px;
   zoom: 1;
@@ -95,19 +93,6 @@
   clear: both;
 }
 .ft-row {
-  clear: both;
-  float: left;
-  zoom: 1;
-}
-.ft-row:after,
-.ft-row:before {
-  content: "";
-  display: table;
-}
-.ft-row:after {
-  clear: both;
-}
-.ft-row-values {
   clear: both;
   float: left;
 }
