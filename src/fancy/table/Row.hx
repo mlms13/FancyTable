@@ -178,6 +178,10 @@ class Row {
     return removeRowClass(settings.classes.hidden);
   }
 
+  /**
+    Sets the value of a cell given the 0-based index of the cell. Cells can have
+    strings, numbers, or html elements as content.
+  **/
   public function setCellValue(index : Int, value : CellContent) : Row {
     if (index >= cells.length) {
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';

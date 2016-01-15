@@ -308,8 +308,9 @@ class Table {
   }
 
   /**
-    Sets the string value of a cell given the 0-based index of the row and the
-    0-based index of the cell within that row.
+    Sets the value of a cell given the 0-based index of the row and the 0-based
+    index of the cell within that row. Cells can have strings, numbers, or html
+    elements as content.
   **/
   public function setCellValue(row : Int, cell : Int, value : CellContent) : Table {
     rows[row].setCellValue(cell, value);

@@ -30,6 +30,8 @@ class Cell {
   }
 
   function set_value(value : CellContent) {
+    // FIXME: should try to inject new text content without wiping out the cell,
+    // which might contain a custom template.
     el.empty().append(value);
     return this.value = value;
   }
