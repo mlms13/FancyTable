@@ -62,4 +62,23 @@ class NestedData {
       return acc;
     }, new Tuple2(0, []));
   }
+
+  /**
+    Takes two folds and determines if they overlap one another, where a fold is
+    a tuple of two ints. The left part is the index of the header row, and the
+    right part is the count of rows folded under the header.
+
+    e.g: `foldsIntersect(new Tuple(0, 3), new Tuple(2,6))` is true because the
+    folds are not completely contained or completely separate. The two folds
+    share some rows, and are overlapping or intersecting as a result.
+  **/
+  public static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
+    // sort by the index of the header
+    var first = a._0 <= b._0 ? a : b,
+        second = first == a ? b : a;
+
+    return first._0 < second._0 && // no problem if they start at the same spot
+           second._0 <= first._0 + first._1 && // or if second starts after the end of first
+           second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
+  }
 }

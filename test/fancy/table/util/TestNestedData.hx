@@ -1,7 +1,7 @@
 package fancy.table.util;
 
-import fancy.table.util.NestedData;
 import fancy.table.util.Types;
+import thx.Tuple;
 import utest.Assert;
 
 class TestNestedData {
@@ -62,5 +62,19 @@ class TestNestedData {
     });
 
     Assert.same(["a", "a.0", "a.0.0", "a.1", "a.1.0", "a.1.1", "b", "b.1"], values);
+  }
+
+  public function testFoldIntersection() {
+    // overlaps
+    Assert.isTrue(NestedData.foldsIntersect(new Tuple2(0, 3), new Tuple2(1, 5)));
+    Assert.isTrue(NestedData.foldsIntersect(new Tuple2(1, 5), new Tuple2(0, 1)));
+    Assert.isTrue(NestedData.foldsIntersect(new Tuple2(2, 3), new Tuple2(5, 1)));
+
+    // lack of overlaps
+    Assert.isFalse(NestedData.foldsIntersect(new Tuple2(1, 4), new Tuple2(1, 4)));
+    Assert.isFalse(NestedData.foldsIntersect(new Tuple2(1, 4), new Tuple2(0, 5)));
+    Assert.isFalse(NestedData.foldsIntersect(new Tuple2(0, 8), new Tuple2(0, 2)));
+    Assert.isFalse(NestedData.foldsIntersect(new Tuple2(0, 3), new Tuple2(8, 4)));
+    Assert.isFalse(NestedData.foldsIntersect(new Tuple2(1, 7), new Tuple2(3, 1)));
   }
 }

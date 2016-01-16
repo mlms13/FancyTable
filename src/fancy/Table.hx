@@ -243,16 +243,6 @@ class Table {
     return this;
   }
 
-  public static function foldsIntersect(a : Tuple2<Int, Int>, b: Tuple2<Int, Int>) : Bool {
-    // sort by the index of the header
-    var first = a._0 <= b._0 ? a : b,
-        second = first == a ? b : a;
-
-    return first._0 < second._0 && // no problem if they start at the same spot
-           second._0 <= first._0 + first._1 && // or if second starts after the end of first
-           second._0 + second._1 > first._0 + first._1; // or if second ends before first ends
-  }
-
   /**
     Given an existing fold (a) and a new fold (b), iterate over each row that
     will become folded in `b` and determine whether that row was already included
@@ -288,7 +278,7 @@ class Table {
       if (fold._0 == headerIndex) {
         return throw 'Cannot set fold point at $headerIndex because that row is already a fold header';
       }
-      if (foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
+      if (NestedData.foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
         return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
       }
 
