@@ -96,8 +96,6 @@ class Table {
     also empty all table elements from the DOM and recreate them.
   **/
   public function setData(?data : Array<Array<CellContent>>) : Table {
-    empty();
-
     data = data != null ? data : [];
 
     return data.reduce(function(table : Table, curr : Array<CellContent>) {
@@ -106,7 +104,7 @@ class Table {
       }, new Row());
 
       return table.appendRow(row);
-    }, this);
+    }, this.empty());
   }
 
   /**
@@ -188,6 +186,8 @@ class Table {
       });
 
       tableEl.removeClass('ft-table-${settings.colCount}-col').addClass('ft-table-$howMany-col');
+      settings.colCount = howMany;
+    } else {
       settings.colCount = howMany;
     }
     return this;

@@ -56,25 +56,25 @@ Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
-	var cardsToRowData = null;
-	cardsToRowData = function(cards3,groupBy) {
-		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards3,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
+	var cardsToRowData;
+	var cardsToRowData1 = null;
+	cardsToRowData1 = function(cards2,groupBy) {
+		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards2,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
 			var restOfGroupBys = groupBy.slice(1);
-			if(restOfGroupBys.length == 0) {
-				var array = tuple._1.map(function(card4) {
-					var tmp = fancy_browser_Dom.create("span",null,null,card4.name);
+			if(restOfGroupBys.length == 0) return { values : thx_Arrays.flatten(tuple._1.map(function(card4) {
+				return [fancy_browser_Dom.create("span",null,[fancy_browser_Dom.create("span",null,null,card4.name),fancy_browser_Dom.create("a",(function($this) {
+					var $r;
 					var _g1 = new haxe_ds_StringMap();
-					var value = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId;
-					if(__map_reserved.href != null) _g1.setReserved("href",value); else _g1.h["href"] = value;
-					return [fancy_browser_Dom.create("span",null,[tmp,fancy_browser_Dom.create("a",_g1,[fancy_browser_Dom.create("i.fa.fa-external-link-square")])]),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(Std.string(card4.cmc)),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(Std.string(card4.draftval)),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(Std.string(card4.tcgprice))];
-				});
-				return { values : Array.prototype.concat.apply([],array), data : []};
-			} else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData(tuple._1,restOfGroupBys)};
+					_g1.set("href","http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card4.multiverseId);
+					$r = _g1;
+					return $r;
+				}(this)),[fancy_browser_Dom.create("i.fa.fa-external-link-square")])]),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.cmc == null?"null":"" + card4.cmc),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.draftval == null?"null":"" + card4.draftval),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card4.tcgprice == null?"null":"" + card4.tcgprice)];
+			})), data : []}; else return { values : [fancy_browser_Dom.create("span",null,null,tuple._0)], data : cardsToRowData1(tuple._1,restOfGroupBys)};
 		});
 	};
-	var cardsToRowData1 = cardsToRowData;
+	cardsToRowData = cardsToRowData1;
 	var toRowData = function(cards1) {
-		return [{ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]}].concat(cardsToRowData1(cards1,[function(card) {
+		return [{ values : [fancy_browser_Dom.create("span",null,null,"Cards"),fancy_browser_Dom.create("span",null,null,"CMC"),fancy_browser_Dom.create("span",null,null,"Draft Value"),fancy_browser_Dom.create("span",null,null,"Price")]}].concat(cardsToRowData(cards1,[function(card) {
 			return card.color;
 		},function(card1) {
 			return card1.rarity;
@@ -84,11 +84,12 @@ Main.main = function() {
 			return card3.name;
 		}]));
 	};
-	var table3 = fancy_Table.fromNestedData(el,{ data : toRowData(cards), eachFold : function(table,rowIndex) {
-		table.rows[rowIndex].cells[0].set_onclick(function(_) {
-			table.rows[rowIndex].toggle();
+	var table = fancy_Table.fromNestedData(el,{ data : [{ values : [fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,""),fancy_browser_Dom.create("span",null,null,"")]}]}).setFixedTop().setFixedLeft();
+	table.setNestedData(toRowData(cards),function(table1,rowIndex) {
+		table1.rows[rowIndex].cells[0].set_onclick(function(_) {
+			table1.rows[rowIndex].toggle();
 		});
-	}}).setFixedTop().setFixedLeft();
+	});
 };
 Math.__name__ = true;
 var Reflect = function() { };
@@ -97,8 +98,12 @@ Reflect.field = function(o,field) {
 	try {
 		return o[field];
 	} catch( e ) {
+		if (e instanceof js__$Boot_HaxeError) e = e.val;
 		return null;
 	}
+};
+Reflect.setField = function(o,field,value) {
+	o[field] = value;
 };
 Reflect.fields = function(o) {
 	var a = [];
@@ -133,10 +138,7 @@ var fancy_Table = function(parent,options) {
 fancy_Table.__name__ = true;
 fancy_Table.findExistingFolds = function(a,b) {
 	return thx_Arrays.filterNull(thx_Ints.range(b._0 + 1,b._0 + b._1 + 1).map(function(index) {
-		if(index > a._0 && index <= a._1 + a._0) {
-			var this1 = { _0 : a._0, _1 : index};
-			return this1;
-		} else return null;
+		if(index > a._0 && index <= a._1 + a._0) return { _0 : a._0, _1 : index}; else return null;
 	}));
 };
 fancy_Table.fromNestedData = function(parent,options) {
@@ -159,20 +161,23 @@ fancy_Table.prototype = {
 		return this.setColCount(0);
 	}
 	,setData: function(data) {
-		this.empty();
 		if(data != null) data = data; else data = [];
-		return data.reduce(function(table,curr) {
-			var initial = new fancy_table_Row();
-			var row1 = curr.reduce(function(row,val) {
+		return thx_Arrays.reduce(data,function(table,curr) {
+			var row1 = thx_Arrays.reduce(curr,function(row,val) {
 				return row.appendCell(new fancy_table_Cell(val));
-			},initial);
+			},new fancy_table_Row());
 			return table.appendRow(row1);
-		},this);
+		},this.empty());
 	}
 	,setNestedData: function(data,eachFold) {
 		var _g = this;
 		this.setData(fancy_table_util_NestedData.rectangularize(data));
-		fancy_table_util_NestedData.generateFolds(data)._1.reduce(function(table,fold) {
+		thx_Arrays.reduce((function($this) {
+			var $r;
+			var this1 = fancy_table_util_NestedData.generateFolds(data);
+			$r = this1._1;
+			return $r;
+		}(this)),function(table,fold) {
 			if(eachFold != null) eachFold(table,fold._0);
 			return table.createFold(fold._0,fold._1);
 		},this);
@@ -184,10 +189,7 @@ fancy_Table.prototype = {
 	}
 	,insertRowAt: function(index,row) {
 		if(row == null) row = new fancy_table_Row(null,{ colCount : this.settings.colCount}); else row = row;
-		var tmp;
-		var b = this.settings.colCount - row.cells.length;
-		if(0 > b) tmp = 0; else tmp = b;
-		row.fillWithCells(tmp);
+		row.fillWithCells(thx_Ints.max(0,this.settings.colCount - row.cells.length));
 		this.setColCount(row.cells.length);
 		this.rows.splice(index,0,row);
 		fancy_browser_Dom.insertAtIndex(this.grid.content,row.el,index);
@@ -204,17 +206,13 @@ fancy_Table.prototype = {
 			});
 			fancy_browser_Dom.addClass(fancy_browser_Dom.removeClass(this.tableEl,"ft-table-" + this.settings.colCount + "-col"),"ft-table-" + howMany + "-col");
 			this.settings.colCount = howMany;
-		}
+		} else this.settings.colCount = howMany;
 		return this;
 	}
 	,setFixedTop: function(howMany) {
 		if(howMany == null) howMany = 1;
-		var _g1;
-		var b = this.fixedTop;
-		if(howMany < b) _g1 = howMany; else _g1 = b;
-		var _g;
-		var b1 = this.fixedTop;
-		if(howMany > b1) _g = howMany; else _g = b1;
+		var _g1 = thx_Ints.min(howMany,this.fixedTop);
+		var _g = thx_Ints.max(howMany,this.fixedTop);
 		while(_g1 < _g) {
 			var i = _g1++;
 		}
@@ -242,30 +240,26 @@ fancy_Table.prototype = {
 	,createFold: function(headerIndex,childrenCount) {
 		var _g2 = this;
 		if(headerIndex >= this.rows.length) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because there are only " + this.rows.length + " rows");
-		var b = this.rows.length - headerIndex;
-		if(childrenCount < b) childrenCount = childrenCount; else childrenCount = b;
+		childrenCount = thx_Ints.min(childrenCount,this.rows.length - headerIndex);
 		var _g = 0;
 		var _g1 = this.folds;
 		while(_g < _g1.length) {
 			var fold = _g1[_g];
 			++_g;
 			if(fold._0 == headerIndex) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because that row is already a fold header");
-			var this2 = { _0 : headerIndex, _1 : childrenCount};
-			if(fancy_table_util_NestedData.foldsIntersect(fold,this2)) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because it intersects with an existing fold");
-			var this3 = { _0 : headerIndex, _1 : childrenCount};
-			fancy_Table.findExistingFolds(fold,this3).map(function(fold3) {
-				_g2.rows[fold3._0].removeChildRow(_g2.rows[fold3._1]);
+			if(fancy_table_util_NestedData.foldsIntersect(fold,{ _0 : headerIndex, _1 : childrenCount})) throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because it intersects with an existing fold");
+			fancy_Table.findExistingFolds(fold,{ _0 : headerIndex, _1 : childrenCount}).map(function(fold1) {
+				_g2.rows[fold1._0].removeChildRow(_g2.rows[fold1._1]);
 			});
 		}
-		var _g13 = headerIndex + 1;
+		var _g11 = headerIndex + 1;
 		var _g3 = childrenCount + headerIndex + 1;
-		while(_g13 < _g3) {
-			var i = _g13++;
+		while(_g11 < _g3) {
+			var i = _g11++;
 			this.rows[i].indent();
 			this.rows[headerIndex].addChildRow(this.rows[i]);
 		}
-		var this1 = { _0 : headerIndex, _1 : childrenCount};
-		this.folds.push(this1);
+		this.folds.push({ _0 : headerIndex, _1 : childrenCount});
 		if(this.fixedLeft > 0) return this.setFixedLeft(this.fixedLeft); else return this;
 	}
 	,__class__: fancy_Table
@@ -296,7 +290,8 @@ fancy_browser_Dom.off = function(el,eventName,callback) {
 fancy_browser_Dom.create = function(name,attrs,children,textContent) {
 	if(attrs == null) attrs = new haxe_ds_StringMap();
 	if(children == null) children = [];
-	var classNames = (__map_reserved["class"] != null?attrs.existsReserved("class"):attrs.h.hasOwnProperty("class"))?__map_reserved["class"] != null?attrs.getReserved("class"):attrs.h["class"]:"";
+	var classNames;
+	if(__map_reserved["class"] != null?attrs.existsReserved("class"):attrs.h.hasOwnProperty("class")) classNames = __map_reserved["class"] != null?attrs.getReserved("class"):attrs.h["class"]; else classNames = "";
 	var nameParts = name.split(".");
 	name = nameParts.shift();
 	if(nameParts.length > 0) classNames += " " + nameParts.join(" ");
@@ -391,14 +386,12 @@ fancy_table_GridContainer.prototype = {
 	,__class__: fancy_table_GridContainer
 };
 var fancy_table_Row = function(cells,options) {
-	this.cells = cells == null?[]:cells;
+	if(cells == null) this.cells = []; else this.cells = cells;
 	this.settings = this.createDefaultOptions(options);
 	this.settings.classes = this.createDefaultClasses(this.settings.classes);
 	this.rows = [];
 	this.el = this.createRowElement(this.cells);
-	var colDiff;
-	var b = this.settings.colCount - this.cells.length;
-	if(0 > b) colDiff = 0; else colDiff = b;
+	var colDiff = thx_Ints.max(0,this.settings.colCount - this.cells.length);
 	this.fillWithCells(colDiff);
 };
 fancy_table_Row.__name__ = true;
@@ -417,24 +410,18 @@ fancy_table_Row.prototype = {
 	}
 	,updateFixedCells: function(count) {
 		var _g = this;
-		var _g1;
-		var b = this.settings.fixedCellCount;
-		if(count < b) _g1 = count; else _g1 = b;
-		var _g2;
-		var b2 = this.settings.fixedCellCount;
-		if(count > b2) _g2 = count; else _g2 = b2;
+		var _g1 = thx_Ints.min(count,this.settings.fixedCellCount);
+		var _g2 = thx_Ints.max(count,this.settings.fixedCellCount);
 		while(_g1 < _g2) {
 			var i = _g1++;
 			this.cells[i].set_fixed(count > this.settings.fixedCellCount);
 		}
 		this.settings.fixedCellCount = count;
-		var array = thx_Ints.range(0,count);
-		var initial = this.createRowElement();
-		this.fixedEl = array.reduce(function(parent,index) {
+		this.fixedEl = thx_Arrays.reduce(thx_Ints.range(0,count),function(parent,index) {
 			var cell = _g.cells[index].copy();
 			cell.set_fixed(false);
 			return fancy_browser_Dom.append(parent,cell.el);
-		},initial);
+		},this.createRowElement());
 		return this.fixedEl;
 	}
 	,insertCell: function(index,cell) {
@@ -463,7 +450,7 @@ fancy_table_Row.prototype = {
 	}
 	,fillWithCells: function(howMany) {
 		var _g = this;
-		return thx_Ints.range(0,howMany).reduce(function(_,_1) {
+		return thx_Arrays.reduce(thx_Ints.range(0,howMany),function(_,_1) {
 			return _g.appendCell();
 		},this);
 	}
@@ -535,29 +522,29 @@ fancy_table_util_NestedData.iterate = function(data,fn,start) {
 	if(start == null) start = 0;
 	return data.reduce(function(acc,row) {
 		fn(row,acc);
-		++acc;
+		acc++;
 		if(row.data != null) return fancy_table_util_NestedData.iterate(row.data,fn,acc); else return acc;
 	},start);
 };
 fancy_table_util_NestedData.generateFolds = function(data,start) {
 	if(start == null) start = 0;
-	var this1 = { _0 : 0, _1 : []};
 	return data.reduce(function(acc,row,index) {
 		acc._0++;
 		if(row.data != null) {
 			var result = fancy_table_util_NestedData.generateFolds(row.data,acc._0 + start);
-			var this2 = { _0 : acc._0 + start - 1, _1 : result._0};
-			acc._1.push(this2);
+			acc._1.push({ _0 : acc._0 + start - 1, _1 : result._0});
 			acc._0 += result._0;
 			acc._1 = acc._1.concat(result._1);
 		}
 		return acc;
-	},this1);
+	},{ _0 : 0, _1 : []});
 };
 fancy_table_util_NestedData.foldsIntersect = function(a,b) {
-	var first = a._0 <= b._0?a:b;
-	var second = first == a?b:a;
-	if(first._0 < second._0 && second._0 <= first._0 + first._1) return second._0 + second._1 > first._0 + first._1; else return false;
+	var first;
+	if(a._0 <= b._0) first = a; else first = b;
+	var second;
+	if(first == a) second = b; else second = a;
+	return first._0 < second._0 && second._0 <= first._0 + first._1 && second._0 + second._1 > first._0 + first._1;
 };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
@@ -589,7 +576,8 @@ haxe_ds_StringMap.prototype = {
 		return this.rh.hasOwnProperty("$" + key);
 	}
 	,keys: function() {
-		return HxOverrides.iter(this.arrayKeys());
+		var _this = this.arrayKeys();
+		return HxOverrides.iter(_this);
 	}
 	,arrayKeys: function() {
 		var out = [];
@@ -642,8 +630,8 @@ js_Boot.__string_rec = function(o,s) {
 				var _g1 = 2;
 				var _g = o.length;
 				while(_g1 < _g) {
-					var i2 = _g1++;
-					if(i2 != 2) str2 += "," + js_Boot.__string_rec(o[i2],s); else str2 += js_Boot.__string_rec(o[i2],s);
+					var i1 = _g1++;
+					if(i1 != 2) str2 += "," + js_Boot.__string_rec(o[i1],s); else str2 += js_Boot.__string_rec(o[i1],s);
 				}
 				return str2 + ")";
 			}
@@ -651,11 +639,10 @@ js_Boot.__string_rec = function(o,s) {
 			var i;
 			var str1 = "[";
 			s += "\t";
-			var _g12 = 0;
-			var _g2 = l;
-			while(_g12 < _g2) {
-				var i3 = _g12++;
-				str1 += (i3 > 0?",":"") + js_Boot.__string_rec(o[i3],s);
+			var _g2 = 0;
+			while(_g2 < l) {
+				var i2 = _g2++;
+				str1 += (i2 > 0?",":"") + js_Boot.__string_rec(o[i2],s);
 			}
 			str1 += "]";
 			return str1;
@@ -664,6 +651,7 @@ js_Boot.__string_rec = function(o,s) {
 		try {
 			tostr = o.toString;
 		} catch( e ) {
+			if (e instanceof js__$Boot_HaxeError) e = e.val;
 			return "???";
 		}
 		if(tostr != null && tostr != Object.toString && typeof(tostr) == "function") {
@@ -757,10 +745,9 @@ var js_html_compat_ArrayBuffer = function(a) {
 	} else {
 		var len = a;
 		this.a = [];
-		var _g1 = 0;
-		var _g = len;
-		while(_g1 < _g) {
-			var i = _g1++;
+		var _g = 0;
+		while(_g < len) {
+			var i = _g++;
 			this.a[i] = 0;
 		}
 		this.byteLength = len;
@@ -786,10 +773,9 @@ js_html_compat_Uint8Array._new = function(arg1,offset,length) {
 	var arr;
 	if(typeof(arg1) == "number") {
 		arr = [];
-		var _g1 = 0;
-		var _g = arg1;
-		while(_g1 < _g) {
-			var i = _g1++;
+		var _g = 0;
+		while(_g < arg1) {
+			var i = _g++;
 			arr[i] = 0;
 		}
 		arr.byteLength = arr.length;
@@ -815,12 +801,7 @@ js_html_compat_Uint8Array._new = function(arg1,offset,length) {
 };
 js_html_compat_Uint8Array._set = function(arg,offset) {
 	var t = this;
-	if((function($this) {
-		var $r;
-		var v = arg.buffer;
-		$r = js_Boot.__instanceof(v,js_html_compat_ArrayBuffer);
-		return $r;
-	}(this))) {
+	if(js_Boot.__instanceof(arg.buffer,js_html_compat_ArrayBuffer)) {
 		var a = arg;
 		if(arg.byteLength + offset > t.byteLength) throw new js__$Boot_HaxeError("set() outside of range");
 		var _g1 = 0;
@@ -835,8 +816,8 @@ js_html_compat_Uint8Array._set = function(arg,offset) {
 		var _g11 = 0;
 		var _g2 = a1.length;
 		while(_g11 < _g2) {
-			var i2 = _g11++;
-			t[i2 + offset] = a1[i2];
+			var i1 = _g11++;
+			t[i1 + offset] = a1[i1];
 		}
 	} else throw new js__$Boot_HaxeError("TODO");
 };
@@ -850,12 +831,15 @@ var thx_Arrays = function() { };
 thx_Arrays.__name__ = true;
 thx_Arrays.filterNull = function(a) {
 	var arr = [];
-	var tmp = HxOverrides.iter(a);
-	while(tmp.hasNext()) {
-		var v = tmp.next();
+	var $it0 = HxOverrides.iter(a);
+	while( $it0.hasNext() ) {
+		var v = $it0.next();
 		if(null != v) arr.push(v);
 	}
 	return arr;
+};
+thx_Arrays.flatten = function(array) {
+	return Array.prototype.concat.apply([],array);
 };
 thx_Arrays.groupByAppend = function(arr,resolver,map) {
 	arr.map(function(v) {
@@ -868,11 +852,20 @@ thx_Arrays.groupByAppend = function(arr,resolver,map) {
 	});
 	return map;
 };
+thx_Arrays.reduce = function(array,callback,initial) {
+	return array.reduce(callback,initial);
+};
 var thx_Either = { __ename__ : true, __constructs__ : ["Left","Right"] };
 thx_Either.Left = function(value) { var $x = ["Left",0,value]; $x.__enum__ = thx_Either; $x.toString = $estr; return $x; };
 thx_Either.Right = function(value) { var $x = ["Right",1,value]; $x.__enum__ = thx_Either; $x.toString = $estr; return $x; };
 var thx_Ints = function() { };
 thx_Ints.__name__ = true;
+thx_Ints.max = function(a,b) {
+	if(a > b) return a; else return b;
+};
+thx_Ints.min = function(a,b) {
+	if(a < b) return a; else return b;
+};
 thx_Ints.range = function(start,stop,step) {
 	if(step == null) step = 1;
 	if(null == stop) {
@@ -883,26 +876,15 @@ thx_Ints.range = function(start,stop,step) {
 	var range = [];
 	var i = -1;
 	var j;
-	if(step < 0) while(true) {
-		++i;
-		j = start + step * i;
-		if(!(j > stop)) break;
-		range.push(j);
-	} else while(true) {
-		++i;
-		j = start + step * i;
-		if(!(j < stop)) break;
-		range.push(j);
-	}
+	if(step < 0) while((j = start + step * ++i) > stop) range.push(j); else while((j = start + step * ++i) < stop) range.push(j);
 	return range;
 };
 var thx_Iterators = function() { };
 thx_Iterators.__name__ = true;
 thx_Iterators.map = function(it,f) {
 	var acc = [];
-	var tmp = it;
-	while(tmp.hasNext()) {
-		var v = tmp.next();
+	while( it.hasNext() ) {
+		var v = it.next();
 		acc.push(f(v));
 	}
 	return acc;
@@ -917,8 +899,8 @@ var thx_Maps = function() { };
 thx_Maps.__name__ = true;
 thx_Maps.tuples = function(map) {
 	return thx_Iterators.map(map.keys(),function(key) {
-		var this1 = { _0 : key, _1 : map.get(key)};
-		return this1;
+		var _1 = map.get(key);
+		return { _0 : key, _1 : _1};
 	});
 };
 var thx_Objects = function() { };
@@ -930,14 +912,14 @@ thx_Objects.combine = function(first,second) {
 	while(_g < _g1.length) {
 		var field = _g1[_g];
 		++_g;
-		to[field] = Reflect.field(first,field);
+		Reflect.setField(to,field,Reflect.field(first,field));
 	}
 	var _g2 = 0;
-	var _g12 = Reflect.fields(second);
-	while(_g2 < _g12.length) {
-		var field2 = _g12[_g2];
+	var _g11 = Reflect.fields(second);
+	while(_g2 < _g11.length) {
+		var field1 = _g11[_g2];
 		++_g2;
-		to[field2] = Reflect.field(second,field2);
+		Reflect.setField(to,field1,Reflect.field(second,field1));
 	}
 	return to;
 };
