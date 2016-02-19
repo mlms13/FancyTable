@@ -184,12 +184,9 @@ class Table {
       rows.map(function(row) {
         row.fillWithCells(howMany - settings.colCount);
       });
-
-      tableEl.removeClass('ft-table-${settings.colCount}-col').addClass('ft-table-$howMany-col');
-      settings.colCount = howMany;
-    } else {
-      settings.colCount = howMany;
     }
+    tableEl.removeClass('ft-table-${settings.colCount}-col').addClass('ft-table-$howMany-col');
+    settings.colCount = howMany;
     return this;
   }
 
