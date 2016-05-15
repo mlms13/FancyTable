@@ -1,6 +1,6 @@
 package fancy.table.util;
 
-import fancy.browser.Dom;
+import dots.Dom;
 import js.html.Node;
 using thx.Strings;
 

@@ -1,7 +1,7 @@
 package fancy.table;
 
 import js.html.Element;
-using fancy.browser.Dom;
+using dots.Dom;
 
 class GridContainer {
   public var topLeft(default, null) : Element;

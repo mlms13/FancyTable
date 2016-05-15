@@ -1,6 +1,6 @@
 package fancy.table;
 
-using fancy.browser.Dom;
+using dots.Dom;
 import fancy.table.util.CellContent;
 import js.html.Element;
 import js.html.Node;

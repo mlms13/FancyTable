@@ -1,4 +1,4 @@
-using fancy.browser.Dom;
+using dots.Dom;
 import fancy.Table;
 import fancy.table.*;
 import fancy.table.util.Types;

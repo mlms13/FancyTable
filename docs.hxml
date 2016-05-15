@@ -2,7 +2,7 @@
 -cp src
 -cp docs
 -lib thx.core
--lib fancybrowser
+-lib dots
 -D doc-gen
 -D dox
 -dce no

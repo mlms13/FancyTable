@@ -1,6 +1,6 @@
 package fancy.table;
 
-using fancy.browser.Dom;
+using dots.Dom;
 import fancy.table.util.Types;
 import fancy.table.util.CellContent;
 import js.html.Element;
@@ -55,8 +55,8 @@ class Row {
   }
 
   function createRowElement(?children : Array<Cell>) : Element {
-    var childElements = (children != null ? children : []).map.fn(_.el);
-    return Dom.create('div.${settings.classes.row}', childElements)
+    var childElements = (children != null ? children : []).map.fn((_.el : js.html.Node));
+    return Dom.create("div", ["class" => settings.classes.row], childElements)
       .addClass(settings.expanded ? settings.classes.expanded : settings.classes.collapsed)
       .addClass(settings.hidden ? settings.classes.hidden : "")
       .addClass('${settings.classes.indent}${settings.indentation}')

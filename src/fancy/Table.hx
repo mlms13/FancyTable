@@ -4,7 +4,7 @@ import fancy.table.*;
 using fancy.table.util.NestedData;
 import fancy.table.util.Types;
 import fancy.table.util.CellContent;
-using fancy.browser.Dom;
+using dots.Dom;
 import js.html.Element;
 import js.html.Node;
 using thx.Arrays;
