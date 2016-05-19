@@ -50,18 +50,22 @@ class Row {
       foldHeader : "ft-row-fold-header",
       hidden : "ft-row-hidden",
       indent : "ft-row-indent-",
-      custom : ""
+      custom : ([] : Array<String>)
     }, classes == null ? {} : classes);
   }
 
   function createRowElement(?children : Array<Cell>) : Element {
     var childElements = (children != null ? children : []).map.fn((_.el : js.html.Node));
-    return Dom.create("div", ["class" => settings.classes.row], childElements)
-      .addClass(settings.expanded ? settings.classes.expanded : settings.classes.collapsed)
-      .addClass(settings.hidden ? settings.classes.hidden : "")
-      .addClass('${settings.classes.indent}${settings.indentation}')
-      .addClass(settings.classes.custom)
-      .addClass(rows.length == 0 ? "" : settings.classes.foldHeader);
+    var classes = [
+      settings.classes.row,
+      settings.expanded ? settings.classes.expanded : settings.classes.collapsed,
+      '${settings.classes.indent}${settings.indentation}',
+    ].concat(settings.classes.custom);
+
+    if (settings.hidden) classes.push(settings.classes.hidden);
+    if (rows.length > 0) classes.push(settings.classes.foldHeader);
+
+    return classes.reduce(Dom.addClass, Dom.create("div", childElements));
   }
 
   /**
@@ -93,24 +97,25 @@ class Row {
     return this;
   }
 
-  public function addRowClass(className : String) {
+  function addRowClass(className : String) {
     el.addClass(className);
     if (fixedEl != null)
       fixedEl.addClass(className);
     return this;
   }
 
-  public function removeRowClass(className : String) {
+  function removeRowClass(className : String) {
     el.removeClass(className);
     if (fixedEl != null)
       fixedEl.removeClass(className);
     return this;
   }
 
-  public function setCustomClass(className : String) {
-    removeRowClass(settings.classes.custom);
-    settings.classes.custom = className;
-    return addRowClass(className);
+  public function setCustomClasses(classes : Array<String>) {
+    settings.classes.custom.each(removeRowClass);
+    settings.classes.custom = classes;
+    classes.each(addRowClass);
+    return this;
   }
 
   public function appendCell(?col : Cell) : Row {

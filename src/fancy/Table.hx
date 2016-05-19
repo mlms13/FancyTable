@@ -126,8 +126,7 @@ class Table {
     // of the classes provided in the nested options.data meta field
     data.iterate(function (row : RowData, index : Int) {
       if (row.meta != null && row.meta.classes != null) {
-        // TODO: someday we won't be able to pass a space-separated list
-        this.rows[index].setCustomClass(row.meta.classes.join(" "));
+        this.rows[index].setCustomClasses(row.meta.classes);
       }
       if (row.meta != null && row.meta.collapsed) {
         this.rows[index].collapse();

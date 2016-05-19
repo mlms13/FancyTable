@@ -34,7 +34,7 @@ typedef FancyRowClasses = {
   ?foldHeader : String,
   ?hidden : String,
   ?indent : String,
-  ?custom : String
+  ?custom : Array<String>
 };
 
 typedef RowData = {
