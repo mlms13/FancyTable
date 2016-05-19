@@ -50,14 +50,6 @@ HxOverrides.substr = function(s,pos,len) {
 	}
 	return s.substr(pos,len);
 };
-HxOverrides.remove = function(a,obj) {
-	var i = a.indexOf(obj);
-	if(i == -1) {
-		return false;
-	}
-	a.splice(i,1);
-	return true;
-};
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
 		return this.cur < this.arr.length;
@@ -103,9 +95,9 @@ Main.main = function() {
 		},function(card4) {
 			return card4.name;
 		}]));
-	})(cards), eachFold : function(table1,rowIndex) {
-		table1.rows[rowIndex].cells[0].set_onclick(function(_) {
-			table1.rows[rowIndex].toggle();
+	})(cards), eachFold : function(row) {
+		row.cells[0].set_onclick(function(_) {
+			row.toggle();
 		});
 	}}).setFixedTop().setFixedLeft();
 };
@@ -453,7 +445,7 @@ var fancy_Table = function(parent,options) {
 	el.classList.add(this.settings.classes.table);
 	this.tableEl = el;
 	this.grid = new fancy_table_GridContainer();
-	this.tableEl.appendChild(this.grid.grid);
+	this.tableEl.appendChild(this.grid.el);
 	this.tableEl.addEventListener("scroll",function(_) {
 		_gthis.grid.positionPanes(_gthis.tableEl.scrollTop,_gthis.tableEl.scrollLeft);
 		if(_gthis.tableEl.scrollTop == 0) {
@@ -471,15 +463,6 @@ var fancy_Table = function(parent,options) {
 	parent.appendChild(this.tableEl);
 };
 fancy_Table.__name__ = true;
-fancy_Table.findExistingFolds = function(a,b) {
-	return thx_Arrays.filterNull(thx_Ints.range(b._0 + 1,b._0 + b._1 + 1).map(function(index) {
-		if(index > a._0 && index <= a._1 + a._0) {
-			return { _0 : a._0, _1 : index};
-		} else {
-			return null;
-		}
-	}));
-};
 fancy_Table.fromNestedData = function(parent,options) {
 	return new fancy_Table(parent).setNestedData(options.data,options.eachFold);
 };
@@ -491,6 +474,7 @@ fancy_Table.prototype = {
 		return thx_Objects.combine({ table : "ft-table", scrollH : "ft-table-scroll-horizontal", scrollV : "ft-table-scroll-vertical"},classes == null?{ }:classes);
 	}
 	,empty: function() {
+		dots_Dom.empty(this.tableEl);
 		this.grid.empty();
 		this.rows = [];
 		this.folds = [];
@@ -513,22 +497,9 @@ fancy_Table.prototype = {
 		},tmp);
 	}
 	,setNestedData: function(data,eachFold) {
-		var _gthis = this;
-		this.setData(fancy_table_util_NestedData.rectangularize(data));
-		thx_Arrays.reduce(fancy_table_util_NestedData.generateFolds(data)._1,function(table,fold) {
-			if(eachFold != null) {
-				eachFold(table,fold._0);
-			}
-			return table.createFold(fold._0,fold._1);
-		},this);
-		fancy_table_util_NestedData.iterate(data,function(row,index) {
-			if(row.meta != null && row.meta.classes != null) {
-				_gthis.rows[index].setCustomClasses(row.meta.classes);
-			}
-			if(row.meta != null && row.meta.collapsed) {
-				_gthis.rows[index].collapse();
-			}
-		});
+		this.empty();
+		this.appendRowsWithChildren(fancy_table_util_NestedData.toRows(data,null,eachFold));
+		this.tableEl.appendChild(this.grid.el);
 		return this;
 	}
 	,insertRowAt: function(index,row) {
@@ -543,6 +514,13 @@ fancy_Table.prototype = {
 		this.rows.splice(index,0,row);
 		dots_Dom.insertAtIndex(this.grid.content,row.el,index);
 		return this;
+	}
+	,appendRowsWithChildren: function(rows) {
+		var _gthis = this;
+		return thx_Arrays.reduce(rows,function(table,row) {
+			table.appendRow(row);
+			return _gthis.appendRowsWithChildren(row.rows);
+		},this);
 	}
 	,appendRow: function(row) {
 		return this.insertRowAt(this.rows.length,row);
@@ -591,46 +569,6 @@ fancy_Table.prototype = {
 			return row.copy().updateFixedCells(_gthis.fixedLeft);
 		}));
 		return this;
-	}
-	,createFold: function(headerIndex,childrenCount) {
-		var _gthis = this;
-		if(headerIndex >= this.rows.length) {
-			throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because there are only " + this.rows.length + " rows");
-		}
-		var b = this.rows.length - headerIndex;
-		if(childrenCount < b) {
-			childrenCount = childrenCount;
-		} else {
-			childrenCount = b;
-		}
-		var _g = 0;
-		var _g1 = this.folds;
-		while(_g < _g1.length) {
-			var fold = _g1[_g];
-			++_g;
-			if(fold._0 == headerIndex) {
-				throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because that row is already a fold header");
-			}
-			if(fancy_table_util_NestedData.foldsIntersect(fold,{ _0 : headerIndex, _1 : childrenCount})) {
-				throw new js__$Boot_HaxeError("Cannot set fold point at " + headerIndex + " because it intersects with an existing fold");
-			}
-			fancy_Table.findExistingFolds(fold,{ _0 : headerIndex, _1 : childrenCount}).map(function(fold1) {
-				_gthis.rows[fold1._0].removeChildRow(_gthis.rows[fold1._1]);
-			});
-		}
-		var _g11 = headerIndex + 1;
-		var _g2 = childrenCount + headerIndex + 1;
-		while(_g11 < _g2) {
-			var i = _g11++;
-			this.rows[i].indent();
-			this.rows[headerIndex].addChildRow(this.rows[i]);
-		}
-		this.folds.push({ _0 : headerIndex, _1 : childrenCount});
-		if(this.fixedLeft > 0) {
-			return this.setFixedLeft(this.fixedLeft);
-		} else {
-			return this;
-		}
 	}
 	,__class__: fancy_Table
 };
@@ -681,8 +619,7 @@ var fancy_table_GridContainer = function() {
 	this.top = dots_Dom.create("div.ft-table-fixed-top");
 	this.left = dots_Dom.create("div.ft-table-fixed-left");
 	this.content = dots_Dom.create("div.ft-table-content");
-	this.grid = dots_Dom.create("div.ft-table-grid-container");
-	dots_Dom.append(dots_Dom.append(dots_Dom.append(dots_Dom.append(this.grid,this.topLeft),this.top),this.left),this.content);
+	this.el = dots_Dom.append(dots_Dom.append(dots_Dom.append(dots_Dom.append(dots_Dom.create("div.ft-table-grid-container"),this.topLeft),this.top),this.left),this.content);
 };
 fancy_table_GridContainer.__name__ = true;
 fancy_table_GridContainer.prototype = {
@@ -786,19 +723,19 @@ fancy_table_Row.prototype = {
 			return _gthis.appendCell();
 		},this);
 	}
-	,addChildRow: function(child) {
+	,addChildRows: function(children) {
+		var _gthis = this;
 		this.addRowClass(this.settings.classes.foldHeader);
-		this.rows.push(child);
+		var _e = children;
+		(function(effect) {
+			thx_Arrays.each(_e,effect);
+		})(function(_) {
+			return _gthis.rows.push(_);
+		});
 	}
-	,removeChildRow: function(child) {
-		HxOverrides.remove(this.rows,child);
-		if(this.rows.length == 0) {
-			this.removeRowClass(this.settings.classes.foldHeader);
-		}
-	}
-	,indent: function() {
+	,setIndentation: function(indentation) {
 		this.removeRowClass("" + this.settings.classes.indent + this.settings.indentation);
-		this.settings.indentation++;
+		this.settings.indentation = indentation;
 		this.addRowClass("" + this.settings.classes.indent + this.settings.indentation);
 	}
 	,expand: function() {
@@ -852,53 +789,30 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
 };
 var fancy_table_util_NestedData = function() { };
 fancy_table_util_NestedData.__name__ = true;
-fancy_table_util_NestedData.rectangularize = function(data) {
-	return thx_Arrays.reduce(data,function(acc,d) {
-		acc.push(d.values);
-		if(d.data != null) {
-			return acc.concat(fancy_table_util_NestedData.rectangularize(d.data));
-		} else {
-			return acc;
+fancy_table_util_NestedData.toRows = function(data,indentation,eachFold) {
+	if(indentation == null) {
+		indentation = 0;
+	}
+	return thx_Arrays.reduce(data,function(acc,curr) {
+		var newRow = new fancy_table_Row(curr.values.map(function(_) {
+			return new fancy_table_Cell(_);
+		}));
+		newRow.setIndentation(indentation);
+		var childRows = curr.data != null?fancy_table_util_NestedData.toRows(curr.data,indentation + 1,eachFold):[];
+		if(childRows.length > 0) {
+			newRow.addChildRows(childRows);
+			eachFold(newRow);
 		}
+		if(curr.meta != null) {
+			if(curr.meta.classes != null) {
+				newRow.setCustomClasses(curr.meta.classes);
+			}
+			if(curr.meta.collapsed == true) {
+				newRow.collapse();
+			}
+		}
+		return acc.concat([newRow]);
 	},[]);
-};
-fancy_table_util_NestedData.iterate = function(data,fn,start) {
-	if(start == null) {
-		start = 0;
-	}
-	return thx_Arrays.reduce(data,function(acc,row) {
-		fn(row,acc);
-		++acc;
-		if(row.data != null) {
-			return fancy_table_util_NestedData.iterate(row.data,fn,acc);
-		} else {
-			return acc;
-		}
-	},start);
-};
-fancy_table_util_NestedData.generateFolds = function(data,start) {
-	if(start == null) {
-		start = 0;
-	}
-	return thx_Arrays.reducei(data,function(acc,row,index) {
-		acc._0++;
-		if(row.data != null) {
-			var result = fancy_table_util_NestedData.generateFolds(row.data,acc._0 + start);
-			acc._1.push({ _0 : acc._0 + start - 1, _1 : result._0});
-			acc._0 += result._0;
-			acc._1 = acc._1.concat(result._1);
-		}
-		return acc;
-	},{ _0 : 0, _1 : []});
-};
-fancy_table_util_NestedData.foldsIntersect = function(a,b) {
-	var first = a._0 <= b._0?a:b;
-	var second = first == a?b:a;
-	if(first._0 < second._0 && second._0 <= first._0 + first._1) {
-		return second._0 + second._1 > first._0 + first._1;
-	} else {
-		return false;
-	}
 };
 var haxe_StackItem = { __ename__ : true, __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
 haxe_StackItem.CFunction = ["CFunction",0];
@@ -1325,17 +1239,6 @@ thx_Arrays.contains = function(array,element,eq) {
 		return false;
 	}
 };
-thx_Arrays.filterNull = function(a) {
-	var arr = [];
-	var tmp = HxOverrides.iter(a);
-	while(tmp.hasNext()) {
-		var v = tmp.next();
-		if(null != v) {
-			arr.push(v);
-		}
-	}
-	return arr;
-};
 thx_Arrays.groupByAppend = function(arr,resolver,map) {
 	var _g1 = 0;
 	var _g = arr.length;
@@ -1354,15 +1257,6 @@ thx_Arrays.groupByAppend = function(arr,resolver,map) {
 thx_Arrays.reduce = function(array,f,initial) {
 	var tmp = HxOverrides.iter(array);
 	while(tmp.hasNext()) initial = f(initial,tmp.next());
-	return initial;
-};
-thx_Arrays.reducei = function(array,f,initial) {
-	var _g1 = 0;
-	var _g = array.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		initial = f(initial,array[i],i);
-	}
 	return initial;
 };
 var thx_Bools = function() { };

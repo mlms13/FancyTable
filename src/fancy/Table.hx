@@ -9,7 +9,7 @@ import js.html.Element;
 import js.html.Node;
 using thx.Arrays;
 using thx.Functions;
-using thx.Ints;
+import thx.Ints;
 using thx.Objects;
 using thx.Tuple;
 
@@ -42,7 +42,7 @@ class Table {
     // create lots of dom
     tableEl = Dom.create("div").addClass(settings.classes.table);
     grid = new GridContainer();
-    tableEl.appendChild(grid.grid);
+    tableEl.appendChild(grid.el);
 
     // and fix the scrolling
     tableEl.on("scroll", function (_) {
@@ -79,6 +79,7 @@ class Table {
   }
 
   function empty() : Table {
+    tableEl.empty();
     grid.empty();
     rows = [];
     folds = [];
@@ -111,28 +112,10 @@ class Table {
     Uses `setData()` internally, but also adds classes and creates folds given
     nested data instead of just strings.
   **/
-  public function setNestedData(data : Array<RowData>, ?eachFold : Table -> Int -> Void) {
-    setData(NestedData.rectangularize(data));
-
-    // find and accumulate all folds, calling the callback for each one
-    data.generateFolds().right.reduce(function (table : Table, fold) {
-      if (eachFold != null)
-        eachFold(table, fold.left);
-
-      return table.createFold(fold.left, fold.right);
-    }, this);
-
-    // iterate over the nested data structure, collapsing rows and setting all
-    // of the classes provided in the nested options.data meta field
-    data.iterate(function (row : RowData, index : Int) {
-      if (row.meta != null && row.meta.classes != null) {
-        this.rows[index].setCustomClasses(row.meta.classes);
-      }
-      if (row.meta != null && row.meta.collapsed) {
-        this.rows[index].collapse();
-      }
-    });
-
+  public function setNestedData(data : Array<RowData>, ?eachFold : Row -> Void) {
+    empty();
+    appendRowsWithChildren(data.toRows(eachFold));
+    tableEl.appendChild(grid.el);
     return this;
   }
 
@@ -168,6 +151,13 @@ class Table {
   **/
   public function prependRow(?row : Row) : Table {
     return insertRowAt(0, row);
+  }
+
+  function appendRowsWithChildren(rows : Array<Row>) {
+    return rows.reduce(function (table : Table, row) {
+      table.appendRow(row);
+      return appendRowsWithChildren(row.rows);
+    }, this);
   }
 
   /**
@@ -238,61 +228,6 @@ class Table {
       }));
     return this;
   }
-
-  /**
-    Given an existing fold (a) and a new fold (b), iterate over each row that
-    will become folded in `b` and determine whether that row was already included
-    in the `a` fold. This returns an array of tuples, where the right of each
-    tuple is the row's index, and the left of each tuple is the row it is
-    currently folded under.
-  **/
-  public static function findExistingFolds(a : Tuple2<Int, Int>, b : Tuple2<Int, Int>) {
-    return Ints.range(b.left + 1, b.left + b.right + 1).map(function (index : Int) {
-      return (index > a.left && index <= a.right + a.left) ? new Tuple2(a.left, index) : null;
-    }).filterNull();
-  }
-
-  /**
-    While data in your table is structurally rectangular, you can use folds to
-    imply nesting. Specify an index of the header row (the one that will still
-    be visible when the content is folded), as well as a count of how many rows
-    following the header will be nested below it.
-
-    Folds can be infinitely nested, but they can't intersect (e.g. you can't
-    specify a fold from 0-4 and another from 2-6, because that doesn't make
-    sense).
-  **/
-  public function createFold(headerIndex : Int, childrenCount : Int) {
-    // check for out-of-range indexes
-    if (headerIndex >= rows.length)
-      return throw 'Cannot set fold point at $headerIndex because there are only ${rows.length} rows';
-
-    childrenCount = Ints.min(childrenCount, rows.length - headerIndex);
-
-    // folds can contain others, but they can't partially overlap
-    for (fold in folds) {
-      if (fold._0 == headerIndex) {
-        return throw 'Cannot set fold point at $headerIndex because that row is already a fold header';
-      }
-      if (NestedData.foldsIntersect(fold, new Tuple2(headerIndex, childrenCount))) {
-        return throw 'Cannot set fold point at $headerIndex because it intersects with an existing fold';
-      }
-
-      findExistingFolds(fold, new Tuple2(headerIndex, childrenCount)).map(function (fold) {
-        rows[fold.left].removeChildRow(rows[fold.right]);
-      });
-    }
-
-    // finally, if we've made it this far, set up the fold
-    for (i in (headerIndex + 1)...(childrenCount + headerIndex + 1)) {
-      rows[i].indent();
-      rows[headerIndex].addChildRow(rows[i]);
-    }
-    folds.push(new Tuple2(headerIndex, childrenCount));
-
-    return fixedLeft > 0 ? setFixedLeft(fixedLeft) : this;
-  }
-
   /**
     Sets the value of a cell given the 0-based index of the row and the 0-based
     index of the cell within that row. Cells can have strings, numbers, or html

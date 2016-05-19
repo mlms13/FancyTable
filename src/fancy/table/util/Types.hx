@@ -15,7 +15,7 @@ typedef FancyTableClasses = {
 typedef FancyNestedTableOptions = {
   data : Array<RowData>,
   ?colCount : Int,
-  ?eachFold : fancy.Table -> Int -> Void
+  ?eachFold : Row -> Void
 }
 
 typedef FancyRowOptions = {

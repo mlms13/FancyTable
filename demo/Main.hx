@@ -102,9 +102,9 @@ class Main {
 
     var table = Table.fromNestedData(el, {
       data : toRowData(cards),
-      eachFold : function (table, rowIndex) {
-        table.rows[rowIndex].cells[0].onclick = function (_) {
-          table.rows[rowIndex].toggle();
+      eachFold : function (row) {
+        row.cells[0].onclick = function (_) {
+          row.toggle();
         }
       }
     })

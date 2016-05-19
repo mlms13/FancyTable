@@ -12,7 +12,7 @@ using thx.Objects;
 class Row {
   public var el(default, null) : Element;
   public var cells(default, null) : Array<Cell>;
-  var rows : Array<Row>;
+  public var rows(default, null) : Array<Row>;
   var settings : FancyRowOptions;
   var fixedEl : Element;
 
@@ -133,6 +133,11 @@ class Row {
     rows.push(child);
   }
 
+  public function addChildRows(children : Array<Row>) {
+    addRowClass(settings.classes.foldHeader);
+    children.each.fn(rows.push(_));
+  }
+
   public function removeChildRow(child : Row) {
     rows.remove(child);
     if (rows.length == 0) {
@@ -140,10 +145,14 @@ class Row {
     }
   }
 
-  public function indent() {
+  public function setIndentation(indentation : Int) {
     removeRowClass('${settings.classes.indent}${settings.indentation}');
-    settings.indentation++;
+    settings.indentation = indentation;
     addRowClass('${settings.classes.indent}${settings.indentation}');
+  }
+
+  public function indent() {
+    setIndentation(settings.indentation++);
   }
 
   public function expand() {
