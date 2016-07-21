@@ -1,67 +1,75 @@
 $basePadding = 8px
 
-.ft
-  &-table
+/* STRUCTURAL  */
+.fancy-grid, .fancy-grid * {
+  box-sizing: border-box;
+}
+.fancy-grid, .fancy-grid .view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.fancy-grid .row, .fancy-grid .column {
+  position: absolute;
+  overflow: hidden;
+}
+.fancy-grid .pane {
+  position: absolute;
+  overflow: hidden;
+}
+.fancy-grid .anchor {
+  position: relative;
+}
+.fancy-grid .row, .fancy-grid .column {
+  pointer-events: none;
+}
+.fancy-grid .grid9 .column.left { z-index: 11; }
+.fancy-grid .grid9 .row.top { z-index: 12; }
+.fancy-grid .grid9 .pane.middle.center { z-index: 0; }
+.fancy-grid .grid9 .pane.middle.right { z-index: 1; }
+.fancy-grid .grid9 .pane.middle.left { z-index: 4; }
+.fancy-grid .grid9 .column.right { z-index: 10; }
+.fancy-grid .grid9 .pane.bottom.right { z-index: 3; }
+.fancy-grid .grid9 .pane.bottom.center { z-index: 2; }
+.fancy-grid .grid9 .pane.bottom.left { z-index: 5; }
+.fancy-grid .grid9 .row.bottom { z-index: 6; }
+.fancy-grid .grid9 .pane.top.left { z-index: 9; }
+.fancy-grid .grid9 .pane.top.right { z-index: 8; }
+.fancy-grid .grid9 .pane.top.center { z-index: 7; }
+.fancy-grid .grid9 .scroller {
+  background-color: rgba(0,0,0,0.2);
+  position: absolute;
+  z-index: 20;
+}
+.fancy-grid .grid9 .scroller:hover {
+  background-color: rgba(0,0,0,0.4);
+}
+.fancy-grid .grid9 .scroller.dragging {
+  background-color: rgba(0,0,0,0.6);
+}
+.fancy-grid .cell {
+  position: absolute;
+}
+
+
+.fancy-grid
     background #fafafa
     border-top 1px solid #ddd
     border-left 1px solid #ddd
     font-size 14px
     position relative
 
-    &-fixed-top
-    &-fixed-left
-    &-fixed-top-left
-      position absolute
-      top 0
 
-    &-fixed-top
-    &-fixed-top-left
-      font-weight bold
-      background #fff
+  .pane.top
+    font-weight bold
+    background #fff
 
-    &-fixed-left
-      background #fafafa
+  .pane.left
+    background #fafafa
 
-    // make sure corner pieces are on top
-    &-fixed-top-left
-      z-index 1
-
-  &-row-fixed
-  &-col-fixed
-    visibility hidden
-
-  &-row
-    border-bottom 1px solid #ddd
-    display flex
-
-    // rows that start a grouping
-    &-fold-header
-      > .ft-cell:first-child
-        user-select none
-        cursor pointer
-
-        &:before
-          content "\25B8"
-          display inline-block
-          margin-right 5px
-
-      &.ft-row-expanded > .ft-cell:first-child:before
-        transform rotate(90deg)
-
-    &-indent-1 > .ft-cell:first-child
-      padding-left 24px
-    &-indent-2 > .ft-cell:first-child
-      padding-left 40px
-    &-indent-3 > .ft-cell:first-child
-      padding-left 56px
-
-    &-hidden
-      display none
-
-  &-cell
+  .cell
     border-right 1px solid #ddd
     box-sizing border-box
-    flex auto
     line-height 16px
     padding $basePadding
 
@@ -72,3 +80,29 @@ $basePadding = 8px
       width 16.6667%
 
 @import "fixed" // leave this out if you want flexible cell widths
+
+// TODO: not applicable at the moment with the new fancy grid
+.ft-row
+  // rows that start a grouping
+  &-fold-header
+    > .ft-cell:first-child
+      user-select none
+      cursor pointer
+
+      &:before
+        content "\25B8"
+        display inline-block
+        margin-right 5px
+
+    &.ft-row-expanded > .ft-cell:first-child:before
+      transform rotate(90deg)
+
+  &-indent-1 > .ft-cell:first-child
+    padding-left 24px
+  &-indent-2 > .ft-cell:first-child
+    padding-left 40px
+  &-indent-3 > .ft-cell:first-child
+    padding-left 56px
+
+  &-hidden
+    display none

@@ -1,5 +1,6 @@
 -cp src
 -cp demo
+-lib fancygrid
 -lib thx.core
 -lib dots
 -dce full

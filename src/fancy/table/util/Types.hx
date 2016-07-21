@@ -1,9 +1,15 @@
 package fancy.table.util;
 
+enum FancyTableData {
+  Tabular(data : Array<Array<CellContent>>);
+  Nested(data : Array<RowData>);
+}
+
 typedef FancyTableOptions = {
   ?classes : FancyTableClasses,
   ?colCount : Int,
-  ?data : Array<Array<CellContent>>
+  ?data : FancyTableData,
+  // TODO fixedtop count, and fixedleft count
 };
 
 typedef FancyTableClasses = {
@@ -11,12 +17,6 @@ typedef FancyTableClasses = {
   ?scrollH : String,
   ?scrollV : String
 };
-
-typedef FancyNestedTableOptions = {
-  data : Array<RowData>,
-  ?colCount : Int,
-  ?eachFold : Row -> Void
-}
 
 typedef FancyRowOptions = {
   ?classes : FancyRowClasses,

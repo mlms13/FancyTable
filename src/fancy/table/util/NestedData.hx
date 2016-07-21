@@ -50,7 +50,10 @@ class NestedData {
 
       if (childRows.length > 0) {
         newRow.addChildRows(childRows);
-        eachFold(newRow);
+
+        // TODO: this shouldn't be optional, but we have no way to currently
+        // handle this in fancygrid
+        if (eachFold != null) eachFold(newRow);
       }
 
       // apply any information stored in meta

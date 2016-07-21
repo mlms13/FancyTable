@@ -3,7 +3,6 @@ package fancy.table;
 using dots.Dom;
 import fancy.table.util.CellContent;
 import js.html.Element;
-import js.html.Node;
 import js.html.Event;
 
 class Cell {
@@ -54,7 +53,7 @@ class Cell {
     mouse events.
   **/
   public function copy(returnOriginalElement = true) {
-    var cloned = value.cloneNode(true),
+    var cloned = value.clone(),
         instance = new Cell(returnOriginalElement ? value : cloned, fixed, onclick);
 
     if (returnOriginalElement) {

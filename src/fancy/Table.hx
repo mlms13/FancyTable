@@ -1,5 +1,6 @@
 package fancy;
 
+import fancy.Grid;
 import fancy.table.*;
 using fancy.table.util.NestedData;
 import fancy.table.util.Types;
@@ -20,10 +21,9 @@ using thx.Tuple;
   return the instance of the table for easy chaining.
 **/
 class Table {
-  public var rows(default, null) : Array<Row>;
-  var tableEl : Element;
+  public var rows(default, null) : Array<Row> = [];
   var settings : FancyTableOptions;
-  var grid : GridContainer;
+  var grid : Grid;
   var folds : Array<Tuple2<Int, Int>>;
 
   // ints to track how many rows/cols are fixed in various places
@@ -39,27 +39,15 @@ class Table {
     settings = createDefaultOptions(options);
     settings.classes = createDefaultClasses(settings.classes);
 
-    // create lots of dom
-    tableEl = Dom.create("div").addClass(settings.classes.table);
-    grid = new GridContainer();
-    tableEl.appendChild(grid.el);
-
-    // and fix the scrolling
-    tableEl.on("scroll", function (_) {
-      grid.positionPanes(tableEl.scrollTop, tableEl.scrollLeft);
-
-      if (tableEl.scrollTop == 0) tableEl.removeClass(settings.classes.scrollV);
-      else tableEl.addClass(settings.classes.scrollV);
-
-      if (tableEl.scrollLeft == 0) tableEl.removeClass(settings.classes.scrollH);
-      else tableEl.addClass(settings.classes.scrollH);
-    });
-
     // fill with any data
     setData(settings.data);
 
-    // and add all of our shiny new dom to the parent
-    parent.appendChild(tableEl);
+    // create the grid
+    grid = new Grid(parent, {
+      rows: rows.length,
+      columns: rows[0].cells.length, // FIXME: whoa buddy
+      render: renderGrid
+    });
   }
 
   function createDefaultOptions(?options : FancyTableOptions) : FancyTableOptions {
@@ -79,14 +67,17 @@ class Table {
   }
 
   function empty() : Table {
-    tableEl.empty();
-    grid.empty();
+    // grid.empty(); TODO
     rows = [];
     folds = [];
     fixedTop = 0;
     fixedLeft = 0;
-    this.settings.data = [];
+    this.settings.data = Nested([]);
     return setColCount(0);
+  }
+
+  function renderGrid(row : Int, col : Int) : Element {
+    return rows[row].cells[col].el;
   }
 
   /**
@@ -96,9 +87,15 @@ class Table {
     Note that this will remove any existing folds and fixed headers. It will
     also empty all table elements from the DOM and recreate them.
   **/
-  public function setData(?data : Array<Array<CellContent>>) : Table {
-    data = data != null ? data : [];
+  // TODO: public
+  function setData(data : FancyTableData) : Table {
+    return switch data {
+      case Tabular(data) : setTabularData(data);
+      case Nested(data) : setNestedData(data);
+    };
+  }
 
+  function setTabularData(data : Array<Array<CellContent>>) : Table {
     return data.reduce(function(table : Table, curr : Array<CellContent>) {
       var row = curr.reduce(function (row : Row, val : CellContent) {
         return row.appendCell(new Cell(val));
@@ -112,10 +109,10 @@ class Table {
     Uses `setData()` internally, but also adds classes and creates folds given
     nested data instead of just strings.
   **/
-  public function setNestedData(data : Array<RowData>, ?eachFold : Row -> Void) {
+  // TODO: public
+  function setNestedData(data : Array<RowData>, ?eachFold : Row -> Void) {
     empty();
     appendRowsWithChildren(data.toRows(eachFold));
-    tableEl.appendChild(grid.el);
     return this;
   }
 
@@ -127,7 +124,7 @@ class Table {
     instructions you provided. If possible, add all rows before setting fixed
     headers.
   **/
-  public function insertRowAt(index : Int, ?row : Row) : Table {
+  function insertRowAt(index : Int, ?row : Row) : Table {
     // TODO: if you're inserting a row within the range of the affixed header
     // rows, we need to re-create the header table
     // ALSO TODO: we need to grab the first n cells in the new row and add them
@@ -141,7 +138,9 @@ class Table {
     setColCount(row.cells.length);
 
     rows.insert(index, row);
-    grid.content.insertAtIndex(row.el, index);
+
+    // TODO: grid needs a way to add rows? no. kind of.
+    // grid.content.insertAtIndex(row.el, index);
     return this;
   }
 
@@ -174,7 +173,10 @@ class Table {
         row.fillWithCells(howMany - settings.colCount);
       });
     }
-    tableEl.removeClass('ft-table-${settings.colCount}-col').addClass('ft-table-$howMany-col');
+
+    // TODO:
+    // tableEl.removeClass('ft-table-${settings.colCount}-col')
+    //    .addClass('ft-table-$howMany-col');
     settings.colCount = howMany;
     return this;
   }
@@ -184,50 +186,51 @@ class Table {
     to make sure things don't get weird if you also fold rows at the top. Any
     folded child rows won't automatically become affixed if you fix the parent.
   **/
-  public function setFixedTop(?howMany = 1) : Table {
-    // TODO: if howmany < the previous value, the hidden cells in the previously
-    // hidden rows will not show up. we need to go through and clean up
-    for (i in Ints.min(howMany, fixedTop)...Ints.max(howMany, fixedTop)) {
-      // rows[i]
-      // cells[i].fixed = howMany > fixedTop;
-    }
-
-    // empty existing fixed-row table
-    grid.top
-      .empty()
-      .append(rows.slice(0, howMany).map(function (row) : Node {
-        return row.copy().el;
-      }));
-
-    fixedTop = howMany;
-    return updateFixedTopLeft();
-  }
+  // function setFixedTop(?howMany = 1) : Table {
+  //   // TODO: if howmany < the previous value, the hidden cells in the previously
+  //   // hidden rows will not show up. we need to go through and clean up
+  //   for (i in Ints.min(howMany, fixedTop)...Ints.max(howMany, fixedTop)) {
+  //     // rows[i]
+  //     // cells[i].fixed = howMany > fixedTop;
+  //   }
+  //
+  //   // empty existing fixed-row table
+  //   grid.top
+  //     .empty()
+  //     .append(rows.slice(0, howMany).map(function (row) : Node {
+  //       return row.copy().el;
+  //     }));
+  //
+  //   fixedTop = howMany;
+  //   return updateFixedTopLeft();
+  // }
 
   /**
     Creates a fixed header column on the left. You can optionally specify more
     than one column to be fixed.
   **/
-  public function setFixedLeft(?howMany = 1) : Table {
-    grid.left
-      .empty()
-      .append(rows.map(function (row) : Node {
-        return row.updateFixedCells(howMany);
-      }));
+  // public function setFixedLeft(?howMany = 1) : Table {
+  //   grid.left
+  //     .empty()
+  //     .append(rows.map(function (row) : Node {
+  //       return row.updateFixedCells(howMany);
+  //     }));
+  //
+  //   fixedLeft = howMany;
+  //   return updateFixedTopLeft();
+  // }
 
-    fixedLeft = howMany;
-    return updateFixedTopLeft();
-  }
+  // function updateFixedTopLeft() : Table {
+  //   grid.topLeft
+  //     .empty()
+  //     .append(rows.slice(0, fixedTop).map(function (row) : Node {
+  //       // FIXME: this copies all rows in `fixedTop`, even if nothing needs
+  //       // to be fixed left
+  //       return row.copy().updateFixedCells(fixedLeft);
+  //     }));
+  //   return this;
+  // }
 
-  function updateFixedTopLeft() : Table {
-    grid.topLeft
-      .empty()
-      .append(rows.slice(0, fixedTop).map(function (row) : Node {
-        // FIXME: this copies all rows in `fixedTop`, even if nothing needs
-        // to be fixed left
-        return row.copy().updateFixedCells(fixedLeft);
-      }));
-    return this;
-  }
   /**
     Sets the value of a cell given the 0-based index of the row and the 0-based
     index of the cell within that row. Cells can have strings, numbers, or html
@@ -236,14 +239,5 @@ class Table {
   public function setCellValue(row : Int, cell : Int, value : CellContent) : Table {
     rows[row].setCellValue(cell, value);
     return this;
-  }
-
-  /**
-    Creates a table instance from nested data, rather than rectangular data.
-    This automatically digs through the nested structure, creating folds as
-    needed.
-  **/
-  public static function fromNestedData(parent : Element, options : FancyNestedTableOptions) : Table {
-    return new Table(parent).setNestedData(options.data, options.eachFold);
   }
 }

@@ -1,82 +1,109 @@
-.ft-table {
+/* STRUCTURAL  */
+.fancy-grid,
+.fancy-grid * {
+  box-sizing: border-box;
+}
+.fancy-grid,
+.fancy-grid .view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.fancy-grid .row,
+.fancy-grid .column {
+  position: absolute;
+  overflow: hidden;
+}
+.fancy-grid .pane {
+  position: absolute;
+  overflow: hidden;
+}
+.fancy-grid .anchor {
+  position: relative;
+}
+.fancy-grid .row,
+.fancy-grid .column {
+  pointer-events: none;
+}
+.fancy-grid .grid9 .column.left {
+  z-index: 11;
+}
+.fancy-grid .grid9 .row.top {
+  z-index: 12;
+}
+.fancy-grid .grid9 .pane.middle.center {
+  z-index: 0;
+}
+.fancy-grid .grid9 .pane.middle.right {
+  z-index: 1;
+}
+.fancy-grid .grid9 .pane.middle.left {
+  z-index: 4;
+}
+.fancy-grid .grid9 .column.right {
+  z-index: 10;
+}
+.fancy-grid .grid9 .pane.bottom.right {
+  z-index: 3;
+}
+.fancy-grid .grid9 .pane.bottom.center {
+  z-index: 2;
+}
+.fancy-grid .grid9 .pane.bottom.left {
+  z-index: 5;
+}
+.fancy-grid .grid9 .row.bottom {
+  z-index: 6;
+}
+.fancy-grid .grid9 .pane.top.left {
+  z-index: 9;
+}
+.fancy-grid .grid9 .pane.top.right {
+  z-index: 8;
+}
+.fancy-grid .grid9 .pane.top.center {
+  z-index: 7;
+}
+.fancy-grid .grid9 .scroller {
+  background-color: rgba(0,0,0,0.2);
+  position: absolute;
+  z-index: 20;
+}
+.fancy-grid .grid9 .scroller:hover {
+  background-color: rgba(0,0,0,0.4);
+}
+.fancy-grid .grid9 .scroller.dragging {
+  background-color: rgba(0,0,0,0.6);
+}
+.fancy-grid .cell {
+  position: absolute;
+}
+.fancy-grid {
   background: #fafafa;
   border-top: 1px solid #ddd;
   border-left: 1px solid #ddd;
   font-size: 14px;
   position: relative;
 }
-.ft-table-fixed-top,
-.ft-table-fixed-left,
-.ft-table-fixed-top-left {
-  position: absolute;
-  top: 0;
-}
-.ft-table-fixed-top,
-.ft-table-fixed-top-left {
+.pane.top {
   font-weight: bold;
   background: #fff;
 }
-.ft-table-fixed-left {
+.pane.left {
   background: #fafafa;
 }
-.ft-table-fixed-top-left {
-  z-index: 1;
-}
-.ft-row-fixed,
-.ft-col-fixed {
-  visibility: hidden;
-}
-.ft-row {
-  border-bottom: 1px solid #ddd;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-}
-.ft-row-fold-header > .ft-cell:first-child {
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  cursor: pointer;
-}
-.ft-row-fold-header > .ft-cell:first-child:before {
-  content: "\25B8";
-  display: inline-block;
-  margin-right: 5px;
-}
-.ft-row-fold-header.ft-row-expanded > .ft-cell:first-child:before {
-  -webkit-transform: rotate(90deg);
-          transform: rotate(90deg);
-}
-.ft-row-indent-1 > .ft-cell:first-child {
-  padding-left: 24px;
-}
-.ft-row-indent-2 > .ft-cell:first-child {
-  padding-left: 40px;
-}
-.ft-row-indent-3 > .ft-cell:first-child {
-  padding-left: 56px;
-}
-.ft-row-hidden {
-  display: none;
-}
-.ft-cell {
+.cell {
   border-right: 1px solid #ddd;
   box-sizing: border-box;
-  -webkit-box-flex: 1;
-  -webkit-flex: auto;
-      -ms-flex: auto;
-          flex: auto;
   line-height: 16px;
   padding: 8px;
 }
-.ft-cell:nth-child(1) {
+.cell:nth-child(1) {
   width: 50%;
 }
-.ft-cell:nth-child(2),
-.ft-cell:nth-child(3),
-.ft-cell:nth-child(4) {
+.cell:nth-child(2),
+.cell:nth-child(3),
+.cell:nth-child(4) {
   width: 16.6667%;
 }
 .ft-table {
@@ -103,4 +130,33 @@
 .ft-cell:nth-child(3),
 .ft-cell:nth-child(4) {
   width: 150px;
+}
+.ft-row-fold-header > .ft-cell:first-child {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  cursor: pointer;
+}
+.ft-row-fold-header > .ft-cell:first-child:before {
+  content: "\25B8";
+  display: inline-block;
+  margin-right: 5px;
+}
+.ft-row-fold-header.ft-row-expanded > .ft-cell:first-child:before {
+  -webkit-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+          transform: rotate(90deg);
+}
+.ft-row-indent-1 > .ft-cell:first-child {
+  padding-left: 24px;
+}
+.ft-row-indent-2 > .ft-cell:first-child {
+  padding-left: 40px;
+}
+.ft-row-indent-3 > .ft-cell:first-child {
+  padding-left: 56px;
+}
+.ft-row-hidden {
+  display: none;
 }
