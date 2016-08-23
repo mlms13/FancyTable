@@ -10,10 +10,7 @@
   height: 100%;
 }
 .fancy-grid .row,
-.fancy-grid .column {
-  position: absolute;
-  overflow: hidden;
-}
+.fancy-grid .column,
 .fancy-grid .pane {
   position: absolute;
   overflow: hidden;
@@ -79,32 +76,31 @@
   position: absolute;
 }
 .fancy-grid {
-  background: #fafafa;
-  border-top: 1px solid #ddd;
-  border-left: 1px solid #ddd;
   font-size: 14px;
+  overflow: hidden;
   position: relative;
 }
-.pane.top {
-  font-weight: bold;
-  background: #fff;
-}
-.pane.left {
+.fancy-grid .pane {
   background: #fafafa;
 }
-.cell {
+.fancy-grid .pane.top {
+  font-weight: bold;
+  background: $cellHeaderColor;
+}
+.fancy-grid .cell {
   border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
   box-sizing: border-box;
   line-height: 16px;
   padding: 8px;
+  width: 20%;
 }
-.cell:nth-child(1) {
+.fancy-grid .cell.col-0 {
+  border-left: 1px solid #ddd;
   width: 50%;
 }
-.cell:nth-child(2),
-.cell:nth-child(3),
-.cell:nth-child(4) {
-  width: 16.6667%;
+.fancy-grid .row-0 {
+  border-top: 1px solid #ddd;
 }
 .ft-table {
   overflow: auto;

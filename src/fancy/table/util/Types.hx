@@ -6,10 +6,11 @@ enum FancyTableData {
 }
 
 typedef FancyTableOptions = {
-  ?classes : FancyTableClasses,
-  ?colCount : Int,
-  ?data : FancyTableData,
-  // TODO fixedtop count, and fixedleft count
+  ?classes: FancyTableClasses,
+  ?colCount: Int,
+  ?data: FancyTableData,
+  ?fixedTop: Int,
+  ?fixedLeft: Int
 };
 
 typedef FancyTableClasses = {

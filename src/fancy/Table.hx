@@ -26,10 +26,6 @@ class Table {
   var grid : Grid;
   var folds : Array<Tuple2<Int, Int>>;
 
-  // ints to track how many rows/cols are fixed in various places
-  var fixedTop : Int;
-  var fixedLeft : Int;
-
   /**
     A container element must be provided to the constructor. You may also
     provide an options object, though the only property you may wish to set with
@@ -46,15 +42,19 @@ class Table {
     grid = new Grid(parent, {
       rows: rows.length,
       columns: rows[0].cells.length, // FIXME: whoa buddy
-      render: renderGrid
+      render: renderGrid,
+      fixedLeft: settings.fixedLeft,
+      fixedTop: settings.fixedTop
     });
   }
 
   function createDefaultOptions(?options : FancyTableOptions) : FancyTableOptions {
     return Objects.merge({
-      classes : {},
-      colCount : 0,
-      data : []
+      classes: {},
+      colCount: 0,
+      fixedTop: 0,
+      fixedLeft: 0,
+      data: []
     }, options == null ? ({} : FancyTableOptions) : options);
   }
 
@@ -70,8 +70,6 @@ class Table {
     // grid.empty(); TODO
     rows = [];
     folds = [];
-    fixedTop = 0;
-    fixedLeft = 0;
     this.settings.data = Nested([]);
     return setColCount(0);
   }
@@ -220,16 +218,6 @@ class Table {
   //   return updateFixedTopLeft();
   // }
 
-  // function updateFixedTopLeft() : Table {
-  //   grid.topLeft
-  //     .empty()
-  //     .append(rows.slice(0, fixedTop).map(function (row) : Node {
-  //       // FIXME: this copies all rows in `fixedTop`, even if nothing needs
-  //       // to be fixed left
-  //       return row.copy().updateFixedCells(fixedLeft);
-  //     }));
-  //   return this;
-  // }
 
   /**
     Sets the value of a cell given the 0-based index of the row and the 0-based

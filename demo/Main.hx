@@ -101,13 +101,16 @@ class Main {
     }
 
     var table = new Table(el, {
-      data : Nested(toRowData(cards)),
+      data: Nested(toRowData(cards)),
+      fixedTop: 1,
+      fixedLeft: 1
       // eachFold : function (row) {
       //   row.cells[0].onclick = function (_) {
       //     row.toggle();
       //   }
       // }
     });
+      // TODO TODO: this comment is old, but maybe still useful?
       // TODO: Currently affixing has to be done after setting cell click
       // handlers. Otherwise the cell gets cloned before the handler is set.
       // We could "fix" this by keeping a reference to each copied cell or
