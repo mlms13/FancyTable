@@ -571,7 +571,32 @@ var fancy_Grid = function(parent,options) {
 	this.leftRailSize = this.hOffset(this.fixedLeft);
 	this.bottomRailSize = this.fixedBottom == 0?0:contentHeight - this.vOffset(this.rows - this.fixedBottom);
 	this.rightRailSize = this.fixedRight == 0?0:contentWidth - this.hOffset(this.columns - this.fixedRight);
-	this.grid9 = new fancy_core_Grid9(this.view,{ scrollerMinSize : 20.0, scrollerMaxSize : 160.0, scrollerSize : 10, contentWidth : contentWidth, contentHeight : contentHeight, topRail : this.topRailSize, leftRail : this.leftRailSize, bottomRail : this.bottomRailSize, rightRail : this.rightRailSize, onScroll : function(x,y,ox,oy) {
+	var _04 = options;
+	var t4;
+	if(null == _04) {
+		t4 = null;
+	} else {
+		var _14 = _04.scrollerSize;
+		if(null == _14) {
+			t4 = null;
+		} else {
+			t4 = _14;
+		}
+	}
+	var scrollerSize = t4 != null?t4:10;
+	var _05 = options;
+	var t5;
+	if(null == _05) {
+		t5 = null;
+	} else {
+		var _15 = _05.scrollerMinSize;
+		if(null == _15) {
+			t5 = null;
+		} else {
+			t5 = _15;
+		}
+	}
+	this.grid9 = new fancy_core_Grid9(this.view,{ scrollerMinSize : t5 != null?t5:scrollerSize, scrollerMaxSize : options.scrollerMaxSize, scrollerSize : scrollerSize, contentWidth : contentWidth, contentHeight : contentHeight, topRail : this.topRailSize, leftRail : this.leftRailSize, bottomRail : this.bottomRailSize, rightRail : this.rightRailSize, onScroll : function(x,y,ox,oy) {
 		if(oy != y) {
 			_gthis.renderMiddle(y);
 		}
@@ -1220,7 +1245,9 @@ var fancy_Table = function(parent,options) {
 	this.settings = this.createDefaultOptions(options);
 	this.settings.classes = this.createDefaultClasses(this.settings.classes);
 	this.setData(this.settings.data);
-	this.grid = new fancy_Grid(parent,{ rows : this.rows.length, columns : this.rows[0].cells.length, render : $bind(this,this.renderGrid), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
+	this.grid = new fancy_Grid(parent,{ rows : this.rows.length, columns : thx_Options.cata(thx_Arrays.getOption(this.rows,0),0,function(_) {
+		return _.cells.length;
+	}), render : $bind(this,this.renderGrid), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
 };
 fancy_Table.__name__ = true;
 fancy_Table.prototype = {
@@ -2729,6 +2756,11 @@ fancy_table_util_FancyTableData.Tabular = function(data) { var $x = ["Tabular",0
 fancy_table_util_FancyTableData.Nested = function(data) { var $x = ["Nested",1,data]; $x.__enum__ = fancy_table_util_FancyTableData; $x.toString = $estr; return $x; };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
+var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
+haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
+haxe_ds_Option.None = ["None",1];
+haxe_ds_Option.None.toString = $estr;
+haxe_ds_Option.None.__enum__ = haxe_ds_Option;
 var haxe_ds_StringMap = function() {
 	this.h = { };
 };
@@ -2888,6 +2920,14 @@ js_Boot.__string_rec = function(o,s) {
 };
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = true;
+thx_Arrays.getOption = function(array,i) {
+	var value = array[i];
+	if(null == value) {
+		return haxe_ds_Option.None;
+	} else {
+		return haxe_ds_Option.Some(value);
+	}
+};
 thx_Arrays.each = function(arr,effect) {
 	var _g1 = 0;
 	var _g = arr.length;
@@ -2984,6 +3024,16 @@ thx_Objects.combine = function(first,second) {
 		to[field1] = Reflect.field(second,field1);
 	}
 	return to;
+};
+var thx_Options = function() { };
+thx_Options.__name__ = true;
+thx_Options.cata = function(option,ifNone,f) {
+	switch(option[1]) {
+	case 0:
+		return f(option[2]);
+	case 1:
+		return ifNone;
+	}
 };
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }

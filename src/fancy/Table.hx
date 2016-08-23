@@ -10,8 +10,10 @@ import js.html.Element;
 import js.html.Node;
 using thx.Arrays;
 using thx.Functions;
+import thx.Functions.fn;
 import thx.Ints;
 using thx.Objects;
+using thx.Options;
 using thx.Tuple;
 
 /**
@@ -41,7 +43,7 @@ class Table {
     // create the grid
     grid = new Grid(parent, {
       rows: rows.length,
-      columns: rows[0].cells.length, // FIXME: whoa buddy
+      columns: rows.getOption(0).cata(0, fn(_.cells.length)),
       render: renderGrid,
       fixedLeft: settings.fixedLeft,
       fixedTop: settings.fixedTop
