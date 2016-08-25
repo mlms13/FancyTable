@@ -4,19 +4,33 @@ import dots.Dom;
 import js.html.Element;
 using thx.Strings;
 
-abstract CellContent(Element) from Element to Element {
-  @:from
-  public static inline function fromString(s : String) : CellContent
+typedef CellContentImpl = Void -> Element;
+
+abstract CellContent(CellContentImpl) from CellContentImpl to CellContentImpl {
+  static inline function spanWithContent(s: String)
     return Dom.create("span", s);
 
   @:from
-  public static inline function fromInt(i : Int) : CellContent
-    return Std.string(i);
+  public static function fromString(s: String): CellContent
+    return function () {
+      return spanWithContent(s);
+    }
 
   @:from
-  public static inline function fromFloat(f : Float) : CellContent
-    return Std.string(f);
+  public static inline function fromInt(i: Int): CellContent
+    return function () {
+      return spanWithContent(Std.string(i));
+    }
 
-  public inline function clone() : CellContent
-    return cast this.cloneNode(true);
+  @:from
+  public static inline function fromFloat(f: Float): CellContent
+    return spanWithContent.bind(Std.string(f));
+
+  inline function toElement() {
+    return this();
+  }
+
+  public static function render(renderer: CellContent): Element {
+    return renderer.toElement();
+  }
 }

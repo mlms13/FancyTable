@@ -68,16 +68,18 @@ class Main {
 
           // if there are no more groupBys, we're rendering actual cards
           return restOfGroupBys.length == 0 ? {
-            values : tuple.right.map(function (card) : Array<CellContent> {
+            values : tuple.right.map(function (card): Array<CellContent> {
               return [
-                Dom.create("span", [
-                  Dom.create("span", card.name),
-                  Dom.create("a", [
-                    "href" => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
-                  ], [
-                    Dom.create("i.fa.fa-external-link-square")
-                  ])
-                ]),
+                function () {
+                  return Dom.create("span", [
+                    Dom.create("span", card.name),
+                    Dom.create("a", [
+                      "href" => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
+                    ], [
+                      Dom.create("i.fa.fa-external-link-square")
+                    ])
+                  ]);
+                },
                 card.cmc, card.draftval, card.tcgprice
               ];
             }).flatten(),
@@ -104,19 +106,13 @@ class Main {
       data: Nested(toRowData(cards)),
       fixedTop: 1,
       fixedLeft: 1
+      // TODO:
       // eachFold : function (row) {
       //   row.cells[0].onclick = function (_) {
       //     row.toggle();
       //   }
       // }
     });
-      // TODO TODO: this comment is old, but maybe still useful?
-      // TODO: Currently affixing has to be done after setting cell click
-      // handlers. Otherwise the cell gets cloned before the handler is set.
-      // We could "fix" this by keeping a reference to each copied cell or
-      // by handling event setting at the Table level
-      // .setFixedTop()
-      // .setFixedLeft();
   }
 }
 

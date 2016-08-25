@@ -23,7 +23,6 @@ typedef FancyRowOptions = {
   ?classes : FancyRowClasses,
   ?colCount : Int,
   ?expanded : Bool,
-  ?hidden : Bool,
   ?fixedCellCount : Int,
   ?indentation : Int
 };
@@ -33,7 +32,6 @@ typedef FancyRowClasses = {
   ?expanded : String,
   ?collapsed : String,
   ?foldHeader : String,
-  ?hidden : String,
   ?indent : String,
   ?custom : Array<String>
 };

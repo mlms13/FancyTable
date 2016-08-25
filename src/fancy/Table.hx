@@ -1,7 +1,7 @@
 package fancy;
 
 import fancy.Grid;
-import fancy.table.*;
+import fancy.table.Row;
 using fancy.table.util.NestedData;
 import fancy.table.util.Types;
 import fancy.table.util.CellContent;
@@ -25,6 +25,7 @@ using thx.Tuple;
 class Table {
   public var rows(default, null) : Array<Row> = [];
   var settings : FancyTableOptions;
+  var maxColumns: Int;
   var grid : Grid;
   var folds : Array<Tuple2<Int, Int>>;
 
@@ -34,6 +35,7 @@ class Table {
     this object is the initial data.
   **/
   public function new(parent : Element, ?options : FancyTableOptions) {
+    maxColumns = 0;
     settings = createDefaultOptions(options);
     settings.classes = createDefaultClasses(settings.classes);
 
@@ -43,7 +45,7 @@ class Table {
     // create the grid
     grid = new Grid(parent, {
       rows: rows.length,
-      columns: rows.getOption(0).cata(0, fn(_.cells.length)),
+      columns: maxColumns,
       render: renderGrid,
       fixedLeft: settings.fixedLeft,
       fixedTop: settings.fixedTop
@@ -56,7 +58,7 @@ class Table {
       colCount: 0,
       fixedTop: 0,
       fixedLeft: 0,
-      data: []
+      data: Tabular([])
     }, options == null ? ({} : FancyTableOptions) : options);
   }
 
@@ -73,11 +75,14 @@ class Table {
     rows = [];
     folds = [];
     this.settings.data = Nested([]);
-    return setColCount(0);
+    maxColumns = 0;
+    return this;
   }
 
-  function renderGrid(row : Int, col : Int) : Element {
-    return rows[row].cells[col].el;
+  function renderGrid(row: Int, col: Int): Element {
+    // TODO: expose the fallback cellcontent through the options
+    var fallback: CellContent = "";
+    return rows.getOption(row).flatMap.fn(_.renderCell(col)).getOrElse(CellContent.render(fallback));
   }
 
   /**
@@ -87,33 +92,29 @@ class Table {
     Note that this will remove any existing folds and fixed headers. It will
     also empty all table elements from the DOM and recreate them.
   **/
-  // TODO: public
-  function setData(data : FancyTableData) : Table {
+  public function setData(data: FancyTableData): Table {
     return switch data {
-      case Tabular(data) : setTabularData(data);
-      case Nested(data) : setNestedData(data);
+      case Tabular(d): setTabularData(this.empty(), d);
+      case Nested(d): setNestedData(this.empty(), d);
     };
   }
 
-  function setTabularData(data : Array<Array<CellContent>>) : Table {
-    return data.reduce(function(table : Table, curr : Array<CellContent>) {
-      var row = curr.reduce(function (row : Row, val : CellContent) {
-        return row.appendCell(new Cell(val));
-      }, new Row());
-
-      return table.appendRow(row);
-    }, this.empty());
+  static function setTabularData(table: Table, data: Array<Array<CellContent>>): Table {
+    return data.reduce(function(t: Table, curr: Array<CellContent>) {
+      return t.appendRow(new Row(curr));
+    }, table);
   }
 
-  /**
-    Uses `setData()` internally, but also adds classes and creates folds given
-    nested data instead of just strings.
-  **/
-  // TODO: public
-  function setNestedData(data : Array<RowData>, ?eachFold : Row -> Void) {
-    empty();
-    appendRowsWithChildren(data.toRows(eachFold));
-    return this;
+  static function setNestedData(table: Table, data: Array<RowData>): Table {
+    return appendRowsWithChildren(table, data.toRows());
+  }
+
+  static function appendRowsWithChildren(table: Table, newRows: Array<Row>) {
+    return newRows.reduce(function (t: Table, row) {
+      trace('table appending row');
+      t.appendRow(row);
+      return appendRowsWithChildren(t, row.rows);
+    }, table);
   }
 
   /**
@@ -124,18 +125,14 @@ class Table {
     instructions you provided. If possible, add all rows before setting fixed
     headers.
   **/
-  function insertRowAt(index : Int, ?row : Row) : Table {
+  function insertRowAt(index : Int, row : Row) : Table {
     // TODO: if you're inserting a row within the range of the affixed header
     // rows, we need to re-create the header table
     // ALSO TODO: we need to grab the first n cells in the new row and add them
     // to the affixed header column table (where n = number of affixed cells)
-    row = row == null ? new Row({colCount : settings.colCount}) : row;
 
-    // if our new row has fewer cols than everybody else, fill it
-    row.fillWithCells(Ints.max(0, settings.colCount - row.cells.length));
-
-    // but if it has more than everybody else, fill those and increase our count
-    setColCount(row.cells.length);
+    // if our new row has more cells than everybody else, increase our count
+    maxColumns = Ints.max(maxColumns, row.cells.length);
 
     rows.insert(index, row);
 
@@ -147,84 +144,31 @@ class Table {
   /**
     Inserts a new row before all existing rows. If no row is provided, an empty
     row will be created.
-  **/
-  public function prependRow(?row : Row) : Table {
-    return insertRowAt(0, row);
-  }
 
-  function appendRowsWithChildren(rows : Array<Row>) {
-    return rows.reduce(function (table : Table, row) {
-      table.appendRow(row);
-      return appendRowsWithChildren(row.rows);
-    }, this);
-  }
+    TODO: in the following couple functions, whose job is it to tell the table
+    to re-render? We don't want `insertRowAt` to do it, because then it will get
+    hit over and over again and we run `setNestedData`. We don't want this
+    function to do it, because we've built these in a way to support chaining.
+    Maybe we expose a re-render function to the user, so they can:
+      .prepend(row1).append(row2).prepend(row3).redraw()
+  **/
+  public inline function prependRow(row: Row): Table
+    return insertRowAt(0, row);
 
   /**
     Inserts a new row after all existing rows. If no row is provided, an empty
     row will be created.
   **/
-  public function appendRow(?row : Row) : Table {
+  public inline function appendRow(row: Row): Table
     return insertRowAt(rows.length, row);
-  }
-
-  function setColCount(howMany : Int) : Table {
-    if (howMany > settings.colCount) {
-      rows.map(function(row) {
-        row.fillWithCells(howMany - settings.colCount);
-      });
-    }
-
-    // TODO:
-    // tableEl.removeClass('ft-table-${settings.colCount}-col')
-    //    .addClass('ft-table-$howMany-col');
-    settings.colCount = howMany;
-    return this;
-  }
-
-  /**
-    Creates a fixed header row at the top. Note that it's your responsibility
-    to make sure things don't get weird if you also fold rows at the top. Any
-    folded child rows won't automatically become affixed if you fix the parent.
-  **/
-  // function setFixedTop(?howMany = 1) : Table {
-  //   // TODO: if howmany < the previous value, the hidden cells in the previously
-  //   // hidden rows will not show up. we need to go through and clean up
-  //   for (i in Ints.min(howMany, fixedTop)...Ints.max(howMany, fixedTop)) {
-  //     // rows[i]
-  //     // cells[i].fixed = howMany > fixedTop;
-  //   }
-  //
-  //   // empty existing fixed-row table
-  //   grid.top
-  //     .empty()
-  //     .append(rows.slice(0, howMany).map(function (row) : Node {
-  //       return row.copy().el;
-  //     }));
-  //
-  //   fixedTop = howMany;
-  //   return updateFixedTopLeft();
-  // }
-
-  /**
-    Creates a fixed header column on the left. You can optionally specify more
-    than one column to be fixed.
-  **/
-  // public function setFixedLeft(?howMany = 1) : Table {
-  //   grid.left
-  //     .empty()
-  //     .append(rows.map(function (row) : Node {
-  //       return row.updateFixedCells(howMany);
-  //     }));
-  //
-  //   fixedLeft = howMany;
-  //   return updateFixedTopLeft();
-  // }
-
 
   /**
     Sets the value of a cell given the 0-based index of the row and the 0-based
     index of the cell within that row. Cells can have strings, numbers, or html
     elements as content.
+
+    TODO: who uses this, and does it really make sense for them to know about
+    the index of these things? What about indexes that are out of range?
   **/
   public function setCellValue(row : Int, cell : Int, value : CellContent) : Table {
     rows[row].setCellValue(cell, value);

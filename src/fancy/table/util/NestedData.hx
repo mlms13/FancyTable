@@ -1,6 +1,5 @@
 package fancy.table.util;
 
-import fancy.table.Cell;
 import fancy.table.Row;
 import fancy.table.util.Types;
 using thx.Arrays;
@@ -40,20 +39,16 @@ class NestedData {
     Builds rows and cells for all of the RowData, returning an array of nested
     Row objects (each with 0 or more Row children).
   **/
-  public static function toRows(data : Array<RowData>, indentation = 0, ?eachFold : Row -> Void) : Array<Row> {
-    return data.reduce(function (acc : Array<Row>, curr : RowData) {
-      var newRow = new Row(curr.values.map.fn(new Cell(_)));
+  public static function toRows(data: Array<RowData>, indentation = 0): Array<Row> {
+    return data.reduce(function (acc: Array<Row>, curr: RowData) {
+      var newRow = new Row(curr.values);
       newRow.setIndentation(indentation);
 
       var childRows = curr.data != null ?
-        toRows(curr.data, indentation + 1, eachFold) : [];
+        toRows(curr.data, indentation + 1) : [];
 
       if (childRows.length > 0) {
         newRow.addChildRows(childRows);
-
-        // TODO: this shouldn't be optional, but we have no way to currently
-        // handle this in fancygrid
-        if (eachFold != null) eachFold(newRow);
       }
 
       // apply any information stored in meta
