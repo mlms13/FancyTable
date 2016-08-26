@@ -1,7 +1,7 @@
 package fancy;
 
 import fancy.Grid;
-import fancy.table.Row;
+import fancy.table.*;
 using fancy.table.util.NestedData;
 import fancy.table.util.Types;
 import fancy.table.util.CellContent;
@@ -23,24 +23,21 @@ using thx.Tuple;
   return the instance of the table for easy chaining.
 **/
 class Table {
-  public var rows(default, null) : Array<Row> = [];
-  var settings : FancyTableOptions;
-  var maxColumns: Int;
-  var grid : Grid;
-  var folds : Array<Tuple2<Int, Int>>;
+  var settings: FancyTableSettings;
+  var grid: Grid;
+  var rows: Array<Row> = [];
+  var maxColumns: Int = 0;
 
   /**
     A container element must be provided to the constructor. You may also
     provide an options object, though the only property you may wish to set with
     this object is the initial data.
   **/
-  public function new(parent : Element, ?options : FancyTableOptions) {
-    maxColumns = 0;
-    settings = createDefaultOptions(options);
-    settings.classes = createDefaultClasses(settings.classes);
+  public function new(parent: Element, data: FancyTableData, ?options: FancyTableOptions) {
+    settings = FancyTableSettings.fromOptions(options);
 
     // fill with any data
-    setData(settings.data);
+    setData(data);
 
     // create the grid
     grid = new Grid(parent, {
@@ -52,29 +49,9 @@ class Table {
     });
   }
 
-  function createDefaultOptions(?options : FancyTableOptions) : FancyTableOptions {
-    return Objects.merge({
-      classes: {},
-      colCount: 0,
-      fixedTop: 0,
-      fixedLeft: 0,
-      data: Tabular([])
-    }, options == null ? ({} : FancyTableOptions) : options);
-  }
-
-  function createDefaultClasses(?classes : FancyTableClasses) {
-    return Objects.merge({
-      table : "ft-table",
-      scrollH : "ft-table-scroll-horizontal",
-      scrollV : "ft-table-scroll-vertical"
-    }, classes == null ? {} : classes);
-  }
-
   function empty() : Table {
     // grid.empty(); TODO
     rows = [];
-    folds = [];
-    this.settings.data = Nested([]);
     maxColumns = 0;
     return this;
   }

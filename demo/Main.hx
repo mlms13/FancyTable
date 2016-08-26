@@ -102,8 +102,7 @@ class Main {
       ]));
     }
 
-    var table = new Table(el, {
-      data: Nested(toRowData(cards)),
+    var table = new Table(el, Nested(toRowData(cards)), {
       fixedTop: 1,
       fixedLeft: 1
       // TODO:

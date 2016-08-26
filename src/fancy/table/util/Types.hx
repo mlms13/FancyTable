@@ -6,17 +6,8 @@ enum FancyTableData {
 }
 
 typedef FancyTableOptions = {
-  ?classes: FancyTableClasses,
-  ?colCount: Int,
-  ?data: FancyTableData,
   ?fixedTop: Int,
   ?fixedLeft: Int
-};
-
-typedef FancyTableClasses = {
-  ?table : String,
-  ?scrollH : String,
-  ?scrollV : String
 };
 
 typedef FancyRowOptions = {

@@ -217,7 +217,7 @@ Main.main = function() {
 		});
 	};
 	var cardsToRowData1 = cardsToRowData;
-	var table = new fancy_Table(el,{ data : fancy_table_util_FancyTableData.Nested((function(cards2) {
+	var table = new fancy_Table(el,fancy_table_util_FancyTableData.Nested((function(cards2) {
 		return [{ values : [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Cards"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("CMC"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Draft Value"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Price")]}].concat(cardsToRowData1(cards2,[function(card1) {
 			return card1.color;
 		},function(card2) {
@@ -227,7 +227,7 @@ Main.main = function() {
 		},function(card4) {
 			return card4.name;
 		}]));
-	})(cards)), fixedTop : 1, fixedLeft : 1});
+	})(cards)),{ fixedTop : 1, fixedLeft : 1});
 };
 Math.__name__ = true;
 var Reflect = function() { };
@@ -1105,12 +1105,11 @@ fancy_Grid.prototype = {
 		}
 	}
 };
-var fancy_Table = function(parent,options) {
-	this.rows = [];
+var fancy_Table = function(parent,data,options) {
 	this.maxColumns = 0;
-	this.settings = this.createDefaultOptions(options);
-	this.settings.classes = this.createDefaultClasses(this.settings.classes);
-	this.setData(this.settings.data);
+	this.rows = [];
+	this.settings = fancy_table_FancyTableSettings.fromOptions(options);
+	this.setData(data);
 	this.grid = new fancy_Grid(parent,{ rows : this.rows.length, columns : this.maxColumns, render : $bind(this,this.renderGrid), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
 };
 fancy_Table.__name__ = true;
@@ -1130,16 +1129,8 @@ fancy_Table.appendRowsWithChildren = function(table,newRows) {
 	},table);
 };
 fancy_Table.prototype = {
-	createDefaultOptions: function(options) {
-		return thx_Objects.combine({ classes : { }, colCount : 0, fixedTop : 0, fixedLeft : 0, data : fancy_table_util_FancyTableData.Tabular([])},options == null?{ }:options);
-	}
-	,createDefaultClasses: function(classes) {
-		return thx_Objects.combine({ table : "ft-table", scrollH : "ft-table-scroll-horizontal", scrollV : "ft-table-scroll-vertical"},classes == null?{ }:classes);
-	}
-	,empty: function() {
+	empty: function() {
 		this.rows = [];
-		this.folds = [];
-		this.settings.data = fancy_table_util_FancyTableData.Nested([]);
 		this.maxColumns = 0;
 		return this;
 	}
@@ -2297,6 +2288,17 @@ fancy_core_SwipeMoveHelper.prototype = {
 			}
 		}
 	}
+};
+var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft) {
+	this.fixedTop = fixedTop;
+	this.fixedLeft = fixedLeft;
+};
+fancy_table_FancyTableSettings.__name__ = true;
+fancy_table_FancyTableSettings.fromOptions = function(opts) {
+	if(opts == null) {
+		opts = { };
+	}
+	return new fancy_table_FancyTableSettings(opts.fixedTop != null?opts.fixedTop:0,opts.fixedLeft != null?opts.fixedLeft:0);
 };
 var fancy_table_Row = function(cells,options) {
 	this.cells = cells;
