@@ -75,7 +75,6 @@ $headerCellColor = #fff
     border-bottom 1px solid $borderColor
     box-sizing border-box
     line-height 16px
-    padding $basePadding
     width 20%
 
     &.col-0
@@ -85,13 +84,18 @@ $headerCellColor = #fff
   .row-0
     border-top 1px solid $borderColor
 
-@import "fixed" // leave this out if you want flexible cell widths
+.ft-cell-content
+  padding $basePadding
 
-// TODO: not applicable at the moment with the new fancy grid
-.ft-row
-  // rows that start a grouping
-  &-fold-header
-    > .ft-cell:first-child
+// leave this out if you want flexible cell widths
+// @import "fixed"
+
+// some cells in the first column need special styling to indicate their indent
+// level, or to show whether they have expanded/collapsed child rows
+.col-0
+  .ft-row
+    // rows that start a grouping
+    &-fold-header
       user-select none
       cursor pointer
 
@@ -100,12 +104,13 @@ $headerCellColor = #fff
         display inline-block
         margin-right 5px
 
-    &.ft-row-expanded > .ft-cell:first-child:before
+    &-expanded:before
       transform rotate(90deg)
 
-  &-indent-1 > .ft-cell:first-child
-    padding-left 24px
-  &-indent-2 > .ft-cell:first-child
-    padding-left 40px
-  &-indent-3 > .ft-cell:first-child
-    padding-left 56px
+    // indent
+    &-indent-1
+      padding-left 24px
+    &-indent-2
+      padding-left 40px
+    &-indent-3
+      padding-left 56px

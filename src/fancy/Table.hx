@@ -111,7 +111,6 @@ class Table {
 
   static function appendRowsWithChildren(table: Table, newRows: Array<Row>) {
     return newRows.reduce(function (t: Table, row) {
-      trace('table appending row');
       t.appendRow(row);
       return appendRowsWithChildren(t, row.rows);
     }, table);

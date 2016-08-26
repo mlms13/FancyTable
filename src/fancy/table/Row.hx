@@ -49,14 +49,17 @@ class Row {
   public function renderCell(col: Int): Option<Element> {
     return cells.getOption(col).map(function (cell) {
       var classes: Array<String> = [
-        settings.expanded ? settings.classes.expanded : settings.classes.collapsed,
+        "ft-cell-content",
         settings.classes.indent + Std.string(settings.indentation)
       ].concat(settings.classes.custom);
 
-      if (rows.length > 0) classes.push(settings.classes.foldHeader);
+      if (rows.length > 0) {
+        classes.push(settings.classes.foldHeader);
+        classes.push(settings.expanded ? settings.classes.expanded : settings.classes.collapsed);
+      }
 
       // TODO: why doesn't the macro let me set classes here?
-      return Dom.create("div", [
+      return Dom.create("div", ["class" => classes.join(" ")], [
         CellContent.render(cell)
       ]);
     });
@@ -76,12 +79,12 @@ class Row {
     return insertCell(cells.length, cell);
   }
 
-  public function addChildRow(child : Row) {
-    rows.push(child);
+  public function addChildRow(child: Row) {
+    rows = rows.append(child);
   }
 
   public inline function addChildRows(children: Array<Row>) {
-    rows.concat(children);
+    rows = rows.concat(children);
   }
 
   public function removeChildRow(child: Row) {

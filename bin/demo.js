@@ -1125,7 +1125,6 @@ fancy_Table.setNestedData = function(table,data) {
 };
 fancy_Table.appendRowsWithChildren = function(table,newRows) {
 	return thx_Arrays.reduce(newRows,function(t,row) {
-		console.log("table appending row");
 		t.insertRowAt(t.rows.length,row);
 		return fancy_Table.appendRowsWithChildren(t,row.rows);
 	},table);
@@ -2316,23 +2315,31 @@ fancy_table_Row.prototype = {
 	,renderCell: function(col) {
 		var _gthis = this;
 		return thx_Options.map(thx_Arrays.getOption(this.cells,col),function(cell) {
-			var classes = [_gthis.settings.expanded?_gthis.settings.classes.expanded:_gthis.settings.classes.collapsed,_gthis.settings.classes.indent + Std.string(_gthis.settings.indentation)].concat(_gthis.settings.classes.custom);
+			var classes = ["ft-cell-content",_gthis.settings.classes.indent + Std.string(_gthis.settings.indentation)].concat(_gthis.settings.classes.custom);
 			if(_gthis.rows.length > 0) {
 				classes.push(_gthis.settings.classes.foldHeader);
+				classes.push(_gthis.settings.expanded?_gthis.settings.classes.expanded:_gthis.settings.classes.collapsed);
 			}
 			var doc = null;
 			if(null == doc) {
 				doc = window.document;
 			}
 			var el = doc.createElement("div");
-			var _g = 0;
-			var _g1 = [];
-			while(_g < _g1.length) {
-				var o = _g1[_g];
-				++_g;
+			var _g1 = 0;
+			var _g2 = [];
+			while(_g1 < _g2.length) {
+				var o = _g2[_g1];
+				++_g1;
 				el.setAttribute(o.name,o.value);
 			}
-			var attrs = null;
+			var _g11 = new haxe_ds_StringMap();
+			var value = classes.join(" ");
+			if(__map_reserved["class"] != null) {
+				_g11.setReserved("class",value);
+			} else {
+				_g11.h["class"] = value;
+			}
+			var attrs = _g11;
 			if(null != attrs) {
 				var tmp = attrs.keys();
 				while(tmp.hasNext()) {
@@ -2342,10 +2349,10 @@ fancy_table_Row.prototype = {
 			}
 			var children = [fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell)];
 			if(null != children) {
-				var _g2 = 0;
-				while(_g2 < children.length) {
-					var child = children[_g2];
-					++_g2;
+				var _g21 = 0;
+				while(_g21 < children.length) {
+					var child = children[_g21];
+					++_g21;
 					el.appendChild(child);
 				}
 			}
@@ -2457,7 +2464,7 @@ fancy_table_util_NestedData.toRows = function(data,indentation) {
 		newRow.setIndentation(indentation);
 		var childRows = curr.data != null?fancy_table_util_NestedData.toRows(curr.data,indentation + 1):[];
 		if(childRows.length > 0) {
-			newRow.rows.concat(childRows);
+			newRow.rows = newRow.rows.concat(childRows);
 		}
 		if(curr.meta != null) {
 			if(curr.meta.classes != null) {
