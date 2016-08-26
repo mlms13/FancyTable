@@ -16,6 +16,12 @@ using thx.Objects;
 using thx.Options;
 using thx.Tuple;
 
+// TODO
+// enum Fold {
+//   Expanded(howMany: Int);
+//   Collapsed(howMany: Int);
+// }
+
 /**
   Create a new FancyTable by instantiating the `Table` class. A table instance
   provides you with read-only access to its rows, as well as methods for adding
@@ -58,8 +64,8 @@ class Table {
 
   function renderGrid(row: Int, col: Int): Element {
     // TODO: expose the fallback cellcontent through the options
-    var fallback: CellContent = "";
-    return rows.getOption(row).flatMap.fn(_.renderCell(col)).getOrElse(CellContent.render(fallback));
+    return rows.getOption(row).flatMap.fn(_.renderCell(col))
+      .getOrElse(Dom.create("span", ""));
   }
 
   /**
@@ -70,10 +76,20 @@ class Table {
     also empty all table elements from the DOM and recreate them.
   **/
   public function setData(data: FancyTableData): Table {
-    return switch data {
+    switch data {
       case Tabular(d): setTabularData(this.empty(), d);
       case Nested(d): setNestedData(this.empty(), d);
     };
+
+    // TODO
+    // var visibleRows = [];
+    // for (r in rows) {
+    //   if (!r.settings.expanded)
+    // }
+
+    // grid.setRowsAndColumns();
+
+    return this;
   }
 
   static function setTabularData(table: Table, data: Array<Array<CellContent>>): Table {
@@ -127,15 +143,17 @@ class Table {
     function to do it, because we've built these in a way to support chaining.
     Maybe we expose a re-render function to the user, so they can:
       .prepend(row1).append(row2).prepend(row3).redraw()
+
+    This only becomes an issue if we make these guys public again
   **/
-  public inline function prependRow(row: Row): Table
+  inline function prependRow(row: Row): Table
     return insertRowAt(0, row);
 
   /**
     Inserts a new row after all existing rows. If no row is provided, an empty
     row will be created.
   **/
-  public inline function appendRow(row: Row): Table
+  inline function appendRow(row: Row): Table
     return insertRowAt(rows.length, row);
 
   /**
@@ -143,11 +161,11 @@ class Table {
     index of the cell within that row. Cells can have strings, numbers, or html
     elements as content.
 
-    TODO: who uses this, and does it really make sense for them to know about
-    the index of these things? What about indexes that are out of range?
+    TODO: re-enable, but figure out whose job it is to re-render after calling
+    this, and figure out how to validate indexes that are out of range
   **/
-  public function setCellValue(row : Int, cell : Int, value : CellContent) : Table {
-    rows[row].setCellValue(cell, value);
-    return this;
-  }
+  // function setCellValue(row: Int, cell: Int, value: CellContent): Table {
+  //   rows[row].setCellValue(cell, value);
+  //   return this;
+  // }
 }

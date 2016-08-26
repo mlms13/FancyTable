@@ -61,6 +61,17 @@ class Main {
       tcgprice : 0.25
     }];
 
+    inline function foldHeader(text: String) {
+      return function (row: Row) {
+        var cell = Dom.create("span", text);
+        cell.on("click", function () {
+          row.toggle();
+          trace("clicked a cell header");
+        });
+        return cell;
+      }
+    }
+
     function cardsToRowData(cards : Array<Card>, groupBy : Array<Card -> String>) : Array<RowData> {
       return cards.groupByAppend(groupBy[0], new Map()).tuples()
         .map(function (tuple) : RowData {
@@ -70,7 +81,7 @@ class Main {
           return restOfGroupBys.length == 0 ? {
             values : tuple.right.map(function (card): Array<CellContent> {
               return [
-                function () {
+                function (_) {
                   return Dom.create("span", [
                     Dom.create("span", card.name),
                     Dom.create("a", [
@@ -85,7 +96,7 @@ class Main {
             }).flatten(),
             data : []
           } : {
-            values : [tuple.left],
+            values : [foldHeader(tuple.left)],
             data : cardsToRowData(tuple.right, restOfGroupBys)
           };
         });

@@ -13,24 +13,19 @@ using thx.Options;
 
 class Row {
   public var cells(default, null): Array<CellContent>;
-  public var rows(default, null): Array<Row>;
+  public var rows(default, null): Array<Row> = [];
   var settings: FancyRowOptions;
 
   public function new(cells: Array<CellContent>, ?options: FancyRowOptions) {
     this.cells = cells;
     settings = createDefaultOptions(options);
     settings.classes = createDefaultClasses(settings.classes);
-
-    rows = [];
   }
 
   function createDefaultOptions(?options : FancyRowOptions) {
     return Objects.merge({
       classes : {},
-      colCount : 0,
       expanded : true,
-      hidden : false,
-      fixedCellCount : 0,
       indentation : 0
     }, options == null ? ({} : FancyRowOptions) : options);
   }
@@ -58,9 +53,8 @@ class Row {
         classes.push(settings.expanded ? settings.classes.expanded : settings.classes.collapsed);
       }
 
-      // TODO: why doesn't the macro let me set classes here?
       return Dom.create("div", ["class" => classes.join(" ")], [
-        CellContent.render(cell)
+        CellContent.render(cell, this)
       ]);
     });
   }
@@ -72,7 +66,6 @@ class Row {
 
   public function setCustomClasses(classes: Array<String>) {
     settings.classes.custom = classes;
-    return this;
   }
 
   public function appendCell(cell: CellContent): Row {
@@ -89,14 +82,6 @@ class Row {
 
   public function removeChildRow(child: Row) {
     rows.remove(child);
-  }
-
-  public function setIndentation(indentation: Int) {
-    settings.indentation = indentation;
-  }
-
-  public function indent() {
-    setIndentation(settings.indentation++);
   }
 
   public function expand() {
@@ -117,6 +102,7 @@ class Row {
   **/
   public function setCellValue(index: Int, value: CellContent): Row {
     if (index >= cells.length) {
+      // TODO: throwing? find a better way
       return throw 'Cannot set "$value" for cell at index $index, which does not exist';
     }
 

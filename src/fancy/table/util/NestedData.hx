@@ -41,23 +41,20 @@ class NestedData {
   **/
   public static function toRows(data: Array<RowData>, indentation = 0): Array<Row> {
     return data.reduce(function (acc: Array<Row>, curr: RowData) {
-      var newRow = new Row(curr.values);
-      newRow.setIndentation(indentation);
+      if (curr.meta == null) curr.meta = {};
+      if (curr.data == null) curr.data = [];
 
-      var childRows = curr.data != null ?
-        toRows(curr.data, indentation + 1) : [];
+      var newRow = new Row(curr.values, {
+        indentation: indentation,
+        expanded: curr.meta.collapsed == null ? true : curr.meta.collapsed
+      });
 
-      if (childRows.length > 0) {
-        newRow.addChildRows(childRows);
-      }
+      if (curr.data.length > 0)
+        newRow.addChildRows(toRows(curr.data, indentation + 1));
 
-      // apply any information stored in meta
-      if (curr.meta != null) {
-        if (curr.meta.classes != null)
-          newRow.setCustomClasses(curr.meta.classes);
-        if (curr.meta.collapsed == true)
-          newRow.collapse();
-      }
+      // apply any classes stored in meta
+      if (curr.meta.classes != null)
+        newRow.setCustomClasses(curr.meta.classes);
 
       return acc.concat([newRow]);
     }, []);
