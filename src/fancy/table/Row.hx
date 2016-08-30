@@ -44,7 +44,6 @@ class Row {
   public function renderCell(table: Table, row: Int, col: Int): Option<Element> {
     return cells.getOption(col).map(function (cell) {
       var classes: Array<String> = [
-        "ft-cell-content",
         settings.classes.indent + Std.string(settings.indentation)
       ].concat(settings.classes.custom);
 
@@ -54,22 +53,14 @@ class Row {
       }
 
       return Dom.create("div", ["class" => classes.join(" ")], [
-        CellContent.render(cell, table, row, col)
+        // TODO: read this class from the settings or something
+        CellContent.render(cell, "ft-cell-content", table, row, col)
       ]);
     });
   }
 
-  public function insertCell(index: Int, cell: CellContent): Row {
-    cells.insert(index, cell);
-    return this;
-  }
-
   public function setCustomClasses(classes: Array<String>) {
     settings.classes.custom = classes;
-  }
-
-  public function appendCell(cell: CellContent): Row {
-    return insertCell(cells.length, cell);
   }
 
   public function addChildRow(child: Row) {

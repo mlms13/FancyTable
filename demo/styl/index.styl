@@ -95,7 +95,7 @@ $headerCellColor = #fff
 .col-0
   .ft-row
     // rows that start a grouping
-    &-fold-header
+    &-fold-header .ft-cell-content
       user-select none
       cursor pointer
 
@@ -103,14 +103,16 @@ $headerCellColor = #fff
         content "\25B8"
         display inline-block
         margin-right 5px
+        position relative
+        transition transform 300ms
 
-    &-expanded:before
+    &-expanded .ft-cell-content:before
       transform rotate(90deg)
 
     // indent
-    &-indent-1
+    &-indent-1 .ft-cell-content
       padding-left 24px
-    &-indent-2
+    &-indent-2 .ft-cell-content
       padding-left 40px
-    &-indent-3
+    &-indent-3 .ft-cell-content
       padding-left 56px

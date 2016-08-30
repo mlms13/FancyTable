@@ -104,29 +104,34 @@
 .ft-cell-content {
   padding: 8px;
 }
-.col-0 .ft-row-fold-header {
+.col-0 .ft-row-fold-header .ft-cell-content {
   -webkit-user-select: none;
      -moz-user-select: none;
       -ms-user-select: none;
           user-select: none;
   cursor: pointer;
 }
-.col-0 .ft-row-fold-header:before {
+.col-0 .ft-row-fold-header .ft-cell-content:before {
   content: "\25B8";
   display: inline-block;
   margin-right: 5px;
+  position: relative;
+  -webkit-transition: -webkit-transform 300ms;
+  transition: -webkit-transform 300ms;
+  transition: transform 300ms;
+  transition: transform 300ms, -webkit-transform 300ms;
 }
-.col-0 .ft-row-expanded:before {
+.col-0 .ft-row-expanded .ft-cell-content:before {
   -webkit-transform: rotate(90deg);
       -ms-transform: rotate(90deg);
           transform: rotate(90deg);
 }
-.col-0 .ft-row-indent-1 {
+.col-0 .ft-row-indent-1 .ft-cell-content {
   padding-left: 24px;
 }
-.col-0 .ft-row-indent-2 {
+.col-0 .ft-row-indent-2 .ft-cell-content {
   padding-left: 40px;
 }
-.col-0 .ft-row-indent-3 {
+.col-0 .ft-row-indent-3 .ft-cell-content {
   padding-left: 56px;
 }

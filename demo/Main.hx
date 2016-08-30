@@ -63,7 +63,7 @@ class Main {
 
     function foldHeader(text: String) {
       return function (ft: Table, row: Int, col: Int) {
-        var cell = Dom.create("span", text);
+        var cell = Dom.create("div.ft-cell-content", text);
         cell.on("click", function () {
           ft.toggleRow(row);
         });
@@ -81,7 +81,7 @@ class Main {
             values : tuple.right.map(function (card): Array<CellContent> {
               return [
                 function (_, _, _) {
-                  return Dom.create("span", [
+                  return Dom.create("div.ft-cell-content", [
                     Dom.create("span", card.name),
                     Dom.create("a", [
                       "href" => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'

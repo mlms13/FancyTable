@@ -21,9 +21,9 @@ Main.main = function() {
 			if(null == doc) {
 				doc = window.document;
 			}
-			var el1 = doc.createElement("span");
+			var el1 = doc.createElement("div");
 			var _g = 0;
-			var _g1 = [];
+			var _g1 = [{ value : "ft-cell-content", name : "class"}];
 			while(_g < _g1.length) {
 				var o = _g1[_g];
 				++_g;
@@ -67,183 +67,72 @@ Main.main = function() {
 			var restOfGroupBys = groupBy.slice(1);
 			if(restOfGroupBys.length == 0) {
 				var array = tuple._1.map(function(card) {
-					var i = card.cmc;
-					var tmp1 = function(_,_1,_2) {
+					return [fancy_table_util_CellContentImpl.LazyElement(function(_,_1,_2) {
 						var doc1 = null;
 						if(null == doc1) {
 							doc1 = window.document;
 						}
-						var el2 = doc1.createElement("span");
-						var _g3 = 0;
-						var _g11 = [];
-						while(_g3 < _g11.length) {
-							var o1 = _g11[_g3];
-							++_g3;
+						var el2 = doc1.createElement("div");
+						var _g11 = 0;
+						var _g21 = [{ value : "ft-cell-content", name : "class"}];
+						while(_g11 < _g21.length) {
+							var o1 = _g21[_g11];
+							++_g11;
 							el2.setAttribute(o1.name,o1.value);
 						}
 						var attrs1 = null;
 						if(null != attrs1) {
-							var tmp2 = attrs1.keys();
-							while(tmp2.hasNext()) {
-								var attr1 = tmp2.next();
+							var tmp1 = attrs1.keys();
+							while(tmp1.hasNext()) {
+								var attr1 = tmp1.next();
 								el2.setAttribute(attr1,__map_reserved[attr1] != null?attrs1.getReserved(attr1):attrs1.h[attr1]);
 							}
 						}
-						var children1 = null;
-						if(null != children1) {
-							var _g4 = 0;
-							while(_g4 < children1.length) {
-								var child1 = children1[_g4];
-								++_g4;
-								el2.appendChild(child1);
-							}
-						}
-						var textContent1 = i == null?"null":"" + i;
-						if(null != textContent1) {
-							el2.appendChild(doc1.createTextNode(textContent1));
-						}
-						return el2;
-					};
-					var f1 = card.draftval;
-					var tmp3 = function(_3,_4,_5) {
 						var doc2 = null;
 						if(null == doc2) {
 							doc2 = window.document;
 						}
 						var el3 = doc2.createElement("span");
-						var _g5 = 0;
-						var _g12 = [];
-						while(_g5 < _g12.length) {
-							var o2 = _g12[_g5];
-							++_g5;
+						var _g12 = 0;
+						var _g22 = [];
+						while(_g12 < _g22.length) {
+							var o2 = _g22[_g12];
+							++_g12;
 							el3.setAttribute(o2.name,o2.value);
 						}
 						var attrs2 = null;
 						if(null != attrs2) {
-							var tmp4 = attrs2.keys();
-							while(tmp4.hasNext()) {
-								var attr2 = tmp4.next();
+							var tmp2 = attrs2.keys();
+							while(tmp2.hasNext()) {
+								var attr2 = tmp2.next();
 								el3.setAttribute(attr2,__map_reserved[attr2] != null?attrs2.getReserved(attr2):attrs2.h[attr2]);
 							}
 						}
-						var children2 = null;
-						if(null != children2) {
-							var _g6 = 0;
-							while(_g6 < children2.length) {
-								var child2 = children2[_g6];
-								++_g6;
-								el3.appendChild(child2);
+						var children1 = null;
+						if(null != children1) {
+							var _g13 = 0;
+							while(_g13 < children1.length) {
+								var child1 = children1[_g13];
+								++_g13;
+								el3.appendChild(child1);
 							}
 						}
-						var textContent2 = f1 == null?"null":"" + f1;
-						if(null != textContent2) {
-							el3.appendChild(doc2.createTextNode(textContent2));
+						var textContent1 = card.name;
+						if(null != textContent1) {
+							el3.appendChild(doc2.createTextNode(textContent1));
 						}
-						return el3;
-					};
-					var f2 = card.tcgprice;
-					var tmp5 = function(_6,_7,_8) {
+						var tmp3 = el3;
 						var doc3 = null;
 						if(null == doc3) {
 							doc3 = window.document;
 						}
-						var el4 = doc3.createElement("span");
-						var _g7 = 0;
-						var _g13 = [];
-						while(_g7 < _g13.length) {
-							var o3 = _g13[_g7];
-							++_g7;
-							el4.setAttribute(o3.name,o3.value);
-						}
-						var attrs3 = null;
-						if(null != attrs3) {
-							var tmp6 = attrs3.keys();
-							while(tmp6.hasNext()) {
-								var attr3 = tmp6.next();
-								el4.setAttribute(attr3,__map_reserved[attr3] != null?attrs3.getReserved(attr3):attrs3.h[attr3]);
-							}
-						}
-						var children3 = null;
-						if(null != children3) {
-							var _g8 = 0;
-							while(_g8 < children3.length) {
-								var child3 = children3[_g8];
-								++_g8;
-								el4.appendChild(child3);
-							}
-						}
-						var textContent3 = f2 == null?"null":"" + f2;
-						if(null != textContent3) {
-							el4.appendChild(doc3.createTextNode(textContent3));
-						}
-						return el4;
-					};
-					return [function(_9,_10,_11) {
-						var doc4 = null;
-						if(null == doc4) {
-							doc4 = window.document;
-						}
-						var el5 = doc4.createElement("span");
-						var _g14 = 0;
-						var _g21 = [];
-						while(_g14 < _g21.length) {
-							var o4 = _g21[_g14];
-							++_g14;
-							el5.setAttribute(o4.name,o4.value);
-						}
-						var attrs4 = null;
-						if(null != attrs4) {
-							var tmp7 = attrs4.keys();
-							while(tmp7.hasNext()) {
-								var attr4 = tmp7.next();
-								el5.setAttribute(attr4,__map_reserved[attr4] != null?attrs4.getReserved(attr4):attrs4.h[attr4]);
-							}
-						}
-						var doc5 = null;
-						if(null == doc5) {
-							doc5 = window.document;
-						}
-						var el6 = doc5.createElement("span");
-						var _g15 = 0;
-						var _g22 = [];
-						while(_g15 < _g22.length) {
-							var o5 = _g22[_g15];
-							++_g15;
-							el6.setAttribute(o5.name,o5.value);
-						}
-						var attrs5 = null;
-						if(null != attrs5) {
-							var tmp8 = attrs5.keys();
-							while(tmp8.hasNext()) {
-								var attr5 = tmp8.next();
-								el6.setAttribute(attr5,__map_reserved[attr5] != null?attrs5.getReserved(attr5):attrs5.h[attr5]);
-							}
-						}
-						var children4 = null;
-						if(null != children4) {
-							var _g16 = 0;
-							while(_g16 < children4.length) {
-								var child4 = children4[_g16];
-								++_g16;
-								el6.appendChild(child4);
-							}
-						}
-						var textContent4 = card.name;
-						if(null != textContent4) {
-							el6.appendChild(doc5.createTextNode(textContent4));
-						}
-						var tmp9 = el6;
-						var doc6 = null;
-						if(null == doc6) {
-							doc6 = window.document;
-						}
-						var el7 = doc6.createElement("a");
+						var el4 = doc3.createElement("a");
 						var _g23 = 0;
-						var _g31 = [];
-						while(_g23 < _g31.length) {
-							var o6 = _g31[_g23];
+						var _g3 = [];
+						while(_g23 < _g3.length) {
+							var o3 = _g3[_g23];
 							++_g23;
-							el7.setAttribute(o6.name,o6.value);
+							el4.setAttribute(o3.name,o3.value);
 						}
 						var _g24 = new haxe_ds_StringMap();
 						var value = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId;
@@ -252,79 +141,79 @@ Main.main = function() {
 						} else {
 							_g24.h["href"] = value;
 						}
-						var attrs6 = _g24;
-						if(null != attrs6) {
-							var tmp10 = attrs6.keys();
-							while(tmp10.hasNext()) {
-								var attr6 = tmp10.next();
-								el7.setAttribute(attr6,__map_reserved[attr6] != null?attrs6.getReserved(attr6):attrs6.h[attr6]);
+						var attrs3 = _g24;
+						if(null != attrs3) {
+							var tmp4 = attrs3.keys();
+							while(tmp4.hasNext()) {
+								var attr3 = tmp4.next();
+								el4.setAttribute(attr3,__map_reserved[attr3] != null?attrs3.getReserved(attr3):attrs3.h[attr3]);
 							}
 						}
-						var doc7 = null;
-						if(null == doc7) {
-							doc7 = window.document;
+						var doc4 = null;
+						if(null == doc4) {
+							doc4 = window.document;
 						}
-						var el8 = doc7.createElement("i");
-						var _g32 = 0;
-						var _g41 = [{ value : "fa fa-external-link-square", name : "class"}];
-						while(_g32 < _g41.length) {
-							var o7 = _g41[_g32];
-							++_g32;
-							el8.setAttribute(o7.name,o7.value);
+						var el5 = doc4.createElement("i");
+						var _g31 = 0;
+						var _g4 = [{ value : "fa fa-external-link-square", name : "class"}];
+						while(_g31 < _g4.length) {
+							var o4 = _g4[_g31];
+							++_g31;
+							el5.setAttribute(o4.name,o4.value);
 						}
-						var attrs7 = null;
-						if(null != attrs7) {
-							var tmp11 = attrs7.keys();
-							while(tmp11.hasNext()) {
-								var attr7 = tmp11.next();
-								el8.setAttribute(attr7,__map_reserved[attr7] != null?attrs7.getReserved(attr7):attrs7.h[attr7]);
+						var attrs4 = null;
+						if(null != attrs4) {
+							var tmp5 = attrs4.keys();
+							while(tmp5.hasNext()) {
+								var attr4 = tmp5.next();
+								el5.setAttribute(attr4,__map_reserved[attr4] != null?attrs4.getReserved(attr4):attrs4.h[attr4]);
 							}
 						}
-						var children5 = null;
-						if(null != children5) {
+						var children2 = null;
+						if(null != children2) {
+							var _g32 = 0;
+							while(_g32 < children2.length) {
+								var child2 = children2[_g32];
+								++_g32;
+								el5.appendChild(child2);
+							}
+						}
+						var textContent2 = null;
+						if(null != textContent2) {
+							el5.appendChild(doc4.createTextNode(textContent2));
+						}
+						var children3 = [el5];
+						if(null != children3) {
 							var _g33 = 0;
-							while(_g33 < children5.length) {
-								var child5 = children5[_g33];
+							while(_g33 < children3.length) {
+								var child3 = children3[_g33];
 								++_g33;
-								el8.appendChild(child5);
+								el4.appendChild(child3);
 							}
 						}
-						var textContent5 = null;
-						if(null != textContent5) {
-							el8.appendChild(doc7.createTextNode(textContent5));
+						var textContent3 = null;
+						if(null != textContent3) {
+							el4.appendChild(doc3.createTextNode(textContent3));
 						}
-						var children6 = [el8];
-						if(null != children6) {
-							var _g34 = 0;
-							while(_g34 < children6.length) {
-								var child6 = children6[_g34];
-								++_g34;
-								el7.appendChild(child6);
-							}
-						}
-						var textContent6 = null;
-						if(null != textContent6) {
-							el7.appendChild(doc6.createTextNode(textContent6));
-						}
-						var children7 = [tmp9,el7];
-						if(null != children7) {
+						var children4 = [tmp3,el4];
+						if(null != children4) {
 							var _g25 = 0;
-							while(_g25 < children7.length) {
-								var child7 = children7[_g25];
+							while(_g25 < children4.length) {
+								var child4 = children4[_g25];
 								++_g25;
-								el5.appendChild(child7);
+								el2.appendChild(child4);
 							}
 						}
-						var textContent7 = null;
-						if(null != textContent7) {
-							el5.appendChild(doc4.createTextNode(textContent7));
+						var textContent4 = null;
+						if(null != textContent4) {
+							el2.appendChild(doc1.createTextNode(textContent4));
 						}
-						return el5;
-					},tmp1,tmp3,tmp5];
+						return el2;
+					}),fancy_table_util_CellContentImpl.RawValue(Std.string(card.cmc)),fancy_table_util_CellContentImpl.RawValue(Std.string(card.draftval)),fancy_table_util_CellContentImpl.RawValue(Std.string(card.tcgprice))];
 				});
 				return { values : Array.prototype.concat.apply([],array), data : []};
 			} else {
-				return { values : [foldHeader(tuple._0)], data : cardsToRowData(tuple._1,restOfGroupBys)};
+				return { values : [fancy_table_util_CellContentImpl.LazyElement(foldHeader(tuple._0))], data : cardsToRowData(tuple._1,restOfGroupBys)};
 			}
 		});
 	};
@@ -2016,7 +1905,6 @@ var fancy_core_Grid9 = function(parent,options) {
 	this.size = this.getGridSizeFromContainer();
 	this.resizeGrid(this.size.w,this.size.h);
 	this.resizeContent(options.contentWidth,options.contentHeight);
-	haxe_Log.trace("grid9 constructor toprail",{ fileName : "Grid9.hx", lineNumber : 161, className : "fancy.core.Grid9", methodName : "new", customParams : [options.topRail]});
 	var _03 = options;
 	var t3;
 	if(null == _03) {
@@ -2484,7 +2372,7 @@ fancy_table_Row.prototype = {
 	,renderCell: function(table,row,col) {
 		var _gthis = this;
 		return thx_Options.map(thx_Arrays.getOption(this.cells,col),function(cell) {
-			var classes = ["ft-cell-content",_gthis.settings.classes.indent + Std.string(_gthis.settings.indentation)].concat(_gthis.settings.classes.custom);
+			var classes = [_gthis.settings.classes.indent + Std.string(_gthis.settings.indentation)].concat(_gthis.settings.classes.custom);
 			if(_gthis.rows.length > 0) {
 				classes.push(_gthis.settings.classes.foldHeader);
 				classes.push(_gthis.settings.expanded?_gthis.settings.classes.expanded:_gthis.settings.classes.collapsed);
@@ -2516,7 +2404,7 @@ fancy_table_Row.prototype = {
 					el.setAttribute(attr,__map_reserved[attr] != null?attrs.getReserved(attr):attrs.h[attr]);
 				}
 			}
-			var children = [fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,table,row,col)];
+			var children = [fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,"ft-cell-content",table,row,col)];
 			if(null != children) {
 				var _g21 = 0;
 				while(_g21 < children.length) {
@@ -2539,23 +2427,37 @@ fancy_table_Row.prototype = {
 		this.settings.expanded = !this.settings.expanded;
 	}
 };
+var fancy_table_util_CellContentImpl = { __ename__ : true, __constructs__ : ["RawValue","LazyElement"] };
+fancy_table_util_CellContentImpl.RawValue = function(v) { var $x = ["RawValue",0,v]; $x.__enum__ = fancy_table_util_CellContentImpl; $x.toString = $estr; return $x; };
+fancy_table_util_CellContentImpl.LazyElement = function(fn) { var $x = ["LazyElement",1,fn]; $x.__enum__ = fancy_table_util_CellContentImpl; $x.toString = $estr; return $x; };
 var fancy_table_util__$CellContent_CellContent_$Impl_$ = {};
 fancy_table_util__$CellContent_CellContent_$Impl_$.__name__ = true;
 fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
-	return function(_,_1,_2) {
+	return fancy_table_util_CellContentImpl.RawValue(s);
+};
+fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(renderer,className,t,row,col) {
+	switch(renderer[1]) {
+	case 0:
+		var v = renderer[2];
 		var doc = null;
 		if(null == doc) {
 			doc = window.document;
 		}
-		var el = doc.createElement("span");
-		var _g = 0;
-		var _g1 = [];
-		while(_g < _g1.length) {
-			var o = _g1[_g];
-			++_g;
+		var el = doc.createElement("div");
+		var _g1 = 0;
+		var _g2 = [];
+		while(_g1 < _g2.length) {
+			var o = _g2[_g1];
+			++_g1;
 			el.setAttribute(o.name,o.value);
 		}
-		var attrs = null;
+		var _g11 = new haxe_ds_StringMap();
+		if(__map_reserved["class"] != null) {
+			_g11.setReserved("class",className);
+		} else {
+			_g11.h["class"] = className;
+		}
+		var attrs = _g11;
 		if(null != attrs) {
 			var tmp = attrs.keys();
 			while(tmp.hasNext()) {
@@ -2565,22 +2467,21 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
 		}
 		var children = null;
 		if(null != children) {
-			var _g2 = 0;
-			while(_g2 < children.length) {
-				var child = children[_g2];
-				++_g2;
+			var _g21 = 0;
+			while(_g21 < children.length) {
+				var child = children[_g21];
+				++_g21;
 				el.appendChild(child);
 			}
 		}
-		var textContent = s;
+		var textContent = v;
 		if(null != textContent) {
 			el.appendChild(doc.createTextNode(textContent));
 		}
 		return el;
-	};
-};
-fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(renderer,t,row,col) {
-	return renderer(t,row,col);
+	case 1:
+		return renderer[2](t,row,col);
+	}
 };
 var fancy_table_util_NestedData = function() { };
 fancy_table_util_NestedData.__name__ = true;
@@ -2610,11 +2511,6 @@ fancy_table_util_FancyTableData.Tabular = function(data) { var $x = ["Tabular",0
 fancy_table_util_FancyTableData.Nested = function(data) { var $x = ["Nested",1,data]; $x.__enum__ = fancy_table_util_FancyTableData; $x.toString = $estr; return $x; };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
-var haxe_Log = function() { };
-haxe_Log.__name__ = true;
-haxe_Log.trace = function(v,infos) {
-	js_Boot.__trace(v,infos);
-};
 var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
 haxe_ds_Option.None = ["None",1];
@@ -2674,35 +2570,6 @@ haxe_ds_StringMap.prototype = {
 };
 var js_Boot = function() { };
 js_Boot.__name__ = true;
-js_Boot.__unhtml = function(s) {
-	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-};
-js_Boot.__trace = function(v,i) {
-	var msg = i != null?i.fileName + ":" + i.lineNumber + ": ":"";
-	msg += js_Boot.__string_rec(v,"");
-	if(i != null && i.customParams != null) {
-		var _g = 0;
-		var _g1 = i.customParams;
-		while(_g < _g1.length) {
-			var v1 = _g1[_g];
-			++_g;
-			msg += "," + js_Boot.__string_rec(v1,"");
-		}
-	}
-	var d;
-	var tmp;
-	if(typeof(document) != "undefined") {
-		d = document.getElementById("haxe:trace");
-		tmp = d != null;
-	} else {
-		tmp = false;
-	}
-	if(tmp) {
-		d.innerHTML += js_Boot.__unhtml(msg) + "<br/>";
-	} else if(typeof console != "undefined" && console.log != null) {
-		console.log(msg);
-	}
-};
 js_Boot.__string_rec = function(o,s) {
 	if(o == null) {
 		return "null";
