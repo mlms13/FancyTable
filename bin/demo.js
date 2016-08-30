@@ -15,6 +15,52 @@ Main.__name__ = true;
 Main.main = function() {
 	var el = window.document.querySelector(".table-container");
 	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
+	var foldHeader = function(text) {
+		return function(ft,row,col) {
+			var doc = null;
+			if(null == doc) {
+				doc = window.document;
+			}
+			var el1 = doc.createElement("span");
+			var _g = 0;
+			var _g1 = [];
+			while(_g < _g1.length) {
+				var o = _g1[_g];
+				++_g;
+				el1.setAttribute(o.name,o.value);
+			}
+			var attrs = null;
+			if(null != attrs) {
+				var tmp = attrs.keys();
+				while(tmp.hasNext()) {
+					var attr = tmp.next();
+					el1.setAttribute(attr,__map_reserved[attr] != null?attrs.getReserved(attr):attrs.h[attr]);
+				}
+			}
+			var children = null;
+			if(null != children) {
+				var _g2 = 0;
+				while(_g2 < children.length) {
+					var child = children[_g2];
+					++_g2;
+					el1.appendChild(child);
+				}
+			}
+			var textContent = text;
+			if(null != textContent) {
+				el1.appendChild(doc.createTextNode(textContent));
+			}
+			var cell = el1;
+			var f = function() {
+				ft.toggleRow(row);
+			};
+			cell.addEventListener("click",function(e) {
+				e.preventDefault();
+				f();
+			});
+			return cell;
+		};
+	};
 	var cardsToRowData = null;
 	cardsToRowData = function(cards1,groupBy) {
 		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards1,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
@@ -22,44 +68,7 @@ Main.main = function() {
 			if(restOfGroupBys.length == 0) {
 				var array = tuple._1.map(function(card) {
 					var i = card.cmc;
-					var tmp = function(_) {
-						var doc = null;
-						if(null == doc) {
-							doc = window.document;
-						}
-						var el1 = doc.createElement("span");
-						var _g = 0;
-						var _g1 = [];
-						while(_g < _g1.length) {
-							var o = _g1[_g];
-							++_g;
-							el1.setAttribute(o.name,o.value);
-						}
-						var attrs = null;
-						if(null != attrs) {
-							var tmp1 = attrs.keys();
-							while(tmp1.hasNext()) {
-								var attr = tmp1.next();
-								el1.setAttribute(attr,__map_reserved[attr] != null?attrs.getReserved(attr):attrs.h[attr]);
-							}
-						}
-						var children = null;
-						if(null != children) {
-							var _g2 = 0;
-							while(_g2 < children.length) {
-								var child = children[_g2];
-								++_g2;
-								el1.appendChild(child);
-							}
-						}
-						var textContent = i == null?"null":"" + i;
-						if(null != textContent) {
-							el1.appendChild(doc.createTextNode(textContent));
-						}
-						return el1;
-					};
-					var f = card.draftval;
-					var tmp2 = function(_1) {
+					var tmp1 = function(_,_1,_2) {
 						var doc1 = null;
 						if(null == doc1) {
 							doc1 = window.document;
@@ -74,9 +83,9 @@ Main.main = function() {
 						}
 						var attrs1 = null;
 						if(null != attrs1) {
-							var tmp3 = attrs1.keys();
-							while(tmp3.hasNext()) {
-								var attr1 = tmp3.next();
+							var tmp2 = attrs1.keys();
+							while(tmp2.hasNext()) {
+								var attr1 = tmp2.next();
 								el2.setAttribute(attr1,__map_reserved[attr1] != null?attrs1.getReserved(attr1):attrs1.h[attr1]);
 							}
 						}
@@ -89,14 +98,14 @@ Main.main = function() {
 								el2.appendChild(child1);
 							}
 						}
-						var textContent1 = f == null?"null":"" + f;
+						var textContent1 = i == null?"null":"" + i;
 						if(null != textContent1) {
 							el2.appendChild(doc1.createTextNode(textContent1));
 						}
 						return el2;
 					};
-					var f1 = card.tcgprice;
-					var tmp4 = function(_2) {
+					var f1 = card.draftval;
+					var tmp3 = function(_3,_4,_5) {
 						var doc2 = null;
 						if(null == doc2) {
 							doc2 = window.document;
@@ -111,9 +120,9 @@ Main.main = function() {
 						}
 						var attrs2 = null;
 						if(null != attrs2) {
-							var tmp5 = attrs2.keys();
-							while(tmp5.hasNext()) {
-								var attr2 = tmp5.next();
+							var tmp4 = attrs2.keys();
+							while(tmp4.hasNext()) {
+								var attr2 = tmp4.next();
 								el3.setAttribute(attr2,__map_reserved[attr2] != null?attrs2.getReserved(attr2):attrs2.h[attr2]);
 							}
 						}
@@ -132,17 +141,18 @@ Main.main = function() {
 						}
 						return el3;
 					};
-					return [function(_3) {
+					var f2 = card.tcgprice;
+					var tmp5 = function(_6,_7,_8) {
 						var doc3 = null;
 						if(null == doc3) {
 							doc3 = window.document;
 						}
 						var el4 = doc3.createElement("span");
-						var _g13 = 0;
-						var _g21 = [];
-						while(_g13 < _g21.length) {
-							var o3 = _g21[_g13];
-							++_g13;
+						var _g7 = 0;
+						var _g13 = [];
+						while(_g7 < _g13.length) {
+							var o3 = _g13[_g7];
+							++_g7;
 							el4.setAttribute(o3.name,o3.value);
 						}
 						var attrs3 = null;
@@ -153,15 +163,31 @@ Main.main = function() {
 								el4.setAttribute(attr3,__map_reserved[attr3] != null?attrs3.getReserved(attr3):attrs3.h[attr3]);
 							}
 						}
+						var children3 = null;
+						if(null != children3) {
+							var _g8 = 0;
+							while(_g8 < children3.length) {
+								var child3 = children3[_g8];
+								++_g8;
+								el4.appendChild(child3);
+							}
+						}
+						var textContent3 = f2 == null?"null":"" + f2;
+						if(null != textContent3) {
+							el4.appendChild(doc3.createTextNode(textContent3));
+						}
+						return el4;
+					};
+					return [function(_9,_10,_11) {
 						var doc4 = null;
 						if(null == doc4) {
 							doc4 = window.document;
 						}
 						var el5 = doc4.createElement("span");
 						var _g14 = 0;
-						var _g22 = [];
-						while(_g14 < _g22.length) {
-							var o4 = _g22[_g14];
+						var _g21 = [];
+						while(_g14 < _g21.length) {
+							var o4 = _g21[_g14];
 							++_g14;
 							el5.setAttribute(o4.name,o4.value);
 						}
@@ -173,31 +199,51 @@ Main.main = function() {
 								el5.setAttribute(attr4,__map_reserved[attr4] != null?attrs4.getReserved(attr4):attrs4.h[attr4]);
 							}
 						}
-						var children3 = null;
-						if(null != children3) {
-							var _g15 = 0;
-							while(_g15 < children3.length) {
-								var child3 = children3[_g15];
-								++_g15;
-								el5.appendChild(child3);
-							}
-						}
-						var textContent3 = card.name;
-						if(null != textContent3) {
-							el5.appendChild(doc4.createTextNode(textContent3));
-						}
-						var tmp8 = el5;
 						var doc5 = null;
 						if(null == doc5) {
 							doc5 = window.document;
 						}
-						var el6 = doc5.createElement("a");
+						var el6 = doc5.createElement("span");
+						var _g15 = 0;
+						var _g22 = [];
+						while(_g15 < _g22.length) {
+							var o5 = _g22[_g15];
+							++_g15;
+							el6.setAttribute(o5.name,o5.value);
+						}
+						var attrs5 = null;
+						if(null != attrs5) {
+							var tmp8 = attrs5.keys();
+							while(tmp8.hasNext()) {
+								var attr5 = tmp8.next();
+								el6.setAttribute(attr5,__map_reserved[attr5] != null?attrs5.getReserved(attr5):attrs5.h[attr5]);
+							}
+						}
+						var children4 = null;
+						if(null != children4) {
+							var _g16 = 0;
+							while(_g16 < children4.length) {
+								var child4 = children4[_g16];
+								++_g16;
+								el6.appendChild(child4);
+							}
+						}
+						var textContent4 = card.name;
+						if(null != textContent4) {
+							el6.appendChild(doc5.createTextNode(textContent4));
+						}
+						var tmp9 = el6;
+						var doc6 = null;
+						if(null == doc6) {
+							doc6 = window.document;
+						}
+						var el7 = doc6.createElement("a");
 						var _g23 = 0;
 						var _g31 = [];
 						while(_g23 < _g31.length) {
-							var o5 = _g31[_g23];
+							var o6 = _g31[_g23];
 							++_g23;
-							el6.setAttribute(o5.name,o5.value);
+							el7.setAttribute(o6.name,o6.value);
 						}
 						var _g24 = new haxe_ds_StringMap();
 						var value = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId;
@@ -206,27 +252,7 @@ Main.main = function() {
 						} else {
 							_g24.h["href"] = value;
 						}
-						var attrs5 = _g24;
-						if(null != attrs5) {
-							var tmp9 = attrs5.keys();
-							while(tmp9.hasNext()) {
-								var attr5 = tmp9.next();
-								el6.setAttribute(attr5,__map_reserved[attr5] != null?attrs5.getReserved(attr5):attrs5.h[attr5]);
-							}
-						}
-						var doc6 = null;
-						if(null == doc6) {
-							doc6 = window.document;
-						}
-						var el7 = doc6.createElement("i");
-						var _g32 = 0;
-						var _g41 = [{ value : "fa fa-external-link-square", name : "class"}];
-						while(_g32 < _g41.length) {
-							var o6 = _g41[_g32];
-							++_g32;
-							el7.setAttribute(o6.name,o6.value);
-						}
-						var attrs6 = null;
+						var attrs6 = _g24;
 						if(null != attrs6) {
 							var tmp10 = attrs6.keys();
 							while(tmp10.hasNext()) {
@@ -234,96 +260,71 @@ Main.main = function() {
 								el7.setAttribute(attr6,__map_reserved[attr6] != null?attrs6.getReserved(attr6):attrs6.h[attr6]);
 							}
 						}
-						var children4 = null;
-						if(null != children4) {
-							var _g33 = 0;
-							while(_g33 < children4.length) {
-								var child4 = children4[_g33];
-								++_g33;
-								el7.appendChild(child4);
+						var doc7 = null;
+						if(null == doc7) {
+							doc7 = window.document;
+						}
+						var el8 = doc7.createElement("i");
+						var _g32 = 0;
+						var _g41 = [{ value : "fa fa-external-link-square", name : "class"}];
+						while(_g32 < _g41.length) {
+							var o7 = _g41[_g32];
+							++_g32;
+							el8.setAttribute(o7.name,o7.value);
+						}
+						var attrs7 = null;
+						if(null != attrs7) {
+							var tmp11 = attrs7.keys();
+							while(tmp11.hasNext()) {
+								var attr7 = tmp11.next();
+								el8.setAttribute(attr7,__map_reserved[attr7] != null?attrs7.getReserved(attr7):attrs7.h[attr7]);
 							}
 						}
-						var textContent4 = null;
-						if(null != textContent4) {
-							el7.appendChild(doc6.createTextNode(textContent4));
-						}
-						var children5 = [el7];
+						var children5 = null;
 						if(null != children5) {
-							var _g34 = 0;
-							while(_g34 < children5.length) {
-								var child5 = children5[_g34];
-								++_g34;
-								el6.appendChild(child5);
+							var _g33 = 0;
+							while(_g33 < children5.length) {
+								var child5 = children5[_g33];
+								++_g33;
+								el8.appendChild(child5);
 							}
 						}
 						var textContent5 = null;
 						if(null != textContent5) {
-							el6.appendChild(doc5.createTextNode(textContent5));
+							el8.appendChild(doc7.createTextNode(textContent5));
 						}
-						var children6 = [tmp8,el6];
+						var children6 = [el8];
 						if(null != children6) {
-							var _g25 = 0;
-							while(_g25 < children6.length) {
-								var child6 = children6[_g25];
-								++_g25;
-								el4.appendChild(child6);
+							var _g34 = 0;
+							while(_g34 < children6.length) {
+								var child6 = children6[_g34];
+								++_g34;
+								el7.appendChild(child6);
 							}
 						}
 						var textContent6 = null;
 						if(null != textContent6) {
-							el4.appendChild(doc3.createTextNode(textContent6));
+							el7.appendChild(doc6.createTextNode(textContent6));
 						}
-						return el4;
-					},tmp,tmp2,tmp4];
+						var children7 = [tmp9,el7];
+						if(null != children7) {
+							var _g25 = 0;
+							while(_g25 < children7.length) {
+								var child7 = children7[_g25];
+								++_g25;
+								el5.appendChild(child7);
+							}
+						}
+						var textContent7 = null;
+						if(null != textContent7) {
+							el5.appendChild(doc4.createTextNode(textContent7));
+						}
+						return el5;
+					},tmp1,tmp3,tmp5];
 				});
 				return { values : Array.prototype.concat.apply([],array), data : []};
 			} else {
-				var text = tuple._0;
-				return { values : [function(row) {
-					var doc7 = null;
-					if(null == doc7) {
-						doc7 = window.document;
-					}
-					var el8 = doc7.createElement("span");
-					var _g7 = 0;
-					var _g16 = [];
-					while(_g7 < _g16.length) {
-						var o7 = _g16[_g7];
-						++_g7;
-						el8.setAttribute(o7.name,o7.value);
-					}
-					var attrs7 = null;
-					if(null != attrs7) {
-						var tmp11 = attrs7.keys();
-						while(tmp11.hasNext()) {
-							var attr7 = tmp11.next();
-							el8.setAttribute(attr7,__map_reserved[attr7] != null?attrs7.getReserved(attr7):attrs7.h[attr7]);
-						}
-					}
-					var children7 = null;
-					if(null != children7) {
-						var _g8 = 0;
-						while(_g8 < children7.length) {
-							var child7 = children7[_g8];
-							++_g8;
-							el8.appendChild(child7);
-						}
-					}
-					var textContent7 = text;
-					if(null != textContent7) {
-						el8.appendChild(doc7.createTextNode(textContent7));
-					}
-					var cell = el8;
-					var f2 = function() {
-						row.toggle();
-						console.log("clicked a cell header");
-					};
-					cell.addEventListener("click",function(e) {
-						e.preventDefault();
-						f2();
-					});
-					return cell;
-				}], data : cardsToRowData(tuple._1,restOfGroupBys)};
+				return { values : [foldHeader(tuple._0)], data : cardsToRowData(tuple._1,restOfGroupBys)};
 			}
 		});
 	};
@@ -486,7 +487,7 @@ var fancy_Grid = function(parent,options) {
 	this.vOffset = this.assignVOffset(options.vOffset);
 	this.hOffset = this.assignHOffset(options.hOffset);
 	this.vSize = this.assignVSize(options.vSize);
-	this.hSize = this.assignHSize(options.hSize);
+	this.hSize = options.hSize != null?options.hSize:this.assignHSize();
 	this.rows = options.rows;
 	this.columns = options.columns;
 	var _0 = options;
@@ -605,7 +606,33 @@ var fancy_Grid = function(parent,options) {
 };
 fancy_Grid.__name__ = true;
 fancy_Grid.prototype = {
-	assignVSize: function(f) {
+	setRowsAndColumns: function(rows,columns) {
+		this.rows = rows;
+		this.columns = columns;
+		this.invalidateCache();
+		var contentWidth = this.hOffset(columns - 1) + this.hSize(columns - 1);
+		var contentHeight = this.vOffset(rows - 1) + this.vSize(rows - 1);
+		this.topRailSize = this.vOffset(this.fixedTop);
+		this.leftRailSize = this.hOffset(this.fixedLeft);
+		this.bottomRailSize = this.fixedBottom == 0?0:contentHeight - this.vOffset(rows - this.fixedBottom);
+		this.rightRailSize = this.fixedRight == 0?0:contentWidth - this.hOffset(columns - this.fixedRight);
+		this.grid9.resizeContent(contentWidth,contentHeight);
+		this.grid9.sizeRails(this.topRailSize,this.bottomRailSize,this.leftRailSize,this.rightRailSize);
+		this.renderCorners();
+		this.renderMiddle(this.grid9.position.y);
+		this.renderCenter(this.grid9.position.x);
+		this.renderMain(this.grid9.position.x,this.grid9.position.y);
+	}
+	,invalidateCache: function() {
+		var _g = 0;
+		var _g1 = this.caches;
+		while(_g < _g1.length) {
+			var cache = _g1[_g];
+			++_g;
+			cache.invalidate();
+		}
+	}
+	,assignVSize: function(f) {
 		var _gthis = this;
 		if(null != f) {
 			return f;
@@ -650,11 +677,8 @@ fancy_Grid.prototype = {
 			return v;
 		};
 	}
-	,assignHSize: function(f) {
+	,assignHSize: function() {
 		var _gthis = this;
-		if(null != f) {
-			return f;
-		}
 		var cache = new fancy_core_IntCache();
 		this.caches.push(cache);
 		return function(col) {
@@ -665,30 +689,25 @@ fancy_Grid.prototype = {
 			var els = [];
 			var el;
 			var _g1 = 0;
-			var a = _gthis.fixedTop + 1;
-			var _g = a > 2?a:2;
+			var _g = _gthis.rows;
 			while(_g1 < _g) {
-				el = _gthis.renderAt(_g1++,col);
-				els.push(el);
-				dots_Dom.append(_gthis.view,el);
+				var i = _g1++;
+				if(i < _gthis.fixedTop + 1 || i > _gthis.rows - _gthis.fixedBottom - 1) {
+					el = _gthis.renderAt(i,col);
+					els.push(el);
+					dots_Dom.append(_gthis.view,el);
+				}
 			}
-			var _g11 = _gthis.rows - _gthis.fixedBottom - 1;
-			var _g2 = _gthis.rows;
-			while(_g11 < _g2) {
-				el = _gthis.renderAt(_g11++,col);
-				els.push(el);
-				dots_Dom.append(_gthis.view,el);
+			var _g2 = 0;
+			while(_g2 < els.length) {
+				var el1 = els[_g2];
+				++_g2;
+				v = Math.max(v,el1.offsetWidth);
 			}
 			var _g3 = 0;
 			while(_g3 < els.length) {
-				var el1 = els[_g3];
+				var el2 = els[_g3];
 				++_g3;
-				v = Math.max(v,el1.offsetWidth);
-			}
-			var _g4 = 0;
-			while(_g4 < els.length) {
-				var el2 = els[_g4];
-				++_g4;
 				_gthis.view.removeChild(el2);
 			}
 			cache.cache[col] = v;
@@ -1218,39 +1237,37 @@ fancy_Grid.prototype = {
 };
 var fancy_Table = function(parent,data,options) {
 	this.maxColumns = 0;
+	this.visibleRows = [];
 	this.rows = [];
 	this.settings = fancy_table_FancyTableSettings.fromOptions(options);
+	this.grid = new fancy_Grid(parent,{ rows : 1, columns : 3, render : $bind(this,this.renderGrid), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
 	this.setData(data);
-	this.grid = new fancy_Grid(parent,{ rows : this.rows.length, columns : this.maxColumns, render : $bind(this,this.renderGrid), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
 };
 fancy_Table.__name__ = true;
-fancy_Table.setTabularData = function(table,data) {
-	return thx_Arrays.reduce(data,function(t,curr) {
-		var row = new fancy_table_Row(curr);
-		return t.insertRowAt(t.rows.length,row);
-	},table);
+fancy_Table.flattenVisibleRows = function(rows) {
+	return thx_Arrays.reduce(rows,function(acc,r) {
+		var children = r.settings.expanded?r.rows:[];
+		return thx_Arrays.append(acc,r).concat(fancy_Table.flattenVisibleRows(children));
+	},[]);
 };
-fancy_Table.setNestedData = function(table,data) {
-	return fancy_Table.appendRowsWithChildren(table,fancy_table_util_NestedData.toRows(data));
+fancy_Table.insertRowAt = function(table,index,newRow) {
+	var a = table.maxColumns;
+	var b = newRow.cells.length;
+	table.maxColumns = a > b?a:b;
+	table.rows.splice(index,0,newRow);
+	return table;
 };
-fancy_Table.appendRowsWithChildren = function(table,newRows) {
-	return thx_Arrays.reduce(newRows,function(t,row) {
-		t.insertRowAt(t.rows.length,row);
-		return fancy_Table.appendRowsWithChildren(t,row.rows);
-	},table);
+fancy_Table.tableAppendRow = function(table,row) {
+	return fancy_Table.insertRowAt(table,table.rows.length,row);
 };
 fancy_Table.prototype = {
-	empty: function() {
-		this.rows = [];
-		this.maxColumns = 0;
-		return this;
-	}
-	,renderGrid: function(row,col) {
-		var _e = thx_Arrays.getOption(this.rows,row);
+	renderGrid: function(row,col) {
+		var _gthis = this;
+		var _e = thx_Arrays.getOption(this.visibleRows,row);
 		var tmp = (function(callback) {
 			return thx_Options.flatMap(_e,callback);
 		})(function(_) {
-			return _.renderCell(col);
+			return _.renderCell(_gthis,row,col);
 		});
 		var doc = null;
 		if(null == doc) {
@@ -1290,20 +1307,25 @@ fancy_Table.prototype = {
 	,setData: function(data) {
 		switch(data[1]) {
 		case 0:
-			fancy_Table.setTabularData(this.empty(),data[2]);
+			thx_Arrays.reduce(data[2].map(function(_) {
+				return new fancy_table_Row(_);
+			}),fancy_Table.tableAppendRow,this);
 			break;
 		case 1:
-			fancy_Table.setNestedData(this.empty(),data[2]);
+			thx_Arrays.reduce(fancy_table_util_NestedData.toRows(data[2]),fancy_Table.tableAppendRow,this);
 			break;
 		}
+		this.visibleRows = fancy_Table.flattenVisibleRows(this.rows);
+		this.grid.setRowsAndColumns(this.visibleRows.length,this.maxColumns);
 		return this;
 	}
-	,insertRowAt: function(index,row) {
-		var a = this.maxColumns;
-		var b = row.cells.length;
-		this.maxColumns = a > b?a:b;
-		this.rows.splice(index,0,row);
-		return this;
+	,toggleRow: function(index) {
+		var _gthis = this;
+		thx_Options.map(thx_Arrays.getOption(this.visibleRows,index),function(r) {
+			r.toggle();
+			_gthis.visibleRows = fancy_Table.flattenVisibleRows(_gthis.rows);
+			_gthis.grid.setRowsAndColumns(_gthis.visibleRows.length,_gthis.maxColumns);
+		});
 	}
 };
 var fancy_core_DragMoveHelper = function(el,callback) {
@@ -1994,6 +2016,7 @@ var fancy_core_Grid9 = function(parent,options) {
 	this.size = this.getGridSizeFromContainer();
 	this.resizeGrid(this.size.w,this.size.h);
 	this.resizeContent(options.contentWidth,options.contentHeight);
+	haxe_Log.trace("grid9 constructor toprail",{ fileName : "Grid9.hx", lineNumber : 161, className : "fancy.core.Grid9", methodName : "new", customParams : [options.topRail]});
 	var _03 = options;
 	var t3;
 	if(null == _03) {
@@ -2194,9 +2217,6 @@ fancy_core_Grid9.prototype = {
 	}
 	,sizeRails: function(topRail,bottomRail,leftRail,rightRail) {
 		var _gthis = this;
-		if(this.topRail == topRail && this.bottomRail == bottomRail && this.leftRail == leftRail && this.rightRail == rightRail) {
-			return;
-		}
 		this.dirty = true;
 		this.topRail = topRail;
 		this.bottomRail = bottomRail;
@@ -2461,7 +2481,7 @@ fancy_table_Row.prototype = {
 	,createDefaultClasses: function(classes) {
 		return thx_Objects.combine({ row : "ft-row", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-", custom : []},classes == null?{ }:classes);
 	}
-	,renderCell: function(col) {
+	,renderCell: function(table,row,col) {
 		var _gthis = this;
 		return thx_Options.map(thx_Arrays.getOption(this.cells,col),function(cell) {
 			var classes = ["ft-cell-content",_gthis.settings.classes.indent + Std.string(_gthis.settings.indentation)].concat(_gthis.settings.classes.custom);
@@ -2496,7 +2516,7 @@ fancy_table_Row.prototype = {
 					el.setAttribute(attr,__map_reserved[attr] != null?attrs.getReserved(attr):attrs.h[attr]);
 				}
 			}
-			var children = [fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,_gthis)];
+			var children = [fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,table,row,col)];
 			if(null != children) {
 				var _g21 = 0;
 				while(_g21 < children.length) {
@@ -2522,7 +2542,7 @@ fancy_table_Row.prototype = {
 var fancy_table_util__$CellContent_CellContent_$Impl_$ = {};
 fancy_table_util__$CellContent_CellContent_$Impl_$.__name__ = true;
 fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
-	return function(_) {
+	return function(_,_1,_2) {
 		var doc = null;
 		if(null == doc) {
 			doc = window.document;
@@ -2559,8 +2579,8 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
 		return el;
 	};
 };
-fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(renderer,row) {
-	return renderer(row);
+fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(renderer,t,row,col) {
+	return renderer(t,row,col);
 };
 var fancy_table_util_NestedData = function() { };
 fancy_table_util_NestedData.__name__ = true;
@@ -2590,6 +2610,11 @@ fancy_table_util_FancyTableData.Tabular = function(data) { var $x = ["Tabular",0
 fancy_table_util_FancyTableData.Nested = function(data) { var $x = ["Nested",1,data]; $x.__enum__ = fancy_table_util_FancyTableData; $x.toString = $estr; return $x; };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
+var haxe_Log = function() { };
+haxe_Log.__name__ = true;
+haxe_Log.trace = function(v,infos) {
+	js_Boot.__trace(v,infos);
+};
 var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
 haxe_ds_Option.None = ["None",1];
@@ -2649,6 +2674,35 @@ haxe_ds_StringMap.prototype = {
 };
 var js_Boot = function() { };
 js_Boot.__name__ = true;
+js_Boot.__unhtml = function(s) {
+	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+};
+js_Boot.__trace = function(v,i) {
+	var msg = i != null?i.fileName + ":" + i.lineNumber + ": ":"";
+	msg += js_Boot.__string_rec(v,"");
+	if(i != null && i.customParams != null) {
+		var _g = 0;
+		var _g1 = i.customParams;
+		while(_g < _g1.length) {
+			var v1 = _g1[_g];
+			++_g;
+			msg += "," + js_Boot.__string_rec(v1,"");
+		}
+	}
+	var d;
+	var tmp;
+	if(typeof(document) != "undefined") {
+		d = document.getElementById("haxe:trace");
+		tmp = d != null;
+	} else {
+		tmp = false;
+	}
+	if(tmp) {
+		d.innerHTML += js_Boot.__unhtml(msg) + "<br/>";
+	} else if(typeof console != "undefined" && console.log != null) {
+		console.log(msg);
+	}
+};
 js_Boot.__string_rec = function(o,s) {
 	if(o == null) {
 		return "null";
@@ -2735,6 +2789,10 @@ js_Boot.__string_rec = function(o,s) {
 };
 var thx_Arrays = function() { };
 thx_Arrays.__name__ = true;
+thx_Arrays.append = function(array,element) {
+	array.push(element);
+	return array;
+};
 thx_Arrays.getOption = function(array,i) {
 	var value = array[i];
 	if(null == value) {

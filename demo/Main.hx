@@ -61,12 +61,11 @@ class Main {
       tcgprice : 0.25
     }];
 
-    inline function foldHeader(text: String) {
-      return function (row: Row) {
+    function foldHeader(text: String) {
+      return function (ft: Table, row: Int, col: Int) {
         var cell = Dom.create("span", text);
         cell.on("click", function () {
-          row.toggle();
-          trace("clicked a cell header");
+          ft.toggleRow(row);
         });
         return cell;
       }
@@ -81,7 +80,7 @@ class Main {
           return restOfGroupBys.length == 0 ? {
             values : tuple.right.map(function (card): Array<CellContent> {
               return [
-                function (_) {
+                function (_, _, _) {
                   return Dom.create("span", [
                     Dom.create("span", card.name),
                     Dom.create("a", [
@@ -116,12 +115,6 @@ class Main {
     var table = new Table(el, Nested(toRowData(cards)), {
       fixedTop: 1,
       fixedLeft: 1
-      // TODO:
-      // eachFold : function (row) {
-      //   row.cells[0].onclick = function (_) {
-      //     row.toggle();
-      //   }
-      // }
     });
   }
 }

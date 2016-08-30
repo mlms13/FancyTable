@@ -16,12 +16,6 @@ using thx.Objects;
 using thx.Options;
 using thx.Tuple;
 
-// TODO
-// enum Fold {
-//   Expanded(howMany: Int);
-//   Collapsed(howMany: Int);
-// }
-
 /**
   Create a new FancyTable by instantiating the `Table` class. A table instance
   provides you with read-only access to its rows, as well as methods for adding
@@ -32,6 +26,7 @@ class Table {
   var settings: FancyTableSettings;
   var grid: Grid;
   var rows: Array<Row> = [];
+  var visibleRows: Array<Row> = [];
   var maxColumns: Int = 0;
 
   /**
@@ -42,29 +37,25 @@ class Table {
   public function new(parent: Element, data: FancyTableData, ?options: FancyTableOptions) {
     settings = FancyTableSettings.fromOptions(options);
 
-    // fill with any data
-    setData(data);
-
     // create the grid
     grid = new Grid(parent, {
-      rows: rows.length,
-      columns: maxColumns,
+      // FIXME: these counts get immediately reset by the `setData` function
+      // we have to default them to non-zero things for now because FancyGrid
+      // fails otherwise
+      rows: 1,
+      columns: 3,
       render: renderGrid,
       fixedLeft: settings.fixedLeft,
       fixedTop: settings.fixedTop
     });
-  }
 
-  function empty() : Table {
-    // grid.empty(); TODO
-    rows = [];
-    maxColumns = 0;
-    return this;
+    // fill with any data
+    setData(data);
   }
 
   function renderGrid(row: Int, col: Int): Element {
     // TODO: expose the fallback cellcontent through the options
-    return rows.getOption(row).flatMap.fn(_.renderCell(col))
+    return visibleRows.getOption(row).flatMap.fn(_.renderCell(this, row, col))
       .getOrElse(Dom.create("span", ""));
   }
 
@@ -77,36 +68,30 @@ class Table {
   **/
   public function setData(data: FancyTableData): Table {
     switch data {
-      case Tabular(d): setTabularData(this.empty(), d);
-      case Nested(d): setNestedData(this.empty(), d);
+      case Tabular(d): setTabularData(this, d);
+      case Nested(d): setNestedData(this, d);
     };
 
-    // TODO
-    // var visibleRows = [];
-    // for (r in rows) {
-    //   if (!r.settings.expanded)
-    // }
-
-    // grid.setRowsAndColumns();
-
+    resetVisibleRowsAndRedraw();
     return this;
   }
 
-  static function setTabularData(table: Table, data: Array<Array<CellContent>>): Table {
-    return data.reduce(function(t: Table, curr: Array<CellContent>) {
-      return t.appendRow(new Row(curr));
-    }, table);
+  static inline function setTabularData(table: Table, data: Array<Array<CellContent>>): Table
+    return data.map.fn(new Row(_)).reduce(tableAppendRow, table);
+
+  static inline function setNestedData(table: Table, data: Array<RowData>): Table
+    return data.toRows().reduce(tableAppendRow, table);
+
+  inline function resetVisibleRowsAndRedraw() {
+    visibleRows = flattenVisibleRows(rows);
+    grid.setRowsAndColumns(visibleRows.length, maxColumns);
   }
 
-  static function setNestedData(table: Table, data: Array<RowData>): Table {
-    return appendRowsWithChildren(table, data.toRows());
-  }
-
-  static function appendRowsWithChildren(table: Table, newRows: Array<Row>) {
-    return newRows.reduce(function (t: Table, row) {
-      t.appendRow(row);
-      return appendRowsWithChildren(t, row.rows);
-    }, table);
+  static function flattenVisibleRows(rows: Array<Row>): Array<Row> {
+    return rows.reduce(function (acc: Array<Row>, r) {
+      var children = r.settings.expanded ? r.rows : [];
+      return acc.append(r).concat(flattenVisibleRows(children));
+    }, []);
   }
 
   /**
@@ -117,20 +102,20 @@ class Table {
     instructions you provided. If possible, add all rows before setting fixed
     headers.
   **/
-  function insertRowAt(index : Int, row : Row) : Table {
+  static function insertRowAt(table: Table, index: Int, newRow: Row): Table {
     // TODO: if you're inserting a row within the range of the affixed header
     // rows, we need to re-create the header table
     // ALSO TODO: we need to grab the first n cells in the new row and add them
     // to the affixed header column table (where n = number of affixed cells)
 
     // if our new row has more cells than everybody else, increase our count
-    maxColumns = Ints.max(maxColumns, row.cells.length);
+    table.maxColumns = Ints.max(table.maxColumns, newRow.cells.length);
 
-    rows.insert(index, row);
+    table.rows.insert(index, newRow);
 
     // TODO: grid needs a way to add rows? no. kind of.
     // grid.content.insertAtIndex(row.el, index);
-    return this;
+    return table;
   }
 
   /**
@@ -146,15 +131,26 @@ class Table {
 
     This only becomes an issue if we make these guys public again
   **/
-  inline function prependRow(row: Row): Table
-    return insertRowAt(0, row);
+  static inline function prependRow(table: Table, row: Row): Table
+    return insertRowAt(table, 0, row);
+
+  // Inserts a new row after all existing rows.
+  static inline function tableAppendRow(table: Table, row: Row): Table
+    return insertRowAt(table, table.rows.length, row);
+
 
   /**
-    Inserts a new row after all existing rows. If no row is provided, an empty
-    row will be created.
+    Switch a row's folded state between collapsed an expanded. The index
+    provided to this function should be its index in the rendered table, not its
+    index among all rows (some of which may be collapsed and hidden). The index
+    needed here will match the index provided to a CellContent's `render()`.
   **/
-  inline function appendRow(row: Row): Table
-    return insertRowAt(rows.length, row);
+  public function toggleRow(index: Int) {
+    visibleRows.getOption(index).map(function(r) {
+      r.toggle();
+      resetVisibleRowsAndRedraw();
+    });
+  }
 
   /**
     Sets the value of a cell given the 0-based index of the row and the 0-based

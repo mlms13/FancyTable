@@ -14,7 +14,7 @@ using thx.Options;
 class Row {
   public var cells(default, null): Array<CellContent>;
   public var rows(default, null): Array<Row> = [];
-  var settings: FancyRowOptions;
+  public var settings(default, null): FancyRowOptions;
 
   public function new(cells: Array<CellContent>, ?options: FancyRowOptions) {
     this.cells = cells;
@@ -41,7 +41,7 @@ class Row {
     }, classes == null ? {} : classes);
   }
 
-  public function renderCell(col: Int): Option<Element> {
+  public function renderCell(table: Table, row: Int, col: Int): Option<Element> {
     return cells.getOption(col).map(function (cell) {
       var classes: Array<String> = [
         "ft-cell-content",
@@ -54,7 +54,7 @@ class Row {
       }
 
       return Dom.create("div", ["class" => classes.join(" ")], [
-        CellContent.render(cell, this)
+        CellContent.render(cell, table, row, col)
       ]);
     });
   }
