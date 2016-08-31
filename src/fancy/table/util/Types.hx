@@ -1,29 +1,18 @@
 package fancy.table.util;
 
-enum FancyTableData {
-  Tabular(data : Array<Array<CellContent>>);
-  Nested(data : Array<RowData>);
-}
-
 typedef FancyTableOptions = {
   ?fixedTop: Int,
   ?fixedLeft: Int,
-  ?fallbackCell: CellContent
+  ?fallbackCell: CellContent,
+  ?classes: FancyTableClassOptions
 };
 
-typedef FancyRowOptions = {
-  ?classes: FancyRowClasses,
-  ?expanded: Bool,
-  ?indentation: Int
-};
-
-typedef FancyRowClasses = {
-  ?row : String,
-  ?expanded : String,
-  ?collapsed : String,
-  ?foldHeader : String,
-  ?indent : String,
-  ?custom : Array<String>
+typedef FancyTableClassOptions = {
+  ?cellContent: String,
+  ?rowExpanded: String,
+  ?rowCollapsed: String,
+  ?rowFoldHeader: String,
+  ?rowIndent: String
 };
 
 typedef RowData = {

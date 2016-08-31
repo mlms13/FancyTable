@@ -2,6 +2,7 @@ package fancy.table;
 
 import haxe.ds.Option;
 using dots.Dom;
+import fancy.table.FancyTableSettings;
 import fancy.table.util.Types;
 import fancy.table.util.CellContent;
 import js.html.Element;
@@ -14,43 +15,29 @@ using thx.Options;
 class Row {
   public var cells(default, null): Array<CellContent>;
   public var rows(default, null): Array<Row> = [];
-  public var settings(default, null): FancyRowOptions;
+  public var expanded(default, null): Bool;
+  var indentation: Int;
+  var classSettings: FancyTableClasses;
+  var customClasses: Array<String>;
 
-  public function new(cells: Array<CellContent>, ?options: FancyRowOptions) {
+  public function new(cells: Array<CellContent>, classSettings, ?customClasses, ?expanded = true, ?indentation = 0) {
     this.cells = cells;
-    settings = createDefaultOptions(options);
-    settings.classes = createDefaultClasses(settings.classes);
-  }
-
-  function createDefaultOptions(?options : FancyRowOptions) {
-    return Objects.merge({
-      classes : {},
-      expanded : true,
-      indentation : 0
-    }, options == null ? ({} : FancyRowOptions) : options);
-  }
-
-  function createDefaultClasses(?classes : FancyRowClasses) : FancyRowClasses {
-    return Objects.merge({
-      row : "ft-row",
-      expanded : "ft-row-expanded",
-      collapsed : "ft-row-collapsed",
-      foldHeader : "ft-row-fold-header",
-      indent : "ft-row-indent-",
-      custom : ([] : Array<String>)
-    }, classes == null ? {} : classes);
+    this.classSettings = classSettings;
+    this.customClasses = customClasses != null ? customClasses : [];
+    this.expanded = expanded;
+    this.indentation = indentation;
   }
 
   // Converts various bits of row-related state into classes for the DOM. These
   // classes get applied to each cell that is considered part of this row.
   function getClasses(): Array<String> {
     var classes: Array<String> = [
-    settings.classes.indent + Std.string(settings.indentation)
-    ].concat(settings.classes.custom);
+      classSettings.rowIndent + Std.string(indentation)
+    ].concat(customClasses);
 
     if (rows.length > 0) {
-      classes.push(settings.classes.foldHeader);
-      classes.push(settings.expanded ? settings.classes.expanded : settings.classes.collapsed);
+      classes.push(classSettings.rowFoldHeader);
+      classes.push(expanded ? classSettings.rowExpanded : classSettings.rowCollapsed);
     }
 
     return classes;
@@ -59,14 +46,9 @@ class Row {
   public function renderCell(table: Table, row: Int, col: Int): Option<Element> {
     return cells.getOption(col).map(function (cell) {
       return Dom.create("div", ["class" => getClasses().join(" ")], [
-        // TODO: read this class from the settings or something
-        cell.render("ft-cell-content", table, row, col)
+        cell.render(classSettings.cellContent, table, row, col)
       ]);
     });
-  }
-
-  public function setCustomClasses(classes: Array<String>) {
-    settings.classes.custom = classes;
   }
 
   public function addChildRow(child: Row) {
@@ -82,15 +64,15 @@ class Row {
   }
 
   public function expand() {
-    settings.expanded = true;
+    expanded = true;
   }
 
   public function collapse() {
-    settings.expanded = false;
+    expanded = false;
   }
 
   public function toggle() {
-    settings.expanded = !settings.expanded;
+    expanded = !expanded;
   }
 
   /**

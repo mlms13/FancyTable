@@ -16,6 +16,11 @@ using thx.Objects;
 using thx.Options;
 using thx.Tuple;
 
+enum FancyTableData {
+  Tabular(data : Array<Array<CellContent>>);
+  Nested(data : Array<RowData>);
+}
+
 /**
   Create a new FancyTable by instantiating the `Table` class. A table instance
   provides you with read-only access to its rows, as well as methods for adding
@@ -76,10 +81,10 @@ class Table {
   }
 
   static inline function setTabularData(table: Table, data: Array<Array<CellContent>>): Table
-    return data.map.fn(new Row(_)).reduce(tableAppendRow, table);
+    return data.map.fn(new Row(_, table.settings.classes)).reduce(tableAppendRow, table);
 
   static inline function setNestedData(table: Table, data: Array<RowData>): Table
-    return data.toRows().reduce(tableAppendRow, table);
+    return data.toRows(table.settings.classes).reduce(tableAppendRow, table);
 
   inline function resetVisibleRowsAndRedraw() {
     visibleRows = flattenVisibleRows(rows);
@@ -88,7 +93,7 @@ class Table {
 
   static function flattenVisibleRows(rows: Array<Row>): Array<Row> {
     return rows.reduce(function (acc: Array<Row>, r) {
-      var children = r.settings.expanded ? r.rows : [];
+      var children = r.expanded ? r.rows : [];
       return acc.append(r).concat(flattenVisibleRows(children));
     }, []);
   }

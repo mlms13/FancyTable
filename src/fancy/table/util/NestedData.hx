@@ -1,6 +1,7 @@
 package fancy.table.util;
 
 import fancy.table.Row;
+import fancy.table.FancyTableSettings;
 import fancy.table.util.Types;
 using thx.Arrays;
 using thx.Functions;
@@ -39,24 +40,17 @@ class NestedData {
     Builds rows and cells for all of the RowData, returning an array of nested
     Row objects (each with 0 or more Row children).
   **/
-  public static function toRows(data: Array<RowData>, indentation = 0): Array<Row> {
+  public static function toRows(data: Array<RowData>, classes: FancyTableClasses, indentation = 0): Array<Row> {
     return data.reduce(function (acc: Array<Row>, curr: RowData) {
       if (curr.meta == null) curr.meta = {};
       if (curr.data == null) curr.data = [];
 
-      var newRow = new Row(curr.values, {
-        indentation: indentation,
-        expanded: curr.meta.collapsed == null ? true : curr.meta.collapsed
-      });
+      var newRow = new Row(curr.values, classes, curr.meta.classes, curr.meta.collapsed, indentation);
 
       if (curr.data.length > 0)
-        newRow.addChildRows(toRows(curr.data, indentation + 1));
+        newRow.addChildRows(toRows(curr.data, classes, indentation + 1));
 
-      // apply any classes stored in meta
-      if (curr.meta.classes != null)
-        newRow.setCustomClasses(curr.meta.classes);
-
-      return acc.concat([newRow]);
+      return acc.append(newRow);
     }, []);
   }
 }
