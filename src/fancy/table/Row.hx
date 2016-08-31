@@ -41,20 +41,26 @@ class Row {
     }, classes == null ? {} : classes);
   }
 
+  // Converts various bits of row-related state into classes for the DOM. These
+  // classes get applied to each cell that is considered part of this row.
+  function getClasses(): Array<String> {
+    var classes: Array<String> = [
+    settings.classes.indent + Std.string(settings.indentation)
+    ].concat(settings.classes.custom);
+
+    if (rows.length > 0) {
+      classes.push(settings.classes.foldHeader);
+      classes.push(settings.expanded ? settings.classes.expanded : settings.classes.collapsed);
+    }
+
+    return classes;
+  }
+
   public function renderCell(table: Table, row: Int, col: Int): Option<Element> {
     return cells.getOption(col).map(function (cell) {
-      var classes: Array<String> = [
-        settings.classes.indent + Std.string(settings.indentation)
-      ].concat(settings.classes.custom);
-
-      if (rows.length > 0) {
-        classes.push(settings.classes.foldHeader);
-        classes.push(settings.expanded ? settings.classes.expanded : settings.classes.collapsed);
-      }
-
-      return Dom.create("div", ["class" => classes.join(" ")], [
+      return Dom.create("div", ["class" => getClasses().join(" ")], [
         // TODO: read this class from the settings or something
-        CellContent.render(cell, "ft-cell-content", table, row, col)
+        cell.render("ft-cell-content", table, row, col)
       ]);
     });
   }

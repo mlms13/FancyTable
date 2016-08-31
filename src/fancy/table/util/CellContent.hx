@@ -35,8 +35,8 @@ abstract CellContent(CellContentImpl) from CellContentImpl to CellContentImpl {
   public static inline function fromCellRenderer(fn: CellRenderer): CellContent
     return LazyElement(fn);
 
-  public static function render(renderer: CellContent, className: String, t: Table, row: Int, col: Int): Element {
-    return switch renderer {
+  public function render(className: String, t: Table, row: Int, col: Int): Element {
+    return switch this {
       case RawValue(v): Dom.create("div", ["class" => className], v);
       case LazyElement(fn): fn(t, row, col);
     };

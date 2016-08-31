@@ -44,7 +44,7 @@ class Table {
       // fails otherwise
       rows: 1,
       columns: 3,
-      render: renderGrid,
+      render: renderGridCell,
       fixedLeft: settings.fixedLeft,
       fixedTop: settings.fixedTop
     });
@@ -53,10 +53,9 @@ class Table {
     setData(data);
   }
 
-  function renderGrid(row: Int, col: Int): Element {
-    // TODO: expose the fallback cellcontent through the options
+  function renderGridCell(row: Int, col: Int): Element {
     return visibleRows.getOption(row).flatMap.fn(_.renderCell(this, row, col))
-      .getOrElse(Dom.create("span", ""));
+      .getOrElse(settings.fallbackCell.render("ft-cell-content", this, row, col));
   }
 
   /**

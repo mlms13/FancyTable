@@ -1129,7 +1129,7 @@ var fancy_Table = function(parent,data,options) {
 	this.visibleRows = [];
 	this.rows = [];
 	this.settings = fancy_table_FancyTableSettings.fromOptions(options);
-	this.grid = new fancy_Grid(parent,{ rows : 1, columns : 3, render : $bind(this,this.renderGrid), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
+	this.grid = new fancy_Grid(parent,{ rows : 1, columns : 3, render : $bind(this,this.renderGridCell), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
 	this.setData(data);
 };
 fancy_Table.__name__ = true;
@@ -1150,48 +1150,14 @@ fancy_Table.tableAppendRow = function(table,row) {
 	return fancy_Table.insertRowAt(table,table.rows.length,row);
 };
 fancy_Table.prototype = {
-	renderGrid: function(row,col) {
+	renderGridCell: function(row,col) {
 		var _gthis = this;
 		var _e = thx_Arrays.getOption(this.visibleRows,row);
-		var tmp = (function(callback) {
+		return thx_Options.getOrElse((function(callback) {
 			return thx_Options.flatMap(_e,callback);
 		})(function(_) {
 			return _.renderCell(_gthis,row,col);
-		});
-		var doc = null;
-		if(null == doc) {
-			doc = window.document;
-		}
-		var el = doc.createElement("span");
-		var _g = 0;
-		var _g1 = [];
-		while(_g < _g1.length) {
-			var o = _g1[_g];
-			++_g;
-			el.setAttribute(o.name,o.value);
-		}
-		var attrs = null;
-		if(null != attrs) {
-			var tmp1 = attrs.keys();
-			while(tmp1.hasNext()) {
-				var attr = tmp1.next();
-				el.setAttribute(attr,__map_reserved[attr] != null?attrs.getReserved(attr):attrs.h[attr]);
-			}
-		}
-		var children = null;
-		if(null != children) {
-			var _g2 = 0;
-			while(_g2 < children.length) {
-				var child = children[_g2];
-				++_g2;
-				el.appendChild(child);
-			}
-		}
-		var textContent = "";
-		if(null != textContent) {
-			el.appendChild(doc.createTextNode(textContent));
-		}
-		return thx_Options.getOrElse(tmp,el);
+		}),fancy_table_util__$CellContent_CellContent_$Impl_$.render(this.settings.fallbackCell,"ft-cell-content",this,row,col));
 	}
 	,setData: function(data) {
 		switch(data[1]) {
@@ -2344,16 +2310,17 @@ fancy_core_SwipeMoveHelper.prototype = {
 		}
 	}
 };
-var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft) {
+var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell) {
 	this.fixedTop = fixedTop;
 	this.fixedLeft = fixedLeft;
+	this.fallbackCell = fallbackCell;
 };
 fancy_table_FancyTableSettings.__name__ = true;
 fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(opts == null) {
 		opts = { };
 	}
-	return new fancy_table_FancyTableSettings(opts.fixedTop != null?opts.fixedTop:0,opts.fixedLeft != null?opts.fixedLeft:0);
+	return new fancy_table_FancyTableSettings(opts.fixedTop != null?opts.fixedTop:0,opts.fixedLeft != null?opts.fixedLeft:0,opts.fallbackCell != null?opts.fallbackCell:fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(""));
 };
 var fancy_table_Row = function(cells,options) {
 	this.rows = [];
@@ -2369,14 +2336,17 @@ fancy_table_Row.prototype = {
 	,createDefaultClasses: function(classes) {
 		return thx_Objects.combine({ row : "ft-row", expanded : "ft-row-expanded", collapsed : "ft-row-collapsed", foldHeader : "ft-row-fold-header", indent : "ft-row-indent-", custom : []},classes == null?{ }:classes);
 	}
+	,getClasses: function() {
+		var classes = [this.settings.classes.indent + Std.string(this.settings.indentation)].concat(this.settings.classes.custom);
+		if(this.rows.length > 0) {
+			classes.push(this.settings.classes.foldHeader);
+			classes.push(this.settings.expanded?this.settings.classes.expanded:this.settings.classes.collapsed);
+		}
+		return classes;
+	}
 	,renderCell: function(table,row,col) {
 		var _gthis = this;
 		return thx_Options.map(thx_Arrays.getOption(this.cells,col),function(cell) {
-			var classes = [_gthis.settings.classes.indent + Std.string(_gthis.settings.indentation)].concat(_gthis.settings.classes.custom);
-			if(_gthis.rows.length > 0) {
-				classes.push(_gthis.settings.classes.foldHeader);
-				classes.push(_gthis.settings.expanded?_gthis.settings.classes.expanded:_gthis.settings.classes.collapsed);
-			}
 			var doc = null;
 			if(null == doc) {
 				doc = window.document;
@@ -2390,7 +2360,7 @@ fancy_table_Row.prototype = {
 				el.setAttribute(o.name,o.value);
 			}
 			var _g11 = new haxe_ds_StringMap();
-			var value = classes.join(" ");
+			var value = _gthis.getClasses().join(" ");
 			if(__map_reserved["class"] != null) {
 				_g11.setReserved("class",value);
 			} else {
@@ -2435,10 +2405,10 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.__name__ = true;
 fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
 	return fancy_table_util_CellContentImpl.RawValue(s);
 };
-fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(renderer,className,t,row,col) {
-	switch(renderer[1]) {
+fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(this1,className,t,row,col) {
+	switch(this1[1]) {
 	case 0:
-		var v = renderer[2];
+		var v = this1[2];
 		var doc = null;
 		if(null == doc) {
 			doc = window.document;
@@ -2480,7 +2450,7 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(renderer,cl
 		}
 		return el;
 	case 1:
-		return renderer[2](t,row,col);
+		return this1[2](t,row,col);
 	}
 };
 var fancy_table_util_NestedData = function() { };

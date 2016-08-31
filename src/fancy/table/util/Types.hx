@@ -7,7 +7,8 @@ enum FancyTableData {
 
 typedef FancyTableOptions = {
   ?fixedTop: Int,
-  ?fixedLeft: Int
+  ?fixedLeft: Int,
+  ?fallbackCell: CellContent
 };
 
 typedef FancyRowOptions = {
