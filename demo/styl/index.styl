@@ -1,74 +1,118 @@
 $basePadding = 8px
 
-.ft
-  &-table
-    background #fafafa
-    border-top 1px solid #ddd
-    border-left 1px solid #ddd
-    font-size 14px
-    position relative
+$borderColor = #ddd
+$cellColor = #fafafa
+$headerCellColor = #fff
 
-    &-fixed-top
-    &-fixed-left
-    &-fixed-top-left
-      position absolute
-      top 0
+/* STRUCTURAL  */
+.fancy-grid,
+.fancy-grid *
+  box-sizing border-box
 
-    &-fixed-top
-    &-fixed-top-left
-      font-weight bold
-      background #fff
 
-    &-fixed-left
-      background #fafafa
+.fancy-grid,
+.fancy-grid .view
+  position relative
+  width 100%
+  height 100%
 
-    // make sure corner pieces are on top
-    &-fixed-top-left
-      z-index 1
+.fancy-grid .row,
+.fancy-grid .column,
+.fancy-grid .pane
+  position absolute
+  overflow hidden
 
-  &-row-fixed
-  &-col-fixed
-    visibility hidden
+.fancy-grid .anchor
+  position relative
 
-  &-row
-    border-bottom 1px solid #ddd
-    display flex
+.fancy-grid .row,
+.fancy-grid .column
+  pointer-events none
 
-    // rows that start a grouping
-    &-fold-header
-      > .ft-cell:first-child
-        user-select none
-        cursor pointer
+.fancy-grid .grid9 .column.left { z-index: 11; }
+.fancy-grid .grid9 .row.top { z-index: 12; }
+.fancy-grid .grid9 .pane.middle.center { z-index: 0; }
+.fancy-grid .grid9 .pane.middle.right { z-index: 1; }
+.fancy-grid .grid9 .pane.middle.left { z-index: 4; }
+.fancy-grid .grid9 .column.right { z-index: 10; }
+.fancy-grid .grid9 .pane.bottom.right { z-index: 3; }
+.fancy-grid .grid9 .pane.bottom.center { z-index: 2; }
+.fancy-grid .grid9 .pane.bottom.left { z-index: 5; }
+.fancy-grid .grid9 .row.bottom { z-index: 6; }
+.fancy-grid .grid9 .pane.top.left { z-index: 9; }
+.fancy-grid .grid9 .pane.top.right { z-index: 8; }
+.fancy-grid .grid9 .pane.top.center { z-index: 7; }
+.fancy-grid .grid9 .scroller {
+  background-color: rgba(0,0,0,0.2);
+  position: absolute;
+  z-index: 20;
+}
+.fancy-grid .grid9 .scroller:hover {
+  background-color: rgba(0,0,0,0.4);
+}
+.fancy-grid .grid9 .scroller.dragging {
+  background-color: rgba(0,0,0,0.6);
+}
+.fancy-grid .cell {
+  position: absolute;
+}
 
-        &:before
-          content "\25B8"
-          display inline-block
-          margin-right 5px
 
-      &.ft-row-expanded > .ft-cell:first-child:before
-        transform rotate(90deg)
+.fancy-grid
+  font-size 14px
+  overflow hidden
+  position relative
 
-    &-indent-1 > .ft-cell:first-child
-      padding-left 24px
-    &-indent-2 > .ft-cell:first-child
-      padding-left 40px
-    &-indent-3 > .ft-cell:first-child
-      padding-left 56px
+  .pane
+    background $cellColor
 
-    &-hidden
-      display none
+  .pane.top
+    font-weight bold
+    background $cellHeaderColor
 
-  &-cell
-    border-right 1px solid #ddd
+  .cell
+    border-right 1px solid $borderColor
+    border-bottom 1px solid $borderColor
     box-sizing border-box
-    flex auto
     line-height 16px
-    padding $basePadding
+    width 20%
 
-    &:nth-child(1)
+    &.col-0
+      border-left 1px solid $borderColor
       width 50%
 
-    &:nth-child(2), &:nth-child(3), &:nth-child(4)
-      width 16.6667%
+  .row-0
+    border-top 1px solid $borderColor
 
-@import "fixed" // leave this out if you want flexible cell widths
+.ft-cell-content
+  padding $basePadding
+
+// leave this out if you want flexible cell widths
+// @import "fixed"
+
+// some cells in the first column need special styling to indicate their indent
+// level, or to show whether they have expanded/collapsed child rows
+.col-0
+  .ft-row
+    // rows that start a grouping
+    &-fold-header .ft-cell-content
+      user-select none
+      cursor pointer
+
+      &:before
+        content "\25B8"
+        display inline-block
+        margin-right 5px
+        position relative
+        transition transform 300ms
+
+    &-expanded .ft-cell-content:before
+      transform rotate(90deg)
+
+    // indent
+    &-indent-1 .ft-cell-content
+      padding-left 24px
+    &-indent-2 .ft-cell-content
+      padding-left 40px
+    &-indent-3 .ft-cell-content
+      padding-left 56px

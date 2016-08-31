@@ -1,7 +1,7 @@
 package fancy.table.util;
 
-import fancy.table.Cell;
 import fancy.table.Row;
+import fancy.table.FancyTableSettings;
 import fancy.table.util.Types;
 using thx.Arrays;
 using thx.Functions;
@@ -40,28 +40,17 @@ class NestedData {
     Builds rows and cells for all of the RowData, returning an array of nested
     Row objects (each with 0 or more Row children).
   **/
-  public static function toRows(data : Array<RowData>, indentation = 0, ?eachFold : Row -> Void) : Array<Row> {
-    return data.reduce(function (acc : Array<Row>, curr : RowData) {
-      var newRow = new Row(curr.values.map.fn(new Cell(_)));
-      newRow.setIndentation(indentation);
+  public static function toRows(data: Array<RowData>, classes: FancyTableClasses, indentation = 0): Array<Row> {
+    return data.reduce(function (acc: Array<Row>, curr: RowData) {
+      if (curr.meta == null) curr.meta = {};
+      if (curr.data == null) curr.data = [];
 
-      var childRows = curr.data != null ?
-        toRows(curr.data, indentation + 1, eachFold) : [];
+      var newRow = new Row(curr.values, classes, curr.meta.classes, curr.meta.collapsed, indentation);
 
-      if (childRows.length > 0) {
-        newRow.addChildRows(childRows);
-        eachFold(newRow);
-      }
+      if (curr.data.length > 0)
+        newRow.addChildRows(toRows(curr.data, classes, indentation + 1));
 
-      // apply any information stored in meta
-      if (curr.meta != null) {
-        if (curr.meta.classes != null)
-          newRow.setCustomClasses(curr.meta.classes);
-        if (curr.meta.collapsed == true)
-          newRow.collapse();
-      }
-
-      return acc.concat([newRow]);
+      return acc.append(newRow);
     }, []);
   }
 }

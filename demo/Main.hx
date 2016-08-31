@@ -61,6 +61,16 @@ class Main {
       tcgprice : 0.25
     }];
 
+    function foldHeader(text: String) {
+      return function (ft: Table, row: Int, col: Int) {
+        var cell = Dom.create("div.ft-cell-content", text);
+        cell.on("click", function () {
+          ft.toggleRow(row);
+        });
+        return cell;
+      }
+    }
+
     function cardsToRowData(cards : Array<Card>, groupBy : Array<Card -> String>) : Array<RowData> {
       return cards.groupByAppend(groupBy[0], new Map()).tuples()
         .map(function (tuple) : RowData {
@@ -68,22 +78,24 @@ class Main {
 
           // if there are no more groupBys, we're rendering actual cards
           return restOfGroupBys.length == 0 ? {
-            values : tuple.right.map(function (card) : Array<CellContent> {
+            values : tuple.right.map(function (card): Array<CellContent> {
               return [
-                Dom.create("span", [
-                  Dom.create("span", card.name),
-                  Dom.create("a", [
-                    "href" => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
-                  ], [
-                    Dom.create("i.fa.fa-external-link-square")
-                  ])
-                ]),
+                function (_, _, _) {
+                  return Dom.create("div.ft-cell-content", [
+                    Dom.create("span", card.name),
+                    Dom.create("a", [
+                      "href" => 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'
+                    ], [
+                      Dom.create("i.fa.fa-external-link-square")
+                    ])
+                  ]);
+                },
                 card.cmc, card.draftval, card.tcgprice
               ];
             }).flatten(),
             data : []
           } : {
-            values : [tuple.left],
+            values : [foldHeader(tuple.left)],
             data : cardsToRowData(tuple.right, restOfGroupBys)
           };
         });
@@ -100,20 +112,10 @@ class Main {
       ]));
     }
 
-    var table = Table.fromNestedData(el, {
-      data : toRowData(cards),
-      eachFold : function (row) {
-        row.cells[0].onclick = function (_) {
-          row.toggle();
-        }
-      }
-    })
-      // TODO: Currently affixing has to be done after setting cell click
-      // handlers. Otherwise the cell gets cloned before the handler is set.
-      // We could "fix" this by keeping a reference to each copied cell or
-      // by handling event setting at the Table level
-      .setFixedTop()
-      .setFixedLeft();
+    var table = new Table(el, Nested(toRowData(cards)), {
+      fixedTop: 1,
+      fixedLeft: 1
+    });
   }
 }
 
