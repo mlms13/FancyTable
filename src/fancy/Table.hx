@@ -51,11 +51,21 @@ class Table {
       columns: 3,
       render: renderGridCell,
       fixedLeft: settings.fixedLeft,
-      fixedTop: settings.fixedTop
+      fixedTop: settings.fixedTop,
+      vSize: assignVSize,
+      hSize: function (col: Int) {
+        return settings.hSize(col, maxColumns);
+      }
     });
 
     // fill with any data
     setData(data);
+  }
+
+  function assignVSize(row: Int): CellDimension {
+    return visibleRows.getOption(row).cata(Fixed(0), function (r: Row) {
+      return r.height;
+    });
   }
 
   function renderGridCell(row: Int, col: Int): Element {
@@ -81,7 +91,7 @@ class Table {
   }
 
   static inline function setTabularData(table: Table, data: Array<Array<CellContent>>): Table
-    return data.map.fn(new Row(_, table.settings.classes)).reduce(tableAppendRow, table);
+    return data.map.fn(new Row(_, table.settings.classes, RenderSmart)).reduce(tableAppendRow, table);
 
   static inline function setNestedData(table: Table, data: Array<RowData>): Table
     return data.toRows(table.settings.classes).reduce(tableAppendRow, table);

@@ -1,5 +1,6 @@
 package fancy.table.util;
 
+import fancy.Grid;
 import fancy.table.Row;
 import fancy.table.FancyTableSettings;
 import fancy.table.util.Types;
@@ -44,8 +45,9 @@ class NestedData {
     return data.reduce(function (acc: Array<Row>, curr: RowData) {
       if (curr.meta == null) curr.meta = {};
       if (curr.data == null) curr.data = [];
+      if (curr.meta.height == null) curr.meta.height = RenderSmart;
 
-      var newRow = new Row(curr.values, classes, curr.meta.classes, curr.meta.collapsed, indentation);
+      var newRow = new Row(curr.values, classes, curr.meta.height, curr.meta.classes, curr.meta.collapsed, indentation);
 
       if (curr.data.length > 0)
         newRow.addChildRows(toRows(curr.data, classes, indentation + 1));

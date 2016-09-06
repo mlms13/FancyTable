@@ -276,6 +276,17 @@ dots_Query.find = function(selector,ctx) {
 dots_Query.selectNodes = function(selector,ctx) {
 	return (ctx != null?ctx:dots_Query.doc).querySelectorAll(selector);
 };
+var fancy_CellDimension = { __ename__ : true, __constructs__ : ["Fixed","RenderFirst","RenderSmart","RenderAll"] };
+fancy_CellDimension.Fixed = function(v) { var $x = ["Fixed",0,v]; $x.__enum__ = fancy_CellDimension; $x.toString = $estr; return $x; };
+fancy_CellDimension.RenderFirst = ["RenderFirst",1];
+fancy_CellDimension.RenderFirst.toString = $estr;
+fancy_CellDimension.RenderFirst.__enum__ = fancy_CellDimension;
+fancy_CellDimension.RenderSmart = ["RenderSmart",2];
+fancy_CellDimension.RenderSmart.toString = $estr;
+fancy_CellDimension.RenderSmart.__enum__ = fancy_CellDimension;
+fancy_CellDimension.RenderAll = ["RenderAll",3];
+fancy_CellDimension.RenderAll.toString = $estr;
+fancy_CellDimension.RenderAll.__enum__ = fancy_CellDimension;
 var fancy_Grid = function(parent,options) {
 	this.caches = [];
 	this.cacheElement = new fancy_core_PositionCache();
@@ -354,8 +365,12 @@ var fancy_Grid = function(parent,options) {
 	this.render = options.render;
 	this.vOffset = this.assignVOffset(options.vOffset);
 	this.hOffset = this.assignHOffset(options.hOffset);
-	this.vSize = this.assignVSize(options.vSize);
-	this.hSize = options.hSize != null?options.hSize:this.assignHSize();
+	this.vSize = this.assignVSize(options.vSize != null?options.vSize:function(_) {
+		return fancy_CellDimension.RenderSmart;
+	});
+	this.hSize = this.assignHSize(options.hSize != null?options.hSize:function(_1) {
+		return fancy_CellDimension.RenderSmart;
+	});
 	this.rows = options.rows;
 	this.columns = options.columns;
 	var _0 = options;
@@ -363,11 +378,11 @@ var fancy_Grid = function(parent,options) {
 	if(null == _0) {
 		t = null;
 	} else {
-		var _1 = _0.fixedLeft;
-		if(null == _1) {
+		var _11 = _0.fixedLeft;
+		if(null == _11) {
 			t = null;
 		} else {
-			t = _1;
+			t = _11;
 		}
 	}
 	this.fixedLeft = t != null?t:0;
@@ -376,11 +391,11 @@ var fancy_Grid = function(parent,options) {
 	if(null == _01) {
 		t1 = null;
 	} else {
-		var _11 = _01.fixedRight;
-		if(null == _11) {
+		var _12 = _01.fixedRight;
+		if(null == _12) {
 			t1 = null;
 		} else {
-			t1 = _11;
+			t1 = _12;
 		}
 	}
 	this.fixedRight = t1 != null?t1:0;
@@ -389,11 +404,11 @@ var fancy_Grid = function(parent,options) {
 	if(null == _02) {
 		t2 = null;
 	} else {
-		var _12 = _02.fixedTop;
-		if(null == _12) {
+		var _13 = _02.fixedTop;
+		if(null == _13) {
 			t2 = null;
 		} else {
-			t2 = _12;
+			t2 = _13;
 		}
 	}
 	this.fixedTop = t2 != null?t2:0;
@@ -402,11 +417,11 @@ var fancy_Grid = function(parent,options) {
 	if(null == _03) {
 		t3 = null;
 	} else {
-		var _13 = _03.fixedBottom;
-		if(null == _13) {
+		var _14 = _03.fixedBottom;
+		if(null == _14) {
 			t3 = null;
 		} else {
-			t3 = _13;
+			t3 = _14;
 		}
 	}
 	this.fixedBottom = t3 != null?t3:0;
@@ -421,11 +436,11 @@ var fancy_Grid = function(parent,options) {
 	if(null == _04) {
 		t4 = null;
 	} else {
-		var _14 = _04.scrollerSize;
-		if(null == _14) {
+		var _15 = _04.scrollerSize;
+		if(null == _15) {
 			t4 = null;
 		} else {
-			t4 = _14;
+			t4 = _15;
 		}
 	}
 	var scrollerSize = t4 != null?t4:10;
@@ -434,11 +449,11 @@ var fancy_Grid = function(parent,options) {
 	if(null == _05) {
 		t5 = null;
 	} else {
-		var _15 = _05.scrollerMinSize;
-		if(null == _15) {
+		var _16 = _05.scrollerMinSize;
+		if(null == _16) {
 			t5 = null;
 		} else {
-			t5 = _15;
+			t5 = _16;
 		}
 	}
 	this.grid9 = new fancy_core_Grid9(this.view,{ scrollerMinSize : t5 != null?t5:scrollerSize, scrollerMaxSize : options.scrollerMaxSize, scrollerSize : scrollerSize, contentWidth : contentWidth, contentHeight : contentHeight, topRail : this.topRailSize, leftRail : this.leftRailSize, bottomRail : this.bottomRailSize, rightRail : this.rightRailSize, onScroll : function(x,y,ox,oy) {
@@ -503,9 +518,6 @@ fancy_Grid.prototype = {
 	}
 	,assignVSize: function(f) {
 		var _gthis = this;
-		if(null != f) {
-			return f;
-		}
 		var cache = new fancy_core_IntCache();
 		this.caches.push(cache);
 		return function(row) {
@@ -513,40 +525,86 @@ fancy_Grid.prototype = {
 				return cache.cache[row];
 			}
 			var v = 0.0;
-			var els = [];
-			var el;
-			var _g1 = 0;
-			var a = _gthis.fixedLeft + 1;
-			var _g = a > 2?a:2;
-			while(_g1 < _g) {
-				el = _gthis.renderAt(row,_g1++);
-				els.push(el);
+			var vCalculated;
+			var _g = f(row);
+			switch(_g[1]) {
+			case 0:
+				vCalculated = _g[2];
+				break;
+			case 1:
+				var el = _gthis.renderAt(row,0);
 				dots_Dom.append(_gthis.view,el);
+				v = Math.max(0.0,el.offsetHeight);
+				_gthis.view.removeChild(el);
+				vCalculated = v;
+				break;
+			case 2:
+				var els = [];
+				var el1;
+				var a = _gthis.fixedLeft + 1;
+				var a1 = a > 2?a:2;
+				var b = _gthis.columns;
+				var leftBound = a1 < b?a1:b;
+				var _g1 = 0;
+				var _g2 = leftBound;
+				while(_g1 < _g2) {
+					el1 = _gthis.renderAt(row,_g1++);
+					els.push(el1);
+					dots_Dom.append(_gthis.view,el1);
+				}
+				var a2 = _gthis.columns - _gthis.fixedRight - 1;
+				var b1 = leftBound + 1;
+				var _g11 = a2 > b1?a2:b1;
+				var _g3 = _gthis.columns;
+				while(_g11 < _g3) {
+					el1 = _gthis.renderAt(row,_g11++);
+					els.push(el1);
+					dots_Dom.append(_gthis.view,el1);
+				}
+				var _g4 = 0;
+				while(_g4 < els.length) {
+					var el2 = els[_g4];
+					++_g4;
+					v = Math.max(v,el2.offsetHeight);
+				}
+				var _g5 = 0;
+				while(_g5 < els.length) {
+					var el3 = els[_g5];
+					++_g5;
+					_gthis.view.removeChild(el3);
+				}
+				vCalculated = v;
+				break;
+			case 3:
+				var els1 = [];
+				var el4;
+				var _g12 = 0;
+				var _g6 = _gthis.columns;
+				while(_g12 < _g6) {
+					el4 = _gthis.renderAt(row,_g12++);
+					els1.push(el4);
+					dots_Dom.append(_gthis.view,el4);
+				}
+				var _g7 = 0;
+				while(_g7 < els1.length) {
+					var el5 = els1[_g7];
+					++_g7;
+					v = Math.max(v,el5.offsetHeight);
+				}
+				var _g8 = 0;
+				while(_g8 < els1.length) {
+					var el6 = els1[_g8];
+					++_g8;
+					_gthis.view.removeChild(el6);
+				}
+				vCalculated = v;
+				break;
 			}
-			var _g11 = _gthis.columns - _gthis.fixedRight - 1;
-			var _g2 = _gthis.columns;
-			while(_g11 < _g2) {
-				el = _gthis.renderAt(row,_g11++);
-				els.push(el);
-				dots_Dom.append(_gthis.view,el);
-			}
-			var _g3 = 0;
-			while(_g3 < els.length) {
-				var el1 = els[_g3];
-				++_g3;
-				v = Math.max(v,el1.offsetHeight);
-			}
-			var _g4 = 0;
-			while(_g4 < els.length) {
-				var el2 = els[_g4];
-				++_g4;
-				_gthis.view.removeChild(el2);
-			}
-			cache.cache[row] = v;
-			return v;
+			cache.cache[row] = vCalculated;
+			return vCalculated;
 		};
 	}
-	,assignHSize: function() {
+	,assignHSize: function(f) {
 		var _gthis = this;
 		var cache = new fancy_core_IntCache();
 		this.caches.push(cache);
@@ -555,32 +613,83 @@ fancy_Grid.prototype = {
 				return cache.cache[col];
 			}
 			var v = 0.0;
-			var els = [];
-			var el;
-			var _g1 = 0;
-			var _g = _gthis.rows;
-			while(_g1 < _g) {
-				var i = _g1++;
-				if(i < _gthis.fixedTop + 1 || i > _gthis.rows - _gthis.fixedBottom - 1) {
-					el = _gthis.renderAt(i,col);
-					els.push(el);
-					dots_Dom.append(_gthis.view,el);
+			var vCalculated;
+			var _g = f(col);
+			switch(_g[1]) {
+			case 0:
+				vCalculated = _g[2];
+				break;
+			case 1:
+				var el = _gthis.renderAt(0,col);
+				dots_Dom.append(_gthis.view,el);
+				v = Math.max(0.0,el.offsetWidth);
+				_gthis.view.removeChild(el);
+				vCalculated = v;
+				break;
+			case 2:
+				var els = [];
+				var el1;
+				var a = _gthis.fixedTop + 1;
+				var a1 = a > 2?a:2;
+				var b = _gthis.rows;
+				var topBound = a1 < b?a1:b;
+				var _g1 = 0;
+				var _g2 = topBound;
+				while(_g1 < _g2) {
+					el1 = _gthis.renderAt(_g1++,col);
+					els.push(el1);
+					dots_Dom.append(_gthis.view,el1);
 				}
+				var a2 = _gthis.rows - _gthis.fixedBottom - 1;
+				var b1 = topBound + 1;
+				var _g11 = a2 > b1?a2:b1;
+				var _g3 = _gthis.rows;
+				while(_g11 < _g3) {
+					el1 = _gthis.renderAt(_g11++,col);
+					els.push(el1);
+					dots_Dom.append(_gthis.view,el1);
+				}
+				var _g4 = 0;
+				while(_g4 < els.length) {
+					var el2 = els[_g4];
+					++_g4;
+					v = Math.max(v,el2.offsetWidth);
+				}
+				var _g5 = 0;
+				while(_g5 < els.length) {
+					var el3 = els[_g5];
+					++_g5;
+					_gthis.view.removeChild(el3);
+				}
+				vCalculated = v;
+				break;
+			case 3:
+				var els1 = [];
+				var el4;
+				var _g12 = 0;
+				var _g6 = _gthis.rows;
+				while(_g12 < _g6) {
+					el4 = _gthis.renderAt(_g12++,col);
+					els1.push(el4);
+					dots_Dom.append(_gthis.view,el4);
+				}
+				var _g7 = 0;
+				while(_g7 < els1.length) {
+					var el5 = els1[_g7];
+					++_g7;
+					v = Math.max(v,el5.offsetWidth);
+				}
+				var _g8 = 0;
+				while(_g8 < els1.length) {
+					var el6 = els1[_g8];
+					++_g8;
+					_gthis.view.removeChild(el6);
+				}
+				vCalculated = v;
+				break;
 			}
-			var _g2 = 0;
-			while(_g2 < els.length) {
-				var el1 = els[_g2];
-				++_g2;
-				v = Math.max(v,el1.offsetWidth);
-			}
-			var _g3 = 0;
-			while(_g3 < els.length) {
-				var el2 = els[_g3];
-				++_g3;
-				_gthis.view.removeChild(el2);
-			}
-			cache.cache[col] = v;
-			return v;
+			cache.cache[col] = vCalculated;
+			return vCalculated;
 		};
 	}
 	,assignVOffset: function(f) {
@@ -1111,8 +1220,11 @@ var fancy_Table = function(parent,data,options) {
 	this.maxColumns = 0;
 	this.visibleRows = [];
 	this.rows = [];
+	var _gthis = this;
 	this.settings = fancy_table_FancyTableSettings.fromOptions(options);
-	this.grid = new fancy_Grid(parent,{ rows : 1, columns : 3, render : $bind(this,this.renderGridCell), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop});
+	this.grid = new fancy_Grid(parent,{ rows : 1, columns : 3, render : $bind(this,this.renderGridCell), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop, vSize : $bind(this,this.assignVSize), hSize : function(col) {
+		return _gthis.settings.hSize(col,_gthis.maxColumns);
+	}});
 	this.setData(data);
 };
 fancy_Table.__name__ = true;
@@ -1133,7 +1245,12 @@ fancy_Table.tableAppendRow = function(table,row) {
 	return fancy_Table.insertRowAt(table,table.rows.length,row);
 };
 fancy_Table.prototype = {
-	renderGridCell: function(row,col) {
+	assignVSize: function(row) {
+		return thx_Options.cata(thx_Arrays.getOption(this.visibleRows,row),fancy_CellDimension.Fixed(0),function(r) {
+			return r.height;
+		});
+	}
+	,renderGridCell: function(row,col) {
 		var _gthis = this;
 		var _e = thx_Arrays.getOption(this.visibleRows,row);
 		return thx_Options.getOrElse((function(callback) {
@@ -1147,7 +1264,7 @@ fancy_Table.prototype = {
 		case 0:
 			var table = this;
 			thx_Arrays.reduce(data[2].map(function(_) {
-				return new fancy_table_Row(_,table.settings.classes);
+				return new fancy_table_Row(_,table.settings.classes,fancy_CellDimension.RenderSmart);
 			}),fancy_Table.tableAppendRow,table);
 			break;
 		case 1:
@@ -1997,7 +2114,6 @@ fancy_core_Grid9.prototype = {
 	}
 	,refresh: function() {
 		var _gthis = this;
-		haxe_Log.trace("Refreshing",{ fileName : "Grid9.hx", lineNumber : 274, className : "fancy.core.Grid9", methodName : "refresh", customParams : [this.dirty]});
 		if(!this.dirty) {
 			return;
 		}
@@ -2295,11 +2411,12 @@ fancy_core_SwipeMoveHelper.prototype = {
 		}
 	}
 };
-var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes) {
+var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize) {
 	this.fixedTop = fixedTop;
 	this.fixedLeft = fixedLeft;
 	this.fallbackCell = fallbackCell;
 	this.classes = classes;
+	this.hSize = hSize;
 };
 fancy_table_FancyTableSettings.__name__ = true;
 fancy_table_FancyTableSettings.classesFromOptions = function(opts) {
@@ -2312,9 +2429,11 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(opts == null) {
 		opts = { };
 	}
-	return new fancy_table_FancyTableSettings(opts.fixedTop != null?opts.fixedTop:0,opts.fixedLeft != null?opts.fixedLeft:0,opts.fallbackCell != null?opts.fallbackCell:fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(""),fancy_table_FancyTableSettings.classesFromOptions(opts.classes));
+	return new fancy_table_FancyTableSettings(opts.fixedTop != null?opts.fixedTop:0,opts.fixedLeft != null?opts.fixedLeft:0,opts.fallbackCell != null?opts.fallbackCell:fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(""),fancy_table_FancyTableSettings.classesFromOptions(opts.classes),opts.hSize != null?opts.hSize:function(_,_1) {
+		return fancy_CellDimension.RenderSmart;
+	});
 };
-var fancy_table_Row = function(cells,classSettings,customClasses,expanded,indentation) {
+var fancy_table_Row = function(cells,classSettings,height,customClasses,expanded,indentation) {
 	if(indentation == null) {
 		indentation = 0;
 	}
@@ -2324,6 +2443,7 @@ var fancy_table_Row = function(cells,classSettings,customClasses,expanded,indent
 	this.rows = [];
 	this.cells = cells;
 	this.classSettings = classSettings;
+	this.height = height;
 	this.customClasses = customClasses != null?customClasses:[];
 	this.expanded = expanded;
 	this.indentation = indentation;
@@ -2457,7 +2577,10 @@ fancy_table_util_NestedData.toRows = function(data,classes,indentation) {
 		if(curr.data == null) {
 			curr.data = [];
 		}
-		var newRow = new fancy_table_Row(curr.values,classes,curr.meta.classes,curr.meta.collapsed,indentation);
+		if(curr.meta.height == null) {
+			curr.meta.height = fancy_CellDimension.RenderSmart;
+		}
+		var newRow = new fancy_table_Row(curr.values,classes,curr.meta.height,curr.meta.classes,curr.meta.collapsed,indentation);
 		if(curr.data.length > 0) {
 			newRow.rows = newRow.rows.concat(fancy_table_util_NestedData.toRows(curr.data,classes,indentation + 1));
 		}
@@ -2466,11 +2589,6 @@ fancy_table_util_NestedData.toRows = function(data,classes,indentation) {
 };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
-var haxe_Log = function() { };
-haxe_Log.__name__ = true;
-haxe_Log.trace = function(v,infos) {
-	js_Boot.__trace(v,infos);
-};
 var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
 haxe_ds_Option.None = ["None",1];
@@ -2530,35 +2648,6 @@ haxe_ds_StringMap.prototype = {
 };
 var js_Boot = function() { };
 js_Boot.__name__ = true;
-js_Boot.__unhtml = function(s) {
-	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-};
-js_Boot.__trace = function(v,i) {
-	var msg = i != null?i.fileName + ":" + i.lineNumber + ": ":"";
-	msg += js_Boot.__string_rec(v,"");
-	if(i != null && i.customParams != null) {
-		var _g = 0;
-		var _g1 = i.customParams;
-		while(_g < _g1.length) {
-			var v1 = _g1[_g];
-			++_g;
-			msg += "," + js_Boot.__string_rec(v1,"");
-		}
-	}
-	var d;
-	var tmp;
-	if(typeof(document) != "undefined") {
-		d = document.getElementById("haxe:trace");
-		tmp = d != null;
-	} else {
-		tmp = false;
-	}
-	if(tmp) {
-		d.innerHTML += js_Boot.__unhtml(msg) + "<br/>";
-	} else if(typeof console != "undefined" && console.log != null) {
-		console.log(msg);
-	}
-};
 js_Boot.__string_rec = function(o,s) {
 	if(o == null) {
 		return "null";
@@ -2715,6 +2804,14 @@ thx_Options.flatMap = function(option,callback) {
 		return callback(option[2]);
 	case 1:
 		return haxe_ds_Option.None;
+	}
+};
+thx_Options.cata = function(option,ifNone,f) {
+	switch(option[1]) {
+	case 0:
+		return f(option[2]);
+	case 1:
+		return ifNone;
 	}
 };
 thx_Options.getOrElse = function(option,alt) {

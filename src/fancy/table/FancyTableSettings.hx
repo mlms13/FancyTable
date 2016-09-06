@@ -1,5 +1,6 @@
 package fancy.table;
 
+import fancy.Grid;
 import fancy.table.util.Types;
 import fancy.table.util.CellContent;
 
@@ -16,12 +17,14 @@ class FancyTableSettings {
   public var fixedLeft(default, null): Int;
   public var fallbackCell(default, null): CellContent;
   public var classes(default, null): FancyTableClasses;
+  public var hSize(default, null): Int -> Int -> CellDimension;
 
-  function new(fixedTop, fixedLeft, fallbackCell, classes) {
+  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize) {
     this.fixedTop = fixedTop;
     this.fixedLeft = fixedLeft;
     this.fallbackCell = fallbackCell;
     this.classes = classes;
+    this.hSize = hSize;
   }
 
   static function classesFromOptions(?opts: FancyTableClassOptions): FancyTableClasses {
@@ -43,7 +46,8 @@ class FancyTableSettings {
       opts.fixedTop != null ? opts.fixedTop : 0,
       opts.fixedLeft != null ? opts.fixedLeft : 0,
       opts.fallbackCell != null ? opts.fallbackCell : CellContent.fromString(""),
-      classesFromOptions(opts.classes)
+      classesFromOptions(opts.classes),
+      opts.hSize != null ? opts.hSize : function (_, _) return RenderSmart
     );
   }
 }

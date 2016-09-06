@@ -16,13 +16,15 @@ class Row {
   public var cells(default, null): Array<CellContent>;
   public var rows(default, null): Array<Row> = [];
   public var expanded(default, null): Bool;
+  public var height(default, null): fancy.Grid.CellDimension;
   var indentation: Int;
   var classSettings: FancyTableClasses;
   var customClasses: Array<String>;
 
-  public function new(cells: Array<CellContent>, classSettings, ?customClasses, ?expanded = true, ?indentation = 0) {
+  public function new(cells: Array<CellContent>, classSettings, height, ?customClasses, ?expanded = true, ?indentation = 0) {
     this.cells = cells;
     this.classSettings = classSettings;
+    this.height = height;
     this.customClasses = customClasses != null ? customClasses : [];
     this.expanded = expanded;
     this.indentation = indentation;

@@ -1,10 +1,13 @@
 package fancy.table.util;
 
+import fancy.Grid;
+
 typedef FancyTableOptions = {
   ?fixedTop: Int,
   ?fixedLeft: Int,
   ?fallbackCell: CellContent,
-  ?classes: FancyTableClassOptions
+  ?classes: FancyTableClassOptions,
+  ?hSize: Int -> Int -> CellDimension
 };
 
 typedef FancyTableClassOptions = {
@@ -20,6 +23,7 @@ typedef RowData = {
   ?data : Array<RowData>,
   ?meta : {
     ?classes : Array<String>,
-    ?collapsed : Bool
+    ?collapsed : Bool,
+    ?height: CellDimension
   }
 };
