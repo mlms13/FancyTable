@@ -47,7 +47,7 @@ class NestedData {
       if (curr.data == null) curr.data = [];
       if (curr.meta.height == null) curr.meta.height = RenderSmart;
 
-      var newRow = new Row(curr.values, classes, curr.meta.height, curr.meta.classes, curr.meta.collapsed, indentation);
+      var newRow = new Row(curr.values, classes, curr.meta.height, curr.meta.classes, curr.meta.expanded, indentation);
 
       if (curr.data.length > 0)
         newRow.addChildRows(toRows(curr.data, classes, indentation + 1));

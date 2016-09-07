@@ -2580,7 +2580,7 @@ fancy_table_util_NestedData.toRows = function(data,classes,indentation) {
 		if(curr.meta.height == null) {
 			curr.meta.height = fancy_CellDimension.RenderSmart;
 		}
-		var newRow = new fancy_table_Row(curr.values,classes,curr.meta.height,curr.meta.classes,curr.meta.collapsed,indentation);
+		var newRow = new fancy_table_Row(curr.values,classes,curr.meta.height,curr.meta.classes,curr.meta.expanded,indentation);
 		if(curr.data.length > 0) {
 			newRow.rows = newRow.rows.concat(fancy_table_util_NestedData.toRows(curr.data,classes,indentation + 1));
 		}

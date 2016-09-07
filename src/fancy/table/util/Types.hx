@@ -23,7 +23,7 @@ typedef RowData = {
   ?data : Array<RowData>,
   ?meta : {
     ?classes : Array<String>,
-    ?collapsed : Bool,
+    ?expanded : Bool,
     ?height: CellDimension
   }
 };
