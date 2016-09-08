@@ -365,10 +365,10 @@ var fancy_Grid = function(parent,options) {
 	this.render = options.render;
 	this.vOffset = this.assignVOffset(options.vOffset);
 	this.hOffset = this.assignHOffset(options.hOffset);
-	this.vSize = this.assignVSize(options.vSize != null?options.vSize:function(_) {
+	this.hSize = this.assignHSize(options.hSize != null?options.hSize:function(_) {
 		return fancy_CellDimension.RenderSmart;
 	});
-	this.hSize = this.assignHSize(options.hSize != null?options.hSize:function(_1) {
+	this.vSize = this.assignVSize(options.vSize != null?options.vSize:function(_1) {
 		return fancy_CellDimension.RenderSmart;
 	});
 	this.rows = options.rows;
@@ -501,6 +501,7 @@ fancy_Grid.prototype = {
 		this.rightRailSize = this.fixedRight == 0?0:contentWidth - this.hOffset(columns - this.fixedRight);
 		this.grid9.resizeContent(contentWidth,contentHeight);
 		this.grid9.sizeRails(this.topRailSize,this.bottomRailSize,this.leftRailSize,this.rightRailSize);
+		this.grid9.setPosition(this.grid9.position.x,this.grid9.position.y);
 		this.renderCorners();
 		this.renderMiddle(this.grid9.position.y);
 		this.renderCenter(this.grid9.position.x);
@@ -532,8 +533,7 @@ fancy_Grid.prototype = {
 				vCalculated = _g[2];
 				break;
 			case 1:
-				var el = _gthis.renderAt(row,0);
-				dots_Dom.append(_gthis.view,el);
+				var el = _gthis.renderWithWidth(_gthis.view,row,0);
 				v = Math.max(0.0,el.offsetHeight);
 				_gthis.view.removeChild(el);
 				vCalculated = v;
@@ -548,18 +548,16 @@ fancy_Grid.prototype = {
 				var _g1 = 0;
 				var _g2 = leftBound;
 				while(_g1 < _g2) {
-					el1 = _gthis.renderAt(row,_g1++);
+					el1 = _gthis.renderWithWidth(_gthis.view,row,_g1++);
 					els.push(el1);
-					dots_Dom.append(_gthis.view,el1);
 				}
 				var a2 = _gthis.columns - _gthis.fixedRight - 1;
 				var b1 = leftBound + 1;
 				var _g11 = a2 > b1?a2:b1;
 				var _g3 = _gthis.columns;
 				while(_g11 < _g3) {
-					el1 = _gthis.renderAt(row,_g11++);
+					el1 = _gthis.renderWithWidth(_gthis.view,row,_g11++);
 					els.push(el1);
-					dots_Dom.append(_gthis.view,el1);
 				}
 				var _g4 = 0;
 				while(_g4 < els.length) {
@@ -581,9 +579,8 @@ fancy_Grid.prototype = {
 				var _g12 = 0;
 				var _g6 = _gthis.columns;
 				while(_g12 < _g6) {
-					el4 = _gthis.renderAt(row,_g12++);
+					el4 = _gthis.renderWithWidth(_gthis.view,row,_g12++);
 					els1.push(el4);
-					dots_Dom.append(_gthis.view,el4);
 				}
 				var _g7 = 0;
 				while(_g7 < els1.length) {
@@ -749,8 +746,14 @@ fancy_Grid.prototype = {
 		el.style.height = "" + this.vSize(row) + "px";
 		return el;
 	}
+	,renderWithWidth: function(parent,row,col) {
+		var el = this.renderAt(row,col);
+		dots_Dom.append(parent,el);
+		el.style.width = "" + this.hSize(col) + "px";
+		return el;
+	}
 	,renderMiddle: function(v) {
-		var a = fancy_core_Search.binary(0,this.rows,this.rowComparator(v + this.topRailSize));
+		var a = fancy_core_Search.binary(0,this.rows - 1,this.rowComparator(v + this.topRailSize));
 		var b = this.fixedTop;
 		var r = a > b?a:b;
 		var top = this.vOffset(r);
@@ -847,7 +850,7 @@ fancy_Grid.prototype = {
 		}
 	}
 	,renderCenter: function(v) {
-		var a = fancy_core_Search.binary(0,this.columns,this.columnComparator(v + this.leftRailSize));
+		var a = fancy_core_Search.binary(0,this.columns - 1,this.columnComparator(v + this.leftRailSize));
 		var b = this.fixedLeft;
 		var c = a > b?a:b;
 		var left = this.hOffset(c);
@@ -944,10 +947,10 @@ fancy_Grid.prototype = {
 		}
 	}
 	,renderMain: function(x,y) {
-		var a = fancy_core_Search.binary(0,this.rows,this.rowComparator(y + this.topRailSize));
+		var a = fancy_core_Search.binary(0,this.rows - 1,this.rowComparator(y + this.topRailSize));
 		var b = this.fixedTop;
 		var r = a > b?a:b;
-		var a1 = fancy_core_Search.binary(0,this.columns,this.columnComparator(x + this.leftRailSize));
+		var a1 = fancy_core_Search.binary(0,this.columns - 1,this.columnComparator(x + this.leftRailSize));
 		var b1 = this.fixedLeft;
 		var c = a1 > b1?a1:b1;
 		var left = this.hOffset(c);
@@ -1260,17 +1263,21 @@ fancy_Table.prototype = {
 		}),fancy_table_util__$CellContent_CellContent_$Impl_$.render(this.settings.fallbackCell,"ft-cell-content",this,row,col));
 	}
 	,setData: function(data) {
+		var _gthis = this;
+		var newRows;
 		switch(data[1]) {
 		case 0:
-			var table = this;
-			thx_Arrays.reduce(data[2].map(function(_) {
-				return new fancy_table_Row(_,table.settings.classes,fancy_CellDimension.RenderSmart);
-			}),fancy_Table.tableAppendRow,table);
+			newRows = data[2].map(function(_) {
+				return new fancy_table_Row(_,_gthis.settings.classes,fancy_CellDimension.RenderSmart);
+			});
 			break;
 		case 1:
-			thx_Arrays.reduce(fancy_table_util_NestedData.toRows(data[2],this.settings.classes),fancy_Table.tableAppendRow,this);
+			newRows = fancy_table_util_NestedData.toRows(data[2],this.settings.classes);
 			break;
 		}
+		this.rows = [];
+		this.maxColumns = 0;
+		thx_Arrays.reduce(newRows,fancy_Table.tableAppendRow,this);
 		this.visibleRows = fancy_Table.flattenVisibleRows(this.rows);
 		this.grid.setRowsAndColumns(this.visibleRows.length,this.maxColumns);
 		return this;
@@ -2352,10 +2359,18 @@ fancy_core_Search.binary = function(min,max,comparator) {
 		var c = comparator(m);
 		if(c < 0) {
 			l1 = m + 1;
-			return search(mid(l1,r1),l1,r1);
+			if(l1 == r1) {
+				return l1;
+			} else {
+				return search(mid(l1,r1),l1,r1);
+			}
 		} else if(c > 0) {
 			r1 = m - 1;
-			return search(mid(l1,r1),l1,r1);
+			if(r1 == l1) {
+				return r1;
+			} else {
+				return search(mid(l1,r1),l1,r1);
+			}
 		} else {
 			return m;
 		}

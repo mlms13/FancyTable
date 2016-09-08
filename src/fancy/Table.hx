@@ -81,20 +81,19 @@ class Table {
     also empty all table elements from the DOM and recreate them.
   **/
   public function setData(data: FancyTableData): Table {
-    switch data {
-      case Tabular(d): setTabularData(this, d);
-      case Nested(d): setNestedData(this, d);
+    // convert the new data to rows
+    var newRows = switch data {
+      case Tabular(d): d.map.fn(new Row(_, settings.classes, RenderSmart));
+      case Nested(d): d.toRows(settings.classes);
     };
 
+    // empty the current table and set new rows
+    rows = [];
+    maxColumns = 0;
+    newRows.reduce(tableAppendRow, this);
     resetVisibleRowsAndRedraw();
     return this;
   }
-
-  static inline function setTabularData(table: Table, data: Array<Array<CellContent>>): Table
-    return data.map.fn(new Row(_, table.settings.classes, RenderSmart)).reduce(tableAppendRow, table);
-
-  static inline function setNestedData(table: Table, data: Array<RowData>): Table
-    return data.toRows(table.settings.classes).reduce(tableAppendRow, table);
 
   inline function resetVisibleRowsAndRedraw() {
     visibleRows = flattenVisibleRows(rows);
