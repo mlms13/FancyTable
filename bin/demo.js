@@ -1279,7 +1279,10 @@ fancy_Table.prototype = {
 		this.maxColumns = 0;
 		thx_Arrays.reduce(newRows,fancy_Table.tableAppendRow,this);
 		this.visibleRows = fancy_Table.flattenVisibleRows(this.rows);
-		this.grid.setRowsAndColumns(this.visibleRows.length,this.maxColumns);
+		var a = this.visibleRows.length;
+		var tmp = a > 1?a:1;
+		var a1 = this.maxColumns;
+		this.grid.setRowsAndColumns(tmp,a1 > 1?a1:1);
 		return this;
 	}
 	,toggleRow: function(index) {
@@ -1287,7 +1290,10 @@ fancy_Table.prototype = {
 		thx_Options.map(thx_Arrays.getOption(this.visibleRows,index),function(r) {
 			r.toggle();
 			_gthis.visibleRows = fancy_Table.flattenVisibleRows(_gthis.rows);
-			_gthis.grid.setRowsAndColumns(_gthis.visibleRows.length,_gthis.maxColumns);
+			var a = _gthis.visibleRows.length;
+			var tmp = a > 1?a:1;
+			var a1 = _gthis.maxColumns;
+			_gthis.grid.setRowsAndColumns(tmp,a1 > 1?a1:1);
 		});
 	}
 };

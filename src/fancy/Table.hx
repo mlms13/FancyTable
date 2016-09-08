@@ -97,7 +97,7 @@ class Table {
 
   inline function resetVisibleRowsAndRedraw() {
     visibleRows = flattenVisibleRows(rows);
-    grid.setRowsAndColumns(visibleRows.length, maxColumns);
+    grid.setRowsAndColumns(Ints.max(visibleRows.length, 1), Ints.max(maxColumns, 1));
   }
 
   static function flattenVisibleRows(rows: Array<Row>): Array<Row> {
