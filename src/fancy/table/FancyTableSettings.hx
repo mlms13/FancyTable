@@ -18,13 +18,17 @@ class FancyTableSettings {
   public var fallbackCell(default, null): CellContent;
   public var classes(default, null): FancyTableClasses;
   public var hSize(default, null): Int -> Int -> CellDimension;
+  public var initialScrollX(default, null): HorizontalScrollPosition;
+  public var initialScrollY(default, null): VerticalScrollPosition;
 
-  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize) {
+  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY) {
     this.fixedTop = fixedTop;
     this.fixedLeft = fixedLeft;
     this.fallbackCell = fallbackCell;
     this.classes = classes;
     this.hSize = hSize;
+    this.initialScrollX = initialX;
+    this.initialScrollY = initialY;
   }
 
   static function classesFromOptions(?opts: FancyTableClassOptions): FancyTableClasses {
@@ -47,7 +51,9 @@ class FancyTableSettings {
       opts.fixedLeft != null ? opts.fixedLeft : 0,
       opts.fallbackCell != null ? opts.fallbackCell : CellContent.fromString(""),
       classesFromOptions(opts.classes),
-      opts.hSize != null ? opts.hSize : function (_, _) return RenderSmart
+      opts.hSize != null ? opts.hSize : function (_, _) return RenderSmart,
+      opts.initialScrollX != null ? opts.initialScrollX : Left,
+      opts.initialScrollY != null ? opts.initialScrollY : Top
     );
   }
 }

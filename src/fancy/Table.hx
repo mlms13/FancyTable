@@ -80,7 +80,7 @@ class Table {
     Note that this will remove any existing folds and fixed headers. It will
     also empty all table elements from the DOM and recreate them.
   **/
-  public function setData(data: FancyTableData): Table {
+  public function setData(data: FancyTableData, resetScroll = true): Table {
     // convert the new data to rows
     var newRows = switch data {
       case Tabular(d): d.map.fn(new Row(_, settings.classes, RenderSmart));
@@ -92,6 +92,10 @@ class Table {
     maxColumns = 0;
     newRows.reduce(tableAppendRow, this);
     resetVisibleRowsAndRedraw();
+
+    if (resetScroll)
+      grid.scrollTo(settings.initialScrollX, settings.initialScrollY);
+
     return this;
   }
 
@@ -123,11 +127,7 @@ class Table {
 
     // if our new row has more cells than everybody else, increase our count
     table.maxColumns = Ints.max(table.maxColumns, newRow.cells.length);
-
     table.rows.insert(index, newRow);
-
-    // TODO: grid needs a way to add rows? no. kind of.
-    // grid.content.insertAtIndex(row.el, index);
     return table;
   }
 
@@ -137,7 +137,7 @@ class Table {
 
     TODO: in the following couple functions, whose job is it to tell the table
     to re-render? We don't want `insertRowAt` to do it, because then it will get
-    hit over and over again and we run `setNestedData`. We don't want this
+    hit over and over again and we refresh with `setData`. We don't want this
     function to do it, because we've built these in a way to support chaining.
     Maybe we expose a re-render function to the user, so they can:
       .prepend(row1).append(row2).prepend(row3).redraw()

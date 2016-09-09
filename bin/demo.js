@@ -276,6 +276,27 @@ dots_Query.find = function(selector,ctx) {
 dots_Query.selectNodes = function(selector,ctx) {
 	return (ctx != null?ctx:dots_Query.doc).querySelectorAll(selector);
 };
+var fancy_VerticalScrollPosition = { __ename__ : true, __constructs__ : ["Top","Bottom","FromTop","FromBottom"] };
+fancy_VerticalScrollPosition.Top = ["Top",0];
+fancy_VerticalScrollPosition.Top.toString = $estr;
+fancy_VerticalScrollPosition.Top.__enum__ = fancy_VerticalScrollPosition;
+fancy_VerticalScrollPosition.Bottom = ["Bottom",1];
+fancy_VerticalScrollPosition.Bottom.toString = $estr;
+fancy_VerticalScrollPosition.Bottom.__enum__ = fancy_VerticalScrollPosition;
+fancy_VerticalScrollPosition.FromTop = function(distance) { var $x = ["FromTop",2,distance]; $x.__enum__ = fancy_VerticalScrollPosition; $x.toString = $estr; return $x; };
+fancy_VerticalScrollPosition.FromBottom = function(distance) { var $x = ["FromBottom",3,distance]; $x.__enum__ = fancy_VerticalScrollPosition; $x.toString = $estr; return $x; };
+var fancy_HorizontalScrollPosition = { __ename__ : true, __constructs__ : ["Left","Right","FromLeft","FromRight"] };
+fancy_HorizontalScrollPosition.Left = ["Left",0];
+fancy_HorizontalScrollPosition.Left.toString = $estr;
+fancy_HorizontalScrollPosition.Left.__enum__ = fancy_HorizontalScrollPosition;
+fancy_HorizontalScrollPosition.Right = ["Right",1];
+fancy_HorizontalScrollPosition.Right.toString = $estr;
+fancy_HorizontalScrollPosition.Right.__enum__ = fancy_HorizontalScrollPosition;
+fancy_HorizontalScrollPosition.FromLeft = function(distance) { var $x = ["FromLeft",2,distance]; $x.__enum__ = fancy_HorizontalScrollPosition; $x.toString = $estr; return $x; };
+fancy_HorizontalScrollPosition.FromRight = function(distance) { var $x = ["FromRight",3,distance]; $x.__enum__ = fancy_HorizontalScrollPosition; $x.toString = $estr; return $x; };
+var fancy_ScrollUnit = { __ename__ : true, __constructs__ : ["Pixels","Cells"] };
+fancy_ScrollUnit.Pixels = function(value) { var $x = ["Pixels",0,value]; $x.__enum__ = fancy_ScrollUnit; $x.toString = $estr; return $x; };
+fancy_ScrollUnit.Cells = function(value) { var $x = ["Cells",1,value]; $x.__enum__ = fancy_ScrollUnit; $x.toString = $estr; return $x; };
 var fancy_CellDimension = { __ename__ : true, __constructs__ : ["Fixed","RenderFirst","RenderSmart","RenderAll"] };
 fancy_CellDimension.Fixed = function(v) { var $x = ["Fixed",0,v]; $x.__enum__ = fancy_CellDimension; $x.toString = $estr; return $x; };
 fancy_CellDimension.RenderFirst = ["RenderFirst",1];
@@ -425,12 +446,6 @@ var fancy_Grid = function(parent,options) {
 		}
 	}
 	this.fixedBottom = t3 != null?t3:0;
-	var contentWidth = this.hOffset(this.columns - 1) + this.hSize(this.columns - 1);
-	var contentHeight = this.vOffset(this.rows - 1) + this.vSize(this.rows - 1);
-	this.topRailSize = this.vOffset(this.fixedTop);
-	this.leftRailSize = this.hOffset(this.fixedLeft);
-	this.bottomRailSize = this.fixedBottom == 0?0:contentHeight - this.vOffset(this.rows - this.fixedBottom);
-	this.rightRailSize = this.fixedRight == 0?0:contentWidth - this.hOffset(this.columns - this.fixedRight);
 	var _04 = options;
 	var t4;
 	if(null == _04) {
@@ -456,7 +471,7 @@ var fancy_Grid = function(parent,options) {
 			t5 = _16;
 		}
 	}
-	this.grid9 = new fancy_core_Grid9(this.view,{ scrollerMinSize : t5 != null?t5:scrollerSize, scrollerMaxSize : options.scrollerMaxSize, scrollerSize : scrollerSize, contentWidth : contentWidth, contentHeight : contentHeight, topRail : this.topRailSize, leftRail : this.leftRailSize, bottomRail : this.bottomRailSize, rightRail : this.rightRailSize, onScroll : function(x,y,ox,oy) {
+	this.grid9 = new fancy_core_Grid9(this.view,{ scrollerMinSize : t5 != null?t5:scrollerSize, scrollerMaxSize : options.scrollerMaxSize, scrollerSize : scrollerSize, contentWidth : 0, contentHeight : 0, onScroll : function(x,y,ox,oy) {
 		if(oy != y) {
 			_gthis.renderMiddle(y);
 		}
@@ -482,10 +497,7 @@ var fancy_Grid = function(parent,options) {
 	this.bottomLeft = this.grid9.bottomLeft;
 	this.bottomCenter = this.grid9.bottomCenter;
 	this.bottomRight = this.grid9.bottomRight;
-	this.renderCorners();
-	this.renderMiddle(0);
-	this.renderCenter(0);
-	this.renderMain(0,0);
+	this.setRowsAndColumns(this.rows,this.columns);
 };
 fancy_Grid.__name__ = true;
 fancy_Grid.prototype = {
@@ -499,14 +511,58 @@ fancy_Grid.prototype = {
 		this.leftRailSize = this.hOffset(this.fixedLeft);
 		this.bottomRailSize = this.fixedBottom == 0?0:contentHeight - this.vOffset(rows - this.fixedBottom);
 		this.rightRailSize = this.fixedRight == 0?0:contentWidth - this.hOffset(columns - this.fixedRight);
-		this.grid9.resizeContent(contentWidth,contentHeight);
 		this.grid9.sizeRails(this.topRailSize,this.bottomRailSize,this.leftRailSize,this.rightRailSize);
+		this.grid9.resizeContent(contentWidth,contentHeight);
 		this.grid9.setPosition(this.grid9.position.x,this.grid9.position.y);
 		this.renderCorners();
 		this.renderMiddle(this.grid9.position.y);
 		this.renderCenter(this.grid9.position.x);
 		this.renderMain(this.grid9.position.x,this.grid9.position.y);
 		this.grid9.refresh();
+	}
+	,scrollTo: function(x,y) {
+		this.grid9.setPosition(x == null?this.grid9.position.x:this.resolveHorizontalScroll(x),y == null?this.grid9.position.y:this.resolveVerticalScroll(y));
+		this.grid9.refresh();
+	}
+	,resolveHorizontalDistance: function(x) {
+		switch(x[1]) {
+		case 0:
+			return x[2];
+		case 1:
+			return this.hOffset(x[2]);
+		}
+	}
+	,resolveHorizontalScroll: function(x) {
+		switch(x[1]) {
+		case 0:
+			return 0;
+		case 1:
+			return this.grid9.contentWidth;
+		case 2:
+			return this.resolveHorizontalDistance(x[2]);
+		case 3:
+			return this.grid9.contentWidth - this.resolveHorizontalDistance(x[2]);
+		}
+	}
+	,resolveVerticalDistance: function(y) {
+		switch(y[1]) {
+		case 0:
+			return y[2];
+		case 1:
+			return this.vOffset(y[2]);
+		}
+	}
+	,resolveVerticalScroll: function(y) {
+		switch(y[1]) {
+		case 0:
+			return 0;
+		case 1:
+			return this.grid9.contentHeight;
+		case 2:
+			return this.resolveVerticalDistance(y[2]);
+		case 3:
+			return this.grid9.contentHeight - this.resolveVerticalDistance(y[2]);
+		}
 	}
 	,invalidateCache: function() {
 		var _g = 0;
@@ -1262,7 +1318,10 @@ fancy_Table.prototype = {
 			return _.renderCell(_gthis,row,col);
 		}),fancy_table_util__$CellContent_CellContent_$Impl_$.render(this.settings.fallbackCell,"ft-cell-content",this,row,col));
 	}
-	,setData: function(data) {
+	,setData: function(data,resetScroll) {
+		if(resetScroll == null) {
+			resetScroll = true;
+		}
 		var _gthis = this;
 		var newRows;
 		switch(data[1]) {
@@ -1283,6 +1342,9 @@ fancy_Table.prototype = {
 		var tmp = a > 1?a:1;
 		var a1 = this.maxColumns;
 		this.grid.setRowsAndColumns(tmp,a1 > 1?a1:1);
+		if(resetScroll) {
+			this.grid.scrollTo(this.settings.initialScrollX,this.settings.initialScrollY);
+		}
 		return this;
 	}
 	,toggleRow: function(index) {
@@ -1984,7 +2046,6 @@ var fancy_core_Grid9 = function(parent,options) {
 	this.bottomRight = dots_Query.find(".pane.bottom.right",this.el);
 	this.size = this.getGridSizeFromContainer();
 	this.resizeGrid(this.size.w,this.size.h);
-	this.resizeContent(options.contentWidth,options.contentHeight);
 	var _03 = options;
 	var t3;
 	if(null == _03) {
@@ -2037,7 +2098,7 @@ var fancy_core_Grid9 = function(parent,options) {
 		}
 	}
 	this.sizeRails(tmp30,tmp31,tmp32,t6 != null?t6:0);
-	this.refresh();
+	this.resizeContent(options.contentWidth,options.contentHeight);
 	window.addEventListener("resize",function(_) {
 		var s = _gthis.getGridSizeFromContainer();
 		_gthis.resizeGrid(s.w,s.h);
@@ -2174,6 +2235,7 @@ fancy_core_Grid9.prototype = {
 		this.left.style.height = this.right.style.height = "" + Math.min(this.gridHeight,this.contentHeight) + "px";
 	}
 	,resizeContent: function(width,height) {
+		var _gthis = this;
 		if(this.contentWidth == width && this.contentHeight == height) {
 			return;
 		}
@@ -2182,9 +2244,23 @@ fancy_core_Grid9.prototype = {
 		this.contentHeight = height;
 		this.top.style.width = this.bottom.style.width = "" + Math.min(this.gridWidth,this.contentWidth) + "px";
 		this.left.style.height = this.right.style.height = "" + Math.min(this.gridHeight,this.contentHeight) + "px";
+		var _e = this.middles;
+		(function(effect) {
+			thx_Arrays.each(_e,effect);
+		})(function(_) {
+			return _.style.height = "" + (_gthis.contentHeight - _gthis.topRail - _gthis.bottomRail) + "px";
+		});
+		var _e1 = this.centers;
+		(function(effect1) {
+			thx_Arrays.each(_e1,effect1);
+		})(function(_1) {
+			return _1.style.width = "" + (_gthis.contentWidth - _gthis.leftRail - _gthis.rightRail) + "px";
+		});
 	}
 	,sizeRails: function(topRail,bottomRail,leftRail,rightRail) {
-		var _gthis = this;
+		if(this.topRail == topRail && this.bottomRail == bottomRail && this.leftRail == leftRail && this.rightRail == rightRail) {
+			return;
+		}
 		this.dirty = true;
 		this.topRail = topRail;
 		this.bottomRail = bottomRail;
@@ -2197,38 +2273,26 @@ fancy_core_Grid9.prototype = {
 		})(function(_) {
 			return _.style.height = "" + topRail + "px";
 		});
-		var _e1 = this.middles;
+		this.bottom.style.height = "" + bottomRail + "px";
+		var _e1 = this.bottoms;
 		(function(effect1) {
 			thx_Arrays.each(_e1,effect1);
 		})(function(_1) {
-			return _1.style.height = "" + (_gthis.contentHeight - topRail - bottomRail) + "px";
+			return _1.style.height = "" + bottomRail + "px";
 		});
-		this.bottom.style.height = "" + bottomRail + "px";
-		var _e2 = this.bottoms;
+		this.left.style.width = "" + leftRail + "px";
+		var _e2 = this.lefts;
 		(function(effect2) {
 			thx_Arrays.each(_e2,effect2);
 		})(function(_2) {
-			return _2.style.height = "" + bottomRail + "px";
+			return _2.style.width = "" + leftRail + "px";
 		});
-		this.left.style.width = "" + leftRail + "px";
-		var _e3 = this.lefts;
+		this.right.style.width = "" + rightRail + "px";
+		var _e3 = this.rights;
 		(function(effect3) {
 			thx_Arrays.each(_e3,effect3);
 		})(function(_3) {
-			return _3.style.width = "" + leftRail + "px";
-		});
-		var _e4 = this.centers;
-		(function(effect4) {
-			thx_Arrays.each(_e4,effect4);
-		})(function(_4) {
-			return _4.style.width = "" + (_gthis.contentWidth - leftRail - rightRail) + "px";
-		});
-		this.right.style.width = "" + rightRail + "px";
-		var _e5 = this.rights;
-		(function(effect5) {
-			thx_Arrays.each(_e5,effect5);
-		})(function(_5) {
-			return _5.style.width = "" + rightRail + "px";
+			return _3.style.width = "" + rightRail + "px";
 		});
 	}
 	,get_gridMiddleHeight: function() {
@@ -2397,7 +2461,6 @@ var fancy_core_SwipeMoveHelper = function(el,callback) {
 		});
 	});
 	el.addEventListener("touchstart",function(e1) {
-		e1.preventDefault();
 		if(null != _gthis.id) {
 			return;
 		}
@@ -2407,7 +2470,6 @@ var fancy_core_SwipeMoveHelper = function(el,callback) {
 		_gthis.y = t1.clientY;
 	});
 	el.addEventListener("touchend",function(e2) {
-		e2.preventDefault();
 		if(e2.touches.length == 0) {
 			_gthis.id = null;
 		} else {
@@ -2432,12 +2494,14 @@ fancy_core_SwipeMoveHelper.prototype = {
 		}
 	}
 };
-var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize) {
+var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize,initialX,initialY) {
 	this.fixedTop = fixedTop;
 	this.fixedLeft = fixedLeft;
 	this.fallbackCell = fallbackCell;
 	this.classes = classes;
 	this.hSize = hSize;
+	this.initialScrollX = initialX;
+	this.initialScrollY = initialY;
 };
 fancy_table_FancyTableSettings.__name__ = true;
 fancy_table_FancyTableSettings.classesFromOptions = function(opts) {
@@ -2452,7 +2516,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	}
 	return new fancy_table_FancyTableSettings(opts.fixedTop != null?opts.fixedTop:0,opts.fixedLeft != null?opts.fixedLeft:0,opts.fallbackCell != null?opts.fallbackCell:fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(""),fancy_table_FancyTableSettings.classesFromOptions(opts.classes),opts.hSize != null?opts.hSize:function(_,_1) {
 		return fancy_CellDimension.RenderSmart;
-	});
+	},opts.initialScrollX != null?opts.initialScrollX:fancy_HorizontalScrollPosition.Left,opts.initialScrollY != null?opts.initialScrollY:fancy_VerticalScrollPosition.Top);
 };
 var fancy_table_Row = function(cells,classSettings,height,customClasses,expanded,indentation) {
 	if(indentation == null) {

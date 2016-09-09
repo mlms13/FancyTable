@@ -7,7 +7,9 @@ typedef FancyTableOptions = {
   ?fixedLeft: Int,
   ?fallbackCell: CellContent,
   ?classes: FancyTableClassOptions,
-  ?hSize: Int -> Int -> CellDimension
+  ?hSize: Int -> Int -> CellDimension,
+  ?initialScrollX: HorizontalScrollPosition,
+  ?initialScrollY: VerticalScrollPosition
 };
 
 typedef FancyTableClassOptions = {
