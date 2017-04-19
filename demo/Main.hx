@@ -1,14 +1,11 @@
 using dots.Dom;
-import fancy.Table;
-import fancy.table.*;
-import fancy.table.util.Types;
-import fancy.table.util.NestedData;
-import fancy.table.util.CellContent;
+
 using thx.Arrays;
-using thx.Functions;
-using thx.Iterators;
 using thx.Maps;
-using thx.Tuple;
+
+import fancy.Table;
+import fancy.table.util.CellContent;
+import fancy.table.util.RowData;
 
 class Main {
   static function main() {

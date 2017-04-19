@@ -4,6 +4,6 @@
 -lib thx.core
 -lib dots
 -dce full
-
 -main Main
 -js bin/demo.js
+-cmd echo Build success!

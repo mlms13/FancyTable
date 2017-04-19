@@ -1,20 +1,20 @@
 package fancy;
 
-import fancy.Grid;
-import fancy.table.*;
-using fancy.table.util.NestedData;
-import fancy.table.util.Types;
-import fancy.table.util.CellContent;
-using dots.Dom;
 import js.html.Element;
-import js.html.Node;
+
 using thx.Arrays;
 using thx.Functions;
-import thx.Functions.fn;
 import thx.Ints;
-using thx.Objects;
 using thx.Options;
-using thx.Tuple;
+
+import fancy.table.FancyTableSettings;
+import fancy.table.Row;
+import fancy.table.util.CellContent;
+import fancy.table.util.FancyTableOptions;
+using fancy.table.util.NestedData;
+import fancy.table.util.RowData;
+
+import fancy.Grid;
 
 enum FancyTableData {
   Tabular(data : Array<Array<CellContent>>);
@@ -28,11 +28,11 @@ enum FancyTableData {
   return the instance of the table for easy chaining.
 **/
 class Table {
-  var settings: FancyTableSettings;
-  var grid: Grid;
-  var rows: Array<Row> = [];
-  var visibleRows: Array<Row> = [];
-  var maxColumns: Int = 0;
+  var settings(default, null): FancyTableSettings;
+  var grid(default, null): Grid;
+  var rows(default, null): Array<Row> = [];
+  var visibleRows(default, null): Array<Row> = [];
+  var maxColumns(default, null): Int = 0;
 
   /**
     A container element must be provided to the constructor. You may also
@@ -55,7 +55,9 @@ class Table {
       vSize: assignVSize,
       hSize: function (col: Int) {
         return settings.hSize(col, maxColumns);
-      }
+      },
+      onScroll: settings.onScroll,
+      onResize: settings.onResize
     });
 
     // fill with any data
@@ -99,7 +101,7 @@ class Table {
     return this;
   }
 
-  inline function resetVisibleRowsAndRedraw() {
+  inline function resetVisibleRowsAndRedraw() : Void {
     visibleRows = flattenVisibleRows(rows);
     grid.setRowsAndColumns(Ints.max(visibleRows.length, 1), Ints.max(maxColumns, 1));
   }
@@ -158,7 +160,7 @@ class Table {
     index among all rows (some of which may be collapsed and hidden). The index
     needed here will match the index provided to a CellContent's `render()`.
   **/
-  public function toggleRow(index: Int) {
+  public function toggleRow(index: Int) : Void {
     visibleRows.getOption(index).map(function(r) {
       r.toggle();
       resetVisibleRowsAndRedraw();

@@ -1,8 +1,12 @@
 package fancy.table;
 
-import fancy.Grid;
-import fancy.table.util.Types;
+using thx.Nulls;
+
 import fancy.table.util.CellContent;
+import fancy.table.util.FancyTableClassOptions;
+import fancy.table.util.FancyTableOptions;
+
+import fancy.Grid;
 
 typedef FancyTableClasses = {
   cellContent: String,
@@ -20,8 +24,10 @@ class FancyTableSettings {
   public var hSize(default, null): Int -> Int -> CellDimension;
   public var initialScrollX(default, null): HorizontalScrollPosition;
   public var initialScrollY(default, null): VerticalScrollPosition;
+  public var onScroll(default, null) : Float -> Float -> Float -> Float -> Void;
+  public var onResize(default, null) : Float -> Float -> Float -> Float -> Void;
 
-  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY) {
+  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, onScroll, onResize) {
     this.fixedTop = fixedTop;
     this.fixedLeft = fixedLeft;
     this.fallbackCell = fallbackCell;
@@ -29,6 +35,8 @@ class FancyTableSettings {
     this.hSize = hSize;
     this.initialScrollX = initialX;
     this.initialScrollY = initialY;
+    this.onScroll = onScroll;
+    this.onResize = onResize;
   }
 
   static function classesFromOptions(?opts: FancyTableClassOptions): FancyTableClasses {
@@ -47,13 +55,15 @@ class FancyTableSettings {
     if (opts == null) opts = {};
 
     return new FancyTableSettings(
-      opts.fixedTop != null ? opts.fixedTop : 0,
-      opts.fixedLeft != null ? opts.fixedLeft : 0,
-      opts.fallbackCell != null ? opts.fallbackCell : CellContent.fromString(""),
+      opts.fixedTop.or(0),
+      opts.fixedLeft.or(0),
+      opts.fallbackCell.or(CellContent.fromString("")),
       classesFromOptions(opts.classes),
-      opts.hSize != null ? opts.hSize : function (_, _) return RenderSmart,
-      opts.initialScrollX != null ? opts.initialScrollX : Left,
-      opts.initialScrollY != null ? opts.initialScrollY : Top
+      opts.hSize.or(function (_, _) return RenderSmart),
+      opts.initialScrollX.or(Left),
+      opts.initialScrollY.or(Top),
+      opts.onScroll.or(function(_, _, _, _) {}),
+      opts.onResize.or(function(_, _, _, _) {})
     );
   }
 }

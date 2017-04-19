@@ -3,7 +3,6 @@ package fancy.table.util;
 import fancy.Grid;
 import fancy.table.Row;
 import fancy.table.FancyTableSettings;
-import fancy.table.util.Types;
 using thx.Arrays;
 using thx.Functions;
 import thx.Tuple;
