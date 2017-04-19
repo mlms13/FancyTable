@@ -3,7 +3,6 @@ package fancy.table;
 import haxe.ds.Option;
 using dots.Dom;
 import fancy.table.FancyTableSettings;
-import fancy.table.util.Types;
 import fancy.table.util.CellContent;
 import js.html.Element;
 using thx.Arrays;

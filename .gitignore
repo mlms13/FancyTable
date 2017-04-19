@@ -1,6 +1,13 @@
-docs/xml
+# Node
 node_modules/
-*.zip
 
-# ignore tests in bin
+# Haxe
+.haxelib/
+
+# IDEs
+.vscode/
+
+# Project files
 bin/test
+docs/xml
+*.zip
