@@ -1428,9 +1428,12 @@ fancy_Table.prototype = {
 		var a1 = this.maxColumns;
 		this.grid.setRowsAndColumns(a > 1 ? a : 1,a1 > 1 ? a1 : 1);
 		if(resetScroll) {
-			this.grid.scrollTo(this.settings.initialScrollX,this.settings.initialScrollY);
+			this.resetScroll();
 		}
 		return this;
+	}
+	,resetScroll: function() {
+		this.grid.scrollTo(this.settings.initialScrollX,this.settings.initialScrollY);
 	}
 	,toggleRow: function(index) {
 		var _gthis = this;
