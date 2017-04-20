@@ -96,9 +96,21 @@ class Table {
     resetVisibleRowsAndRedraw();
 
     if (resetScroll)
-      grid.scrollTo(settings.initialScrollX, settings.initialScrollY);
+      this.resetScroll();
 
     return this;
+  }
+
+  public function resetScroll() : Void {
+    grid.scrollTo(settings.initialScrollX, settings.initialScrollY);
+  }
+
+  public function resetScrollX() : Void {
+    grid.scrollTo(settings.initialScrollX, null);
+  }
+
+  public function resetScrollY() : Void {
+    grid.scrollTo(null, settings.initialScrollY);
   }
 
   inline function resetVisibleRowsAndRedraw() : Void {
