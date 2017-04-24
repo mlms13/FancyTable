@@ -2,7 +2,6 @@ package fancy.table.util;
 
 import dots.Dom;
 import js.html.Element;
-using thx.Strings;
 
 typedef CellRenderer = Table -> Int -> Int -> Element;
 

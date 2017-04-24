@@ -1,11 +1,8 @@
 package fancy.table.util;
 
-import fancy.Grid;
 import fancy.table.Row;
 import fancy.table.FancyTableSettings;
 using thx.Arrays;
-using thx.Functions;
-import thx.Tuple;
 
 typedef ChildRows = { children : Array<Row>, allRows : Array<Row> };
 

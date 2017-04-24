@@ -6,9 +6,6 @@ import fancy.table.FancyTableSettings;
 import fancy.table.util.CellContent;
 import js.html.Element;
 using thx.Arrays;
-using thx.Functions;
-using thx.Ints;
-using thx.Objects;
 using thx.Options;
 
 class Row {
