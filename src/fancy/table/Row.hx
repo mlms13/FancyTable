@@ -41,9 +41,9 @@ class Row {
     return classes;
   }
 
-  public function renderCell(table: Table, row: Int, col: Int): Option<Element> {
+  public function renderCell(table: Table, row: Int, col: Int, classes: Array<String>): Option<Element> {
     return cells.getOption(col).map(function (cell) {
-      return Dom.create("div", ["class" => getClasses().join(" ")], [
+      return Dom.create("div", ["class" => getClasses().concat(classes).join(" ")], [
         cell.render(classSettings.cellContent, table, row, col)
       ]);
     });

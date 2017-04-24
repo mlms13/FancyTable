@@ -9,9 +9,145 @@ import fancy.table.util.RowData;
 
 class Main {
   static function main() {
-    var el = js.Browser.document.querySelector(".table-container");
+    var elNested = js.Browser.document.querySelector(".table-container-nested"),
+        elFlat = js.Browser.document.querySelector(".table-container-flat");
 
     var cards = [{
+      name : "Quarantine Field",
+      color : "White",
+      type : "Enchantment",
+      rarity : "Mythic",
+      multiverseId : "402001",
+      cmc : 2,
+      draftval : 5,
+      tcgprice : 2.52
+    }, {
+      name : "Hero of Goma Fada",
+      color : "White",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401913",
+      cmc : 5,
+      draftval : 3.5,
+      tcgprice : 0.25
+    }, {
+      name : "Felidar Sovereign",
+      color : "White",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401878",
+      cmc : 6,
+      draftval : 4,
+      tcgprice : 0.56
+    }, {
+      name : "Part the Waterveil",
+      color : "Blue",
+      type : "Sorcery",
+      rarity : "Mythic",
+      multiverseId : "401982",
+      cmc : 6,
+      draftval : 2.0,
+      tcgprice : 1.29
+    }, {
+      name : "Guardian of Tazeem",
+      color : "Blue",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401906",
+      cmc : 5,
+      draftval : 4.5,
+      tcgprice : 0.25
+    }, {
+      name : "Quarantine Field",
+      color : "White",
+      type : "Enchantment",
+      rarity : "Mythic",
+      multiverseId : "402001",
+      cmc : 2,
+      draftval : 5,
+      tcgprice : 2.52
+    }, {
+      name : "Hero of Goma Fada",
+      color : "White",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401913",
+      cmc : 5,
+      draftval : 3.5,
+      tcgprice : 0.25
+    }, {
+      name : "Felidar Sovereign",
+      color : "White",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401878",
+      cmc : 6,
+      draftval : 4,
+      tcgprice : 0.56
+    }, {
+      name : "Part the Waterveil",
+      color : "Blue",
+      type : "Sorcery",
+      rarity : "Mythic",
+      multiverseId : "401982",
+      cmc : 6,
+      draftval : 2.0,
+      tcgprice : 1.29
+    }, {
+      name : "Guardian of Tazeem",
+      color : "Blue",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401906",
+      cmc : 5,
+      draftval : 4.5,
+      tcgprice : 0.25
+    }, {
+      name : "Quarantine Field",
+      color : "White",
+      type : "Enchantment",
+      rarity : "Mythic",
+      multiverseId : "402001",
+      cmc : 2,
+      draftval : 5,
+      tcgprice : 2.52
+    }, {
+      name : "Hero of Goma Fada",
+      color : "White",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401913",
+      cmc : 5,
+      draftval : 3.5,
+      tcgprice : 0.25
+    }, {
+      name : "Felidar Sovereign",
+      color : "White",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401878",
+      cmc : 6,
+      draftval : 4,
+      tcgprice : 0.56
+    }, {
+      name : "Part the Waterveil",
+      color : "Blue",
+      type : "Sorcery",
+      rarity : "Mythic",
+      multiverseId : "401982",
+      cmc : 6,
+      draftval : 2.0,
+      tcgprice : 1.29
+    }, {
+      name : "Guardian of Tazeem",
+      color : "Blue",
+      type : "Creature",
+      rarity : "Rare",
+      multiverseId : "401906",
+      cmc : 5,
+      draftval : 4.5,
+      tcgprice : 0.25
+    }, {
       name : "Quarantine Field",
       color : "White",
       type : "Enchantment",
@@ -109,9 +245,42 @@ class Main {
       ]));
     }
 
-    var table = new Table(el, Nested(toRowData(cards)), {
+    function toFlatData(cards : Array<Card>) : Array<Array<CellContent>> {
+      return [[
+        CellContent.fromString("Cards"),
+        CellContent.fromString("CMC"),
+        CellContent.fromString("Color"),
+        CellContent.fromString("Type"),
+        CellContent.fromString("Rarity"),
+        CellContent.fromString("Draft Value"),
+        CellContent.fromString("Price"),
+      ]].concat(cards.map(function(card) {
+        return [
+          CellContent.fromString(card.name),
+          CellContent.fromInt(card.cmc),
+          CellContent.fromString(card.color),
+          CellContent.fromString(card.type),
+          CellContent.fromString(card.rarity),
+          CellContent.fromFloat(card.draftval),
+          CellContent.fromFloat(card.tcgprice),
+        ];
+      }));
+    }
+
+    new Table(elNested, Nested(toRowData(cards)), {
       fixedTop: 1,
       fixedLeft: 1
+    });
+
+    new Table(elFlat, Tabular(toFlatData(cards)), {
+      fixedTop: 1,
+      fixedLeft: 1,
+      selection: {
+        minRow: 1,
+        minCol: 1,
+        maxRow: 2,
+        maxCol: 3
+      }
     });
   }
 }

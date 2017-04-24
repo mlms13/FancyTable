@@ -70,9 +70,39 @@ class Table {
     });
   }
 
+  // function isSelected(row: Int, col: Int): Bool {
+
+  // }
+
   function renderGridCell(row: Int, col: Int): Element {
-    return visibleRows.getOption(row).flatMap.fn(_.renderCell(this, row, col))
-      .getOrElse(settings.fallbackCell.render("ft-cell-content", this, row, col));
+    // var selected = isSelected(row, col),
+    //     selectedTop = ,
+    //     selectedRight = ,
+    //     selectedBottom = ,
+    //     selectedLeft = ;
+    var classes = switch settings.selection {
+      case None: [];
+      case Some(range):
+        var buff = [];
+        if(range.contains(row, col)) {
+          if(range.isActive(row, col))
+            buff.push("active"); // TODO !!!
+          buff.push("selected"); // TODO !!!
+          if(range.isOnTop(row))
+            buff.push("selected-top"); // TODO !!!
+          if(range.isOnRight(col))
+            buff.push("selected-right"); // TODO !!!
+          if(range.isOnBottom(row))
+            buff.push("selected-bottom"); // TODO !!!
+          if(range.isOnLeft(col))
+            buff.push("selected-left"); // TODO !!!
+        }
+        buff;
+    };
+
+    return visibleRows.getOption(row)
+      .flatMap.fn(_.renderCell(this, row, col, classes))
+      .getOrElse(settings.fallbackCell.render(["ft-cell-content"].concat(classes).join(" "), this, row, col));
   }
 
   /**
