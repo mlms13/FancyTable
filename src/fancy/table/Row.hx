@@ -14,7 +14,7 @@ class Row {
   public var expanded(default, null): Bool;
   public var height(default, null): fancy.Grid.CellDimension;
   var indentation: Int;
-  var classSettings: FancyTableClasses;
+  public var classSettings(default, null): FancyTableClasses;
   var customClasses: Array<String>;
 
   public function new(cells: Array<CellContent>, classSettings, height, ?customClasses, ?expanded = true, ?indentation = 0) {
@@ -43,10 +43,14 @@ class Row {
 
   public function renderCell(table: Table, row: Int, col: Int, classes: Array<String>): Option<Element> {
     return cells.getOption(col).map(function (cell) {
-      return Dom.create("div", ["class" => getClasses().concat(classes).join(" ")], [
-        cell.render(classSettings.cellContent, table, row, col)
-      ]);
+      return renderCellContainer(classes, cell.render(classSettings.cellContent, table, row, col));
     });
+  }
+
+  public function renderCellContainer(classes: Array<String>, content: Element) {
+    return Dom.create("div", ["class" => getClasses().concat(classes).join(" ")], [
+      content
+    ]);
   }
 
   public function addChildRow(child: Row) {

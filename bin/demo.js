@@ -9,6 +9,36 @@ function $extend(from, fields) {
 }
 var HxOverrides = function() { };
 HxOverrides.__name__ = true;
+HxOverrides.strDate = function(s) {
+	var _g = s.length;
+	switch(_g) {
+	case 8:
+		var k = s.split(":");
+		var d = new Date();
+		d["setTime"](0);
+		d["setUTCHours"](k[0]);
+		d["setUTCMinutes"](k[1]);
+		d["setUTCSeconds"](k[2]);
+		return d;
+	case 10:
+		var k1 = s.split("-");
+		return new Date(k1[0],k1[1] - 1,k1[2],0,0,0);
+	case 19:
+		var k2 = s.split(" ");
+		var y = k2[0].split("-");
+		var t = k2[1].split(":");
+		return new Date(y[0],y[1] - 1,y[2],t[0],t[1],t[2]);
+	default:
+		throw new js__$Boot_HaxeError("Invalid date format : " + s);
+	}
+};
+HxOverrides.cca = function(s,index) {
+	var x = s.charCodeAt(index);
+	if(x != x) {
+		return undefined;
+	}
+	return x;
+};
 HxOverrides.iter = function(a) {
 	return { cur : 0, arr : a, hasNext : function() {
 		return this.cur < this.arr.length;
@@ -241,14 +271,57 @@ Main.main = function() {
 			return [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.name),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.cmc)),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.color),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.type),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.rarity),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.draftval)),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.tcgprice))];
 		}));
 	};
-	new fancy_Table(elNested,fancy_FancyTableData.Nested(toRowData(cards)),{ fixedTop : 1, fixedLeft : 1});
-	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(toFlatData(cards)),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}});
+	new fancy_Table(elNested,fancy_FancyTableData.Nested(toRowData(cards)),{ fixedTop : 1, fixedLeft : 1, onFocus : function() {
+		console.log("focus table #1");
+	}, onBlur : function() {
+		console.log("blur table #1");
+	}, focusOnHover : false, rangeSelectionEnabled : false});
+	var flat = toFlatData(cards);
+	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(flat),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onFocus : function() {
+		console.log("focus table #2");
+	}, onBlur : function() {
+		console.log("blur table #2");
+	}, onKey : function(key,shift,coords) {
+		var flat1 = coords.get_row();
+		var item = flat[flat1][coords.get_col()];
+		console.log("received " + key + ", " + (shift == null ? "null" : "" + shift) + " at " + coords.toString());
+		if(item[1] == 0) {
+			var v = item[2];
+			if(key == "Backspace") {
+				var flat2 = coords.get_row();
+				return haxe_ds_Option.Some(flat[flat2][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v.substring(0,v.length - 1)));
+			} else {
+				var other = key;
+				if(other.length == 1) {
+					var flat3 = coords.get_row();
+					return haxe_ds_Option.Some(flat[flat3][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v + other));
+				} else {
+					return haxe_ds_Option.None;
+				}
+			}
+		} else {
+			return haxe_ds_Option.None;
+		}
+	}, onDoubleClick : function(coords1) {
+		console.log("dbl click at " + coords1.toString());
+		return haxe_ds_Option.None;
+	}});
 };
 Math.__name__ = true;
 var Std = function() { };
 Std.__name__ = true;
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
+};
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) {
+		v = parseInt(x);
+	}
+	if(isNaN(v)) {
+		return null;
+	}
+	return v;
 };
 var dots_Dom = function() { };
 dots_Dom.__name__ = true;
@@ -290,7 +363,16 @@ dots_Query.find = function(selector,ctx) {
 dots_Query.selectNodes = function(selector,ctx) {
 	return (ctx != null ? ctx : dots_Query.doc).querySelectorAll(selector);
 };
-var fancy_VerticalScrollPosition = { __ename__ : true, __constructs__ : ["Top","Bottom","FromTop","FromBottom"] };
+dots_Query.closest = function(element,selector) {
+	while(!element.matches(selector)) {
+		element = element.parentElement;
+		if(null == element) {
+			return null;
+		}
+	}
+	return element;
+};
+var fancy_VerticalScrollPosition = { __ename__ : true, __constructs__ : ["Top","Bottom","FromTop","FromBottom","Visible"] };
 fancy_VerticalScrollPosition.Top = ["Top",0];
 fancy_VerticalScrollPosition.Top.toString = $estr;
 fancy_VerticalScrollPosition.Top.__enum__ = fancy_VerticalScrollPosition;
@@ -299,7 +381,8 @@ fancy_VerticalScrollPosition.Bottom.toString = $estr;
 fancy_VerticalScrollPosition.Bottom.__enum__ = fancy_VerticalScrollPosition;
 fancy_VerticalScrollPosition.FromTop = function(distance) { var $x = ["FromTop",2,distance]; $x.__enum__ = fancy_VerticalScrollPosition; $x.toString = $estr; return $x; };
 fancy_VerticalScrollPosition.FromBottom = function(distance) { var $x = ["FromBottom",3,distance]; $x.__enum__ = fancy_VerticalScrollPosition; $x.toString = $estr; return $x; };
-var fancy_HorizontalScrollPosition = { __ename__ : true, __constructs__ : ["Left","Right","FromLeft","FromRight"] };
+fancy_VerticalScrollPosition.Visible = function(distance) { var $x = ["Visible",4,distance]; $x.__enum__ = fancy_VerticalScrollPosition; $x.toString = $estr; return $x; };
+var fancy_HorizontalScrollPosition = { __ename__ : true, __constructs__ : ["Left","Right","FromLeft","FromRight","Visible"] };
 fancy_HorizontalScrollPosition.Left = ["Left",0];
 fancy_HorizontalScrollPosition.Left.toString = $estr;
 fancy_HorizontalScrollPosition.Left.__enum__ = fancy_HorizontalScrollPosition;
@@ -308,6 +391,7 @@ fancy_HorizontalScrollPosition.Right.toString = $estr;
 fancy_HorizontalScrollPosition.Right.__enum__ = fancy_HorizontalScrollPosition;
 fancy_HorizontalScrollPosition.FromLeft = function(distance) { var $x = ["FromLeft",2,distance]; $x.__enum__ = fancy_HorizontalScrollPosition; $x.toString = $estr; return $x; };
 fancy_HorizontalScrollPosition.FromRight = function(distance) { var $x = ["FromRight",3,distance]; $x.__enum__ = fancy_HorizontalScrollPosition; $x.toString = $estr; return $x; };
+fancy_HorizontalScrollPosition.Visible = function(distance) { var $x = ["Visible",4,distance]; $x.__enum__ = fancy_HorizontalScrollPosition; $x.toString = $estr; return $x; };
 var fancy_ScrollUnit = { __ename__ : true, __constructs__ : ["Pixels","Cells"] };
 fancy_ScrollUnit.Pixels = function(value) { var $x = ["Pixels",0,value]; $x.__enum__ = fancy_ScrollUnit; $x.toString = $estr; return $x; };
 fancy_ScrollUnit.Cells = function(value) { var $x = ["Cells",1,value]; $x.__enum__ = fancy_ScrollUnit; $x.toString = $estr; return $x; };
@@ -531,6 +615,11 @@ var fancy_Grid = function(parent,options) {
 		}
 		_gthis.renderMain(_gthis.grid9.position.x,_gthis.grid9.position.y);
 		onResize(w,h,ow,oh);
+	}, onRefresh : function() {
+		_gthis.renderCorners();
+		_gthis.renderMiddle(_gthis.grid9.position.y);
+		_gthis.renderCenter(_gthis.grid9.position.x);
+		_gthis.renderMain(_gthis.grid9.position.x,_gthis.grid9.position.y);
 	}});
 	this.topLeft = this.grid9.topLeft;
 	this.topCenter = this.grid9.topCenter;
@@ -545,7 +634,18 @@ var fancy_Grid = function(parent,options) {
 };
 fancy_Grid.__name__ = true;
 fancy_Grid.prototype = {
-	setRowsAndColumns: function(rows,columns) {
+	patchCellContent: function(row,col,el) {
+		var s = ".row-" + row + ".col-" + col;
+		console.log("PATCH IT NOW: " + s);
+		var p = this.grid9.el.querySelector(s);
+		console.log(p);
+		if(null == p) {
+			return;
+		}
+		p.innerHTML = "";
+		p.appendChild(el);
+	}
+	,setRowsAndColumns: function(rows,columns) {
 		this.rows = rows;
 		this.columns = columns;
 		this.invalidateCache();
@@ -557,7 +657,7 @@ fancy_Grid.prototype = {
 		this.rightRailSize = this.fixedRight == 0 ? 0 : contentWidth - this.hOffset(columns - this.fixedRight);
 		this.grid9.sizeRails(this.topRailSize,this.bottomRailSize,this.leftRailSize,this.rightRailSize);
 		this.grid9.resizeContent(contentWidth,contentHeight);
-		this.grid9.setPosition(this.grid9.position.x,this.grid9.position.y);
+		this.grid9.setPosition(this.grid9.position.x,this.grid9.position.y,false);
 		this.renderCorners();
 		this.renderMiddle(this.grid9.position.y);
 		this.renderCenter(this.grid9.position.x);
@@ -567,7 +667,7 @@ fancy_Grid.prototype = {
 	,scrollTo: function(x,y) {
 		var xPos = x == null ? this.grid9.position.x : this.resolveHorizontalScroll(x);
 		var yPos = y == null ? this.grid9.position.y : this.resolveVerticalScroll(y);
-		this.grid9.setPosition(xPos,yPos);
+		this.grid9.setPosition(xPos,yPos,true);
 		this.grid9.refresh();
 	}
 	,resolveHorizontalDistance: function(x) {
@@ -592,6 +692,19 @@ fancy_Grid.prototype = {
 		case 3:
 			var d1 = x[2];
 			return this.grid9.contentWidth - this.resolveHorizontalDistance(d1);
+		case 4:
+			var d2 = x[2];
+			var off = this.resolveHorizontalDistance(d2);
+			var pos = this.grid9.position;
+			var size = this.grid9.size;
+			if(off >= pos.x && off <= pos.x + size.w) {
+				return pos.x;
+			} else if(off < pos.x) {
+				return off;
+			} else {
+				return off;
+			}
+			break;
 		}
 	}
 	,resolveVerticalDistance: function(y) {
@@ -616,6 +729,19 @@ fancy_Grid.prototype = {
 		case 3:
 			var d1 = y[2];
 			return this.grid9.contentHeight - this.resolveVerticalDistance(d1);
+		case 4:
+			var d2 = y[2];
+			var off = this.resolveVerticalDistance(d2);
+			var pos = this.grid9.position;
+			var size = this.grid9.size;
+			if(off >= pos.y && off <= pos.y + size.h) {
+				return pos.y;
+			} else if(off < pos.y) {
+				return off;
+			} else {
+				return off;
+			}
+			break;
 		}
 	}
 	,invalidateCache: function() {
@@ -851,6 +977,8 @@ fancy_Grid.prototype = {
 		var el = this.cacheElement.get(row,col);
 		if(null == el) {
 			el = window.document.createElement("div");
+			el.setAttribute("data-row","" + row);
+			el.setAttribute("data-col","" + col);
 			el.className = "cell row-" + row + " col-" + col;
 			el.appendChild(this.render(row,col));
 			this.cacheElement.set(row,col,el);
@@ -1368,6 +1496,19 @@ fancy_Grid.prototype = {
 			}
 		}
 	}
+	,resetCacheForRange: function(minRow,minCol,maxRow,maxCol) {
+		var _g1 = minRow;
+		var _g = maxRow + 1;
+		while(_g1 < _g) {
+			var r = _g1++;
+			var _g3 = minCol;
+			var _g2 = maxCol + 1;
+			while(_g3 < _g2) {
+				var c = _g3++;
+				this.cacheElement.remove(r,c);
+			}
+		}
+	}
 };
 var fancy_FancyTableData = { __ename__ : true, __constructs__ : ["Tabular","Nested"] };
 fancy_FancyTableData.Tabular = function(data) { var $x = ["Tabular",0,data]; $x.__enum__ = fancy_FancyTableData; $x.toString = $estr; return $x; };
@@ -1378,10 +1519,18 @@ var fancy_Table = function(parent,data,options) {
 	this.rows = [];
 	var _gthis = this;
 	this.settings = fancy_table_FancyTableSettings.fromOptions(options);
+	var value = options.selection;
+	var _e = null == value ? haxe_ds_Option.None : haxe_ds_Option.Some(value);
+	this.selection = (function(callback) {
+		return thx_Options.map(_e,callback);
+	})(function(_) {
+		return new fancy_table_Range(new fancy_table_Coords(_.minRow,_.minCol),new fancy_table_Coords(_.maxRow,_.maxCol));
+	});
 	this.grid = new fancy_Grid(parent,{ rows : 1, columns : 3, render : $bind(this,this.renderGridCell), fixedLeft : this.settings.fixedLeft, fixedTop : this.settings.fixedTop, vSize : $bind(this,this.assignVSize), hSize : function(col) {
 		return _gthis.settings.hSize(col,_gthis.maxColumns);
 	}, onScroll : this.settings.onScroll, onResize : this.settings.onResize});
 	this.setData(data);
+	this.wireEvents(parent);
 };
 fancy_Table.__name__ = true;
 fancy_Table.flattenVisibleRows = function(rows) {
@@ -1401,7 +1550,342 @@ fancy_Table.tableAppendRow = function(table,row) {
 	return fancy_Table.insertRowAt(table,table.rows.length,row);
 };
 fancy_Table.prototype = {
-	assignVSize: function(row) {
+	wireEvents: function(el) {
+		var _gthis = this;
+		if(this.settings.focusOnHover) {
+			el.addEventListener("mouseenter",$bind(this,this.focus),false);
+			el.addEventListener("mouseleave",$bind(this,this.blur),false);
+		} else {
+			el.addEventListener("mousedown",function(e) {
+				e.cancelBubble = true;
+				_gthis.focus();
+			},false);
+			window.document.addEventListener("mousedown",$bind(this,this.blur),false);
+		}
+		if(this.settings.selectionEnabled) {
+			var counter = 0;
+			var cancel = function() {
+			};
+			el.addEventListener("click",function(e1) {
+				if((counter += 1) == 1) {
+					cancel = thx_Timer.delay(function() {
+						counter = 0;
+					},400);
+					var _e = _gthis.getCoords(e1.target);
+					(function(f) {
+						return thx_Options.each(_e,f);
+					})(function(_) {
+						var tmp = _.get_row();
+						var tmp1 = _.get_col();
+						_gthis.select(tmp,tmp1);
+						return;
+					});
+				} else if(counter == 2) {
+					_gthis.dblClick(e1);
+				} else {
+					counter = 0;
+					cancel();
+				}
+			},false);
+			window.document.addEventListener("keydown",function(e2) {
+				if(!_gthis.hasFocus) {
+					return;
+				}
+				_gthis.pressKey(e2.key,e2.shiftKey);
+			},false);
+		} else {
+			el.addEventListener("dblclick",$bind(this,this.dblClick),false);
+		}
+	}
+	,dblClick: function(e) {
+		var _gthis = this;
+		thx_Options.each(this.getCoords(e.target),function(coords) {
+			var _g = _gthis.settings.onDoubleClick(coords);
+			switch(_g[1]) {
+			case 0:
+				var cell = _g[2];
+				_gthis.patchCellContent(coords,cell);
+				e.cancelBubble = true;
+				e.preventDefault();
+				break;
+			case 1:
+				break;
+			}
+		});
+	}
+	,getCoords: function(el) {
+		var cell = dots_Query.closest(el,"div.cell");
+		if(null == cell) {
+			return haxe_ds_Option.None;
+		}
+		var row = Std.parseInt(cell.getAttribute("data-row"));
+		var col = Std.parseInt(cell.getAttribute("data-col"));
+		return haxe_ds_Option.Some(new fancy_table_Coords(row,col));
+	}
+	,pressKey: function(key,shift) {
+		var _g = this.settings.rangeSelectionEnabled;
+		var _g1 = key.toLowerCase();
+		switch(_g1) {
+		case "arrowdown":
+			switch(shift) {
+			case false:
+				this.goDown();
+				break;
+			case true:
+				if(_g == true) {
+					this.selectDown();
+				} else {
+					var other = _g1;
+					var shift1 = shift;
+					var rangeSelectionEnabled = _g;
+					var _g2 = this.selection;
+					switch(_g2[1]) {
+					case 0:
+						var range = _g2[2];
+						this.maybePatchCellContent(range.active,this.settings.onKey(key,shift1,range.active));
+						break;
+					case 1:
+						break;
+					}
+				}
+				break;
+			}
+			break;
+		case "arrowleft":
+			switch(shift) {
+			case false:
+				this.goLeft();
+				break;
+			case true:
+				if(_g == true) {
+					this.selectLeft();
+				} else {
+					var other1 = _g1;
+					var shift2 = shift;
+					var rangeSelectionEnabled1 = _g;
+					var _g3 = this.selection;
+					switch(_g3[1]) {
+					case 0:
+						var range1 = _g3[2];
+						this.maybePatchCellContent(range1.active,this.settings.onKey(key,shift2,range1.active));
+						break;
+					case 1:
+						break;
+					}
+				}
+				break;
+			}
+			break;
+		case "arrowright":
+			switch(shift) {
+			case false:
+				this.goRight();
+				break;
+			case true:
+				if(_g == true) {
+					this.selectRight();
+				} else {
+					var other2 = _g1;
+					var shift3 = shift;
+					var rangeSelectionEnabled2 = _g;
+					var _g4 = this.selection;
+					switch(_g4[1]) {
+					case 0:
+						var range2 = _g4[2];
+						this.maybePatchCellContent(range2.active,this.settings.onKey(key,shift3,range2.active));
+						break;
+					case 1:
+						break;
+					}
+				}
+				break;
+			}
+			break;
+		case "arrowup":
+			switch(shift) {
+			case false:
+				this.goUp();
+				break;
+			case true:
+				if(_g == true) {
+					this.selectUp();
+				} else {
+					var other3 = _g1;
+					var shift4 = shift;
+					var rangeSelectionEnabled3 = _g;
+					var _g5 = this.selection;
+					switch(_g5[1]) {
+					case 0:
+						var range3 = _g5[2];
+						this.maybePatchCellContent(range3.active,this.settings.onKey(key,shift4,range3.active));
+						break;
+					case 1:
+						break;
+					}
+				}
+				break;
+			}
+			break;
+		case "enter":
+			switch(shift) {
+			case false:
+				this.goNext();
+				break;
+			case true:
+				this.goPrevious();
+				break;
+			}
+			break;
+		default:
+			var rangeSelectionEnabled4 = _g;
+			var shift5 = shift;
+			var other4 = _g1;
+			var _g6 = this.selection;
+			switch(_g6[1]) {
+			case 0:
+				var range4 = _g6[2];
+				this.maybePatchCellContent(range4.active,this.settings.onKey(key,shift5,range4.active));
+				break;
+			case 1:
+				break;
+			}
+		}
+	}
+	,maybePatchCellContent: function(coords,maybeCell) {
+		var f = $bind(this,this.patchCellContent);
+		var a1 = coords;
+		thx_Options.each(maybeCell,function(a2) {
+			f(a1,a2);
+		});
+	}
+	,patchCellContent: function(coords,cell) {
+		var _gthis = this;
+		console.log("PATCH CELL CONTENT");
+		thx_Options.each(thx_Options.map(thx_Arrays.getOption(this.visibleRows,coords.get_row()),function(r) {
+			var r1 = r.classSettings.cellContent;
+			var el = coords.get_row();
+			var el1 = coords.get_col();
+			var el2 = fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,r1,_gthis,el,el1);
+			return r.renderCellContainer([],el2);
+		}),function(el3) {
+			_gthis.grid.patchCellContent(coords.get_row(),coords.get_col(),el3);
+		});
+	}
+	,select: function(row,col) {
+		this.selectRange(row,col,row,col,row,col);
+	}
+	,goFirst: function() {
+		this.selectRange(0,0,0,0,0,0);
+	}
+	,selectFromRange: function(f) {
+		var _g = this.selection;
+		switch(_g[1]) {
+		case 0:
+			var range = _g[2];
+			this.selectWithRange(f(range));
+			break;
+		case 1:
+			this.goFirst();
+			break;
+		}
+	}
+	,goNext: function() {
+		this.selectFromRange(function(_) {
+			return _.next();
+		});
+	}
+	,goPrevious: function() {
+		this.selectFromRange(function(_) {
+			return _.previous();
+		});
+	}
+	,goLeft: function() {
+		this.selectFromRange(function(_) {
+			return _.left();
+		});
+	}
+	,goRight: function() {
+		this.selectFromRange(function(_) {
+			return _.right();
+		});
+	}
+	,goUp: function() {
+		this.selectFromRange(function(_) {
+			return _.up();
+		});
+	}
+	,goDown: function() {
+		this.selectFromRange(function(_) {
+			return _.down();
+		});
+	}
+	,selectLeft: function() {
+		this.selectFromRange(function(_) {
+			return _.selectLeft();
+		});
+	}
+	,selectRight: function() {
+		this.selectFromRange(function(_) {
+			return _.selectRight();
+		});
+	}
+	,selectUp: function() {
+		this.selectFromRange(function(_) {
+			return _.selectUp();
+		});
+	}
+	,selectDown: function() {
+		this.selectFromRange(function(_) {
+			return _.selectDown();
+		});
+	}
+	,selectWithRange: function(range) {
+		this.selectRange(range.min.get_row(),range.min.get_col(),range.max.get_row(),range.max.get_col(),range.active.get_row(),range.active.get_col());
+	}
+	,selectRange: function(minRow,minCol,maxRow,maxCol,row,col) {
+		if(col == null) {
+			col = 0;
+		}
+		if(row == null) {
+			row = 0;
+		}
+		if(!this.settings.selectionEnabled) {
+			return;
+		}
+		if(!this.settings.rangeSelectionEnabled) {
+			maxRow = minRow;
+			maxCol = minCol;
+		}
+		if(row < minRow) {
+			row = minRow;
+		} else if(row > maxRow) {
+			row = maxRow;
+		}
+		if(col < minCol) {
+			col = minCol;
+		} else if(col > maxCol) {
+			col = maxCol;
+		}
+		var _g = this.selection;
+		switch(_g[1]) {
+		case 0:
+			var range = _g[2];
+			this.grid.resetCacheForRange(range.min.get_row(),range.min.get_col(),range.max.get_row(),range.max.get_col());
+			break;
+		case 1:
+			break;
+		}
+		var range1 = new fancy_table_Range(new fancy_table_Coords(minRow,minCol),new fancy_table_Coords(maxRow,maxCol));
+		range1.active.set_row(row);
+		range1.active.set_col(col);
+		this.selection = haxe_ds_Option.Some(range1);
+		this.grid.resetCacheForRange(range1.min.get_row(),range1.min.get_col(),range1.max.get_row(),range1.max.get_col());
+		this.scrollToCell(row,col);
+	}
+	,scrollToCell: function(row,col) {
+		this.grid.scrollTo(fancy_HorizontalScrollPosition.Visible(fancy_ScrollUnit.Cells(col)),fancy_VerticalScrollPosition.Visible(fancy_ScrollUnit.Cells(row)));
+	}
+	,assignVSize: function(row) {
 		return thx_Options.cata(thx_Arrays.getOption(this.visibleRows,row),fancy_CellDimension.Fixed(0),function(r) {
 			return r.height;
 		});
@@ -1409,7 +1893,7 @@ fancy_Table.prototype = {
 	,renderGridCell: function(row,col) {
 		var _gthis = this;
 		var classes;
-		var _g = this.settings.selection;
+		var _g = this.selection;
 		switch(_g[1]) {
 		case 0:
 			var range = _g[2];
@@ -1444,6 +1928,20 @@ fancy_Table.prototype = {
 		})(function(_) {
 			return _.renderCell(_gthis,row,col,classes);
 		}),fancy_table_util__$CellContent_CellContent_$Impl_$.render(this.settings.fallbackCell,["ft-cell-content"].concat(classes).join(" "),this,row,col));
+	}
+	,focus: function() {
+		if(this.hasFocus) {
+			return;
+		}
+		this.hasFocus = true;
+		this.settings.onFocus();
+	}
+	,blur: function() {
+		if(!this.hasFocus) {
+			return;
+		}
+		this.hasFocus = false;
+		this.settings.onBlur();
 	}
 	,setData: function(data,resetScroll) {
 		if(resetScroll == null) {
@@ -1554,6 +2052,20 @@ var fancy_core_Grid9 = function(parent,options) {
 	}
 	this.onResize = t1 != null ? t1 : function(w,h,ow,oh) {
 	};
+	var _02 = options;
+	var t2;
+	if(null == _02) {
+		t2 = null;
+	} else {
+		var _12 = _02.onRefresh;
+		if(null == _12) {
+			t2 = null;
+		} else {
+			t2 = _12;
+		}
+	}
+	this.onRefresh = t2 != null ? t2 : function() {
+	};
 	var offset = function() {
 		if(_gthis.contentWidth > _gthis.gridWidth && _gthis.contentHeight > _gthis.gridHeight) {
 			return _gthis.scrollerSize + _gthis.scrollerMargin;
@@ -1590,19 +2102,19 @@ var fancy_core_Grid9 = function(parent,options) {
 	this.scrollerVDimensions = new fancy_core_ScrollerDimensions({ viewSize : viewHeight, contentSize : contentHeight, scrollerArea : fancy_core__$Lazy_Lazy_$Impl_$.subtract(viewHeight,offset), minScrollerSize : minScrollerSize, maxScrollerSize : maxScrollerSize});
 	this.scrollerHDimensions = new fancy_core_ScrollerDimensions({ viewSize : viewWidth, contentSize : contentWidth, scrollerArea : fancy_core__$Lazy_Lazy_$Impl_$.subtract(viewWidth,offset), minScrollerSize : minScrollerSize, maxScrollerSize : maxScrollerSize});
 	this.scrollerSize = options.scrollerSize;
-	var _02 = options;
-	var t2;
-	if(null == _02) {
-		t2 = null;
+	var _03 = options;
+	var t3;
+	if(null == _03) {
+		t3 = null;
 	} else {
-		var _12 = _02.scrollerMargin;
-		if(null == _12) {
-			t2 = null;
+		var _13 = _03.scrollerMargin;
+		if(null == _13) {
+			t3 = null;
 		} else {
-			t2 = _12;
+			t3 = _13;
 		}
 	}
-	this.scrollerMargin = t2 != null ? t2 : 0;
+	this.scrollerMargin = t3 != null ? t3 : 0;
 	var doc = null;
 	if(null == doc) {
 		doc = window.document;
@@ -2176,24 +2688,12 @@ var fancy_core_Grid9 = function(parent,options) {
 	this.bottomRight = dots_Query.find(".pane.bottom.right",this.el);
 	this.size = this.getGridSizeFromContainer();
 	this.resizeGrid(this.size.w,this.size.h);
-	var _03 = options;
-	var t3;
-	if(null == _03) {
-		t3 = null;
-	} else {
-		var _13 = _03.topRail;
-		if(null == _13) {
-			t3 = null;
-		} else {
-			t3 = _13;
-		}
-	}
 	var _04 = options;
 	var t4;
 	if(null == _04) {
 		t4 = null;
 	} else {
-		var _14 = _04.bottomRail;
+		var _14 = _04.topRail;
 		if(null == _14) {
 			t4 = null;
 		} else {
@@ -2205,7 +2705,7 @@ var fancy_core_Grid9 = function(parent,options) {
 	if(null == _05) {
 		t5 = null;
 	} else {
-		var _15 = _05.leftRail;
+		var _15 = _05.bottomRail;
 		if(null == _15) {
 			t5 = null;
 		} else {
@@ -2217,14 +2717,26 @@ var fancy_core_Grid9 = function(parent,options) {
 	if(null == _06) {
 		t6 = null;
 	} else {
-		var _16 = _06.rightRail;
+		var _16 = _06.leftRail;
 		if(null == _16) {
 			t6 = null;
 		} else {
 			t6 = _16;
 		}
 	}
-	this.sizeRails(t3 != null ? t3 : 0,t4 != null ? t4 : 0,t5 != null ? t5 : 0,t6 != null ? t6 : 0);
+	var _07 = options;
+	var t7;
+	if(null == _07) {
+		t7 = null;
+	} else {
+		var _17 = _07.rightRail;
+		if(null == _17) {
+			t7 = null;
+		} else {
+			t7 = _17;
+		}
+	}
+	this.sizeRails(t4 != null ? t4 : 0,t5 != null ? t5 : 0,t6 != null ? t6 : 0,t7 != null ? t7 : 0);
 	this.resizeContent(options.contentWidth,options.contentHeight);
 	window.addEventListener("resize",function(_) {
 		var s = _gthis.getGridSizeFromContainer();
@@ -2285,12 +2797,12 @@ fancy_core_Grid9.prototype = {
 		}
 	}
 	,resetPosition: function() {
-		this.setPosition(this.position.x,this.position.y);
+		this.setPosition(this.position.x,this.position.y,false);
 	}
 	,movePosition: function(x,y) {
-		this.setPosition(this.position.x + x,this.position.y + y);
+		this.setPosition(this.position.x + x,this.position.y + y,true);
 	}
-	,setPosition: function(x,y) {
+	,setPosition: function(x,y,force) {
 		var oldx = this.position.x;
 		var oldy = this.position.y;
 		this.position.x = x;
@@ -2308,10 +2820,14 @@ fancy_core_Grid9.prototype = {
 			this.position.y = limit1;
 		}
 		if(oldx == this.position.x && oldy == this.position.y) {
-			return;
+			if(force) {
+				this.dirty = true;
+				this.onRefresh();
+			}
+		} else {
+			this.dirty = true;
+			this.onScroll(this.position.x,this.position.y,oldx,oldy);
 		}
-		this.onScroll(this.position.x,this.position.y,oldx,oldy);
-		this.dirty = true;
 	}
 	,getGridSizeFromContainer: function() {
 		return { w : this.el.parentElement.offsetWidth, h : this.el.parentElement.offsetHeight};
@@ -2495,6 +3011,13 @@ fancy_core_PositionCache.prototype = {
 		}
 		r[col] = value;
 	}
+	,remove: function(row,col) {
+		var r = this.cache[row];
+		if(null == r) {
+			return;
+		}
+		r[col] = null;
+	}
 	,invalidate: function() {
 		this.cache = [];
 	}
@@ -2641,6 +3164,9 @@ fancy_table_Coords.prototype = {
 			return false;
 		}
 	}
+	,toString: function() {
+		return "{row:" + this.get_row() + ", col:" + this.get_col() + "}";
+	}
 	,get_row: function() {
 		return this.row;
 	}
@@ -2654,7 +3180,7 @@ fancy_table_Coords.prototype = {
 		return this.col = v;
 	}
 };
-var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize,initialX,initialY,onScroll,onResize,canSelect,selectionEnabled,rangeSelectionEnabled,selection) {
+var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize,initialX,initialY,canSelect,selectionEnabled,rangeSelectionEnabled,focusOnHover,onScroll,onResize,onFocus,onBlur,onKey,onDoubleClick) {
 	this.fixedTop = fixedTop;
 	this.fixedLeft = fixedLeft;
 	this.fallbackCell = fallbackCell;
@@ -2662,12 +3188,16 @@ var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,cl
 	this.hSize = hSize;
 	this.initialScrollX = initialX;
 	this.initialScrollY = initialY;
-	this.onScroll = onScroll;
-	this.onResize = onResize;
 	this.canSelect = canSelect;
 	this.selectionEnabled = selectionEnabled;
 	this.rangeSelectionEnabled = rangeSelectionEnabled;
-	this.selection = selection;
+	this.focusOnHover = focusOnHover;
+	this.onScroll = onScroll;
+	this.onResize = onResize;
+	this.onFocus = onFocus;
+	this.onBlur = onBlur;
+	this.onKey = onKey;
+	this.onDoubleClick = onDoubleClick;
 };
 fancy_table_FancyTableSettings.__name__ = true;
 fancy_table_FancyTableSettings.classesFromOptions = function(opts) {
@@ -2706,13 +3236,6 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 		}
 	}
 	var fixedLeft = t1 != null ? t1 : 0;
-	var value = opts.selection;
-	var _e = null == value ? haxe_ds_Option.None : haxe_ds_Option.Some(value);
-	var selection = (function(callback) {
-		return thx_Options.map(_e,callback);
-	})(function(_) {
-		return new fancy_table_Range(new fancy_table_Coords(_.minRow,_.minCol),new fancy_table_Coords(_.maxRow,_.maxCol));
-	});
 	var _02 = opts;
 	var t2;
 	if(null == _02) {
@@ -2768,7 +3291,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _06) {
 		t6 = null;
 	} else {
-		var _16 = _06.onScroll;
+		var _16 = _06.canSelect;
 		if(null == _16) {
 			t6 = null;
 		} else {
@@ -2780,7 +3303,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _07) {
 		t7 = null;
 	} else {
-		var _17 = _07.onResize;
+		var _17 = _07.selectionEnabled;
 		if(null == _17) {
 			t7 = null;
 		} else {
@@ -2792,7 +3315,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _08) {
 		t8 = null;
 	} else {
-		var _18 = _08.canSelect;
+		var _18 = _08.rangeSelectionEnabled;
 		if(null == _18) {
 			t8 = null;
 		} else {
@@ -2804,7 +3327,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _09) {
 		t9 = null;
 	} else {
-		var _19 = _09.selectionEnabled;
+		var _19 = _09.focusOnHover;
 		if(null == _19) {
 			t9 = null;
 		} else {
@@ -2816,24 +3339,86 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _010) {
 		t10 = null;
 	} else {
-		var _110 = _010.rangeSelectionEnabled;
+		var _110 = _010.onScroll;
 		if(null == _110) {
 			t10 = null;
 		} else {
 			t10 = _110;
 		}
 	}
-	return new fancy_table_FancyTableSettings(fixedTop,fixedLeft,tmp,tmp1,t3 != null ? t3 : function(_2,_3) {
-		return fancy_CellDimension.RenderSmart;
-	},t4 != null ? t4 : fancy_HorizontalScrollPosition.Left,t5 != null ? t5 : fancy_VerticalScrollPosition.Top,t6 != null ? t6 : function(_4,_5,_6,_7) {
-	},t7 != null ? t7 : function(_8,_9,_10,_20) {
-	},t8 != null ? t8 : function(r,c) {
-		if(r >= fixedTop) {
-			return c >= fixedLeft;
+	var _011 = opts;
+	var t11;
+	if(null == _011) {
+		t11 = null;
+	} else {
+		var _111 = _011.onResize;
+		if(null == _111) {
+			t11 = null;
 		} else {
-			return false;
+			t11 = _111;
 		}
-	},t9 != null ? t9 : true,t10 != null ? t10 : true,selection);
+	}
+	var _012 = opts;
+	var t12;
+	if(null == _012) {
+		t12 = null;
+	} else {
+		var _112 = _012.onFocus;
+		if(null == _112) {
+			t12 = null;
+		} else {
+			t12 = _112;
+		}
+	}
+	var _013 = opts;
+	var t13;
+	if(null == _013) {
+		t13 = null;
+	} else {
+		var _113 = _013.onBlur;
+		if(null == _113) {
+			t13 = null;
+		} else {
+			t13 = _113;
+		}
+	}
+	var _014 = opts;
+	var t14;
+	if(null == _014) {
+		t14 = null;
+	} else {
+		var _114 = _014.onKey;
+		if(null == _114) {
+			t14 = null;
+		} else {
+			t14 = _114;
+		}
+	}
+	var _015 = opts;
+	var t15;
+	if(null == _015) {
+		t15 = null;
+	} else {
+		var _115 = _015.onDoubleClick;
+		if(null == _115) {
+			t15 = null;
+		} else {
+			t15 = _115;
+		}
+	}
+	return new fancy_table_FancyTableSettings(fixedTop,fixedLeft,tmp,tmp1,t3 != null ? t3 : function(_,_2) {
+		return fancy_CellDimension.RenderSmart;
+	},t4 != null ? t4 : fancy_HorizontalScrollPosition.Left,t5 != null ? t5 : fancy_VerticalScrollPosition.Top,t6 != null ? t6 : function(r,c) {
+		return true;
+	},t7 != null ? t7 : true,t8 != null ? t8 : true,t9 != null ? t9 : true,t10 != null ? t10 : function(_3,_4,_5,_6) {
+	},t11 != null ? t11 : function(_7,_8,_9,_10) {
+	},t12 != null ? t12 : function() {
+	},t13 != null ? t13 : function() {
+	},t14 != null ? t14 : function(_20,_21,_22) {
+		return haxe_ds_Option.None;
+	},t15 != null ? t15 : function(_23) {
+		return haxe_ds_Option.None;
+	});
 };
 var fancy_table_Range = function(min,max) {
 	this.min = min;
@@ -2863,6 +3448,100 @@ fancy_table_Range.prototype = {
 	}
 	,isOnBottom: function(row) {
 		return this.max.get_row() == row;
+	}
+	,next: function() {
+		if(this.rows() == 1 && this.cols() == 1) {
+			return this.down();
+		}
+		if(this.activeRow() == this.rows() - 1 && this.activeCol() == this.cols() - 1) {
+			var range = new fancy_table_Range(this.min,this.max);
+			range.active.set_row(this.min.get_row());
+			range.active.set_col(this.min.get_col());
+			return range;
+		} else if(this.activeRow() < this.rows() - 1) {
+			var range1 = new fancy_table_Range(this.min,this.max);
+			range1.active.set_row(this.active.get_row() + 1);
+			range1.active.set_col(this.active.get_col());
+			return range1;
+		} else {
+			var range2 = new fancy_table_Range(this.min,this.max);
+			range2.active.set_row(this.min.get_row());
+			range2.active.set_col(this.active.get_col() + 1);
+			return range2;
+		}
+	}
+	,previous: function() {
+		if(this.rows() == 1 && this.cols() == 1) {
+			return this.up();
+		}
+		if(this.activeRow() == 0 && this.activeCol() == 0) {
+			var range = new fancy_table_Range(this.min,this.max);
+			range.active.set_row(this.max.get_row());
+			range.active.set_col(this.max.get_col());
+			return range;
+		} else if(this.activeRow() > 0) {
+			var range1 = new fancy_table_Range(this.min,this.max);
+			range1.active.set_row(this.active.get_row() - 1);
+			range1.active.set_col(this.active.get_col());
+			return range1;
+		} else {
+			var range2 = new fancy_table_Range(this.min,this.max);
+			range2.active.set_row(this.max.get_row());
+			range2.active.set_col(this.active.get_col() - 1);
+			return range2;
+		}
+	}
+	,left: function() {
+		var coord = new fancy_table_Coords(this.active.get_row(),this.active.get_col() - 1);
+		return new fancy_table_Range(coord,coord);
+	}
+	,right: function() {
+		var coord = new fancy_table_Coords(this.active.get_row(),this.active.get_col() + 1);
+		return new fancy_table_Range(coord,coord);
+	}
+	,up: function() {
+		var coord = new fancy_table_Coords(this.active.get_row() - 1,this.active.get_col());
+		return new fancy_table_Range(coord,coord);
+	}
+	,down: function() {
+		var coord = new fancy_table_Coords(this.active.get_row() + 1,this.active.get_col());
+		return new fancy_table_Range(coord,coord);
+	}
+	,selectLeft: function() {
+		var range = this.cols() == 1 || this.activeCol() > 0 ? new fancy_table_Range(new fancy_table_Coords(this.min.get_row(),this.min.get_col() - 1),this.max) : new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row(),this.max.get_col() - 1));
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
+	}
+	,selectRight: function() {
+		var range = this.cols() == 1 || this.activeCol() < this.cols() - 1 ? new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row(),this.max.get_col() + 1)) : new fancy_table_Range(new fancy_table_Coords(this.min.get_row(),this.min.get_col() + 1),this.max);
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
+	}
+	,selectUp: function() {
+		var range = this.rows() == 1 || this.activeRow() > 0 ? new fancy_table_Range(new fancy_table_Coords(this.min.get_row() - 1,this.min.get_col()),this.max) : new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row() - 1,this.max.get_col()));
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
+	}
+	,selectDown: function() {
+		var range = this.rows() == 1 || this.activeRow() < this.rows() - 1 ? new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row() + 1,this.max.get_col())) : new fancy_table_Range(new fancy_table_Coords(this.min.get_row() + 1,this.min.get_col()),this.max);
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
+	}
+	,rows: function() {
+		return this.max.get_row() - this.min.get_row() + 1;
+	}
+	,cols: function() {
+		return this.max.get_col() - this.min.get_col() + 1;
+	}
+	,activeRow: function() {
+		return this.active.get_row() - this.min.get_row();
+	}
+	,activeCol: function() {
+		return this.active.get_col() - this.min.get_col();
 	}
 };
 var fancy_table_ActiveCoords = function(range,row,col) {
@@ -2917,48 +3596,52 @@ fancy_table_Row.prototype = {
 	,renderCell: function(table,row,col,classes) {
 		var _gthis = this;
 		return thx_Options.map(thx_Arrays.getOption(this.cells,col),function(cell) {
-			var doc = null;
-			if(null == doc) {
-				doc = window.document;
-			}
-			var el = doc.createElement("div");
-			var _g1 = 0;
-			var _g2 = [];
-			while(_g1 < _g2.length) {
-				var o = _g2[_g1];
-				++_g1;
-				el.setAttribute(o.name,o.value);
-			}
-			var _g11 = new haxe_ds_StringMap();
-			var value = _gthis.getClasses().concat(classes).join(" ");
-			if(__map_reserved["class"] != null) {
-				_g11.setReserved("class",value);
-			} else {
-				_g11.h["class"] = value;
-			}
-			var attrs = _g11;
-			if(null != attrs) {
-				var attr = attrs.keys();
-				while(attr.hasNext()) {
-					var attr1 = attr.next();
-					el.setAttribute(attr1,__map_reserved[attr1] != null ? attrs.getReserved(attr1) : attrs.h[attr1]);
-				}
-			}
-			var children = [fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,_gthis.classSettings.cellContent,table,row,col)];
-			if(null != children) {
-				var _g21 = 0;
-				while(_g21 < children.length) {
-					var child = children[_g21];
-					++_g21;
-					el.appendChild(child);
-				}
-			}
-			var textContent = null;
-			if(null != textContent) {
-				el.appendChild(doc.createTextNode(textContent));
-			}
-			return el;
+			var tmp = fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,_gthis.classSettings.cellContent,table,row,col);
+			return _gthis.renderCellContainer(classes,tmp);
 		});
+	}
+	,renderCellContainer: function(classes,content) {
+		var doc = null;
+		if(null == doc) {
+			doc = window.document;
+		}
+		var el = doc.createElement("div");
+		var _g1 = 0;
+		var _g2 = [];
+		while(_g1 < _g2.length) {
+			var o = _g2[_g1];
+			++_g1;
+			el.setAttribute(o.name,o.value);
+		}
+		var _g11 = new haxe_ds_StringMap();
+		var value = this.getClasses().concat(classes).join(" ");
+		if(__map_reserved["class"] != null) {
+			_g11.setReserved("class",value);
+		} else {
+			_g11.h["class"] = value;
+		}
+		var attrs = _g11;
+		if(null != attrs) {
+			var attr = attrs.keys();
+			while(attr.hasNext()) {
+				var attr1 = attr.next();
+				el.setAttribute(attr1,__map_reserved[attr1] != null ? attrs.getReserved(attr1) : attrs.h[attr1]);
+			}
+		}
+		var children = [content];
+		if(null != children) {
+			var _g21 = 0;
+			while(_g21 < children.length) {
+				var child = children[_g21];
+				++_g21;
+				el.appendChild(child);
+			}
+		}
+		var textContent = null;
+		if(null != textContent) {
+			el.appendChild(doc.createTextNode(textContent));
+		}
+		return el;
 	}
 	,toggle: function() {
 		this.expanded = !this.expanded;
@@ -3104,6 +3787,25 @@ haxe_ds_StringMap.prototype = {
 		return out;
 	}
 };
+var js__$Boot_HaxeError = function(val) {
+	Error.call(this);
+	this.val = val;
+	this.message = String(val);
+	if(Error.captureStackTrace) {
+		Error.captureStackTrace(this,js__$Boot_HaxeError);
+	}
+};
+js__$Boot_HaxeError.__name__ = true;
+js__$Boot_HaxeError.wrap = function(val) {
+	if((val instanceof Error)) {
+		return val;
+	} else {
+		return new js__$Boot_HaxeError(val);
+	}
+};
+js__$Boot_HaxeError.__super__ = Error;
+js__$Boot_HaxeError.prototype = $extend(Error.prototype,{
+});
 var js_Boot = function() { };
 js_Boot.__name__ = true;
 js_Boot.__string_rec = function(o,s) {
@@ -3297,11 +3999,77 @@ thx_Options.getOrElse = function(option,alt) {
 		return alt;
 	}
 };
+thx_Options.each = function(o,f) {
+	switch(o[1]) {
+	case 0:
+		var v = o[2];
+		f(v);
+		return o;
+	case 1:
+		return o;
+	}
+};
+var thx_Timer = function() { };
+thx_Timer.__name__ = true;
+thx_Timer.delay = function(callback,delayms) {
+	var id = setTimeout(callback,delayms);
+	return function() {
+		thx_Timer.clear(id);
+	};
+};
+thx_Timer.clear = function(id) {
+	clearTimeout(id);
+	return;
+};
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
 String.__name__ = true;
 Array.__name__ = true;
+Date.__name__ = ["Date"];
 var __map_reserved = {}
+var scope = ("undefined" !== typeof window && window) || ("undefined" !== typeof global && global) || Function("return this")();
+if(!scope.setImmediate) {
+	scope.setImmediate = function(callback) {
+		scope.setTimeout(callback,0);
+	};
+}
+var lastTime = 0;
+var vendors = ["webkit","moz"];
+var x = 0;
+while(x < vendors.length && !scope.requestAnimationFrame) {
+	scope.requestAnimationFrame = scope[vendors[x] + "RequestAnimationFrame"];
+	scope.cancelAnimationFrame = scope[vendors[x] + "CancelAnimationFrame"] || scope[vendors[x] + "CancelRequestAnimationFrame"];
+	++x;
+}
+if(!scope.requestAnimationFrame) {
+	scope.requestAnimationFrame = function(callback1) {
+		var currTime = new Date().getTime();
+		var timeToCall = Math.max(0,16 - (currTime - lastTime));
+		var id = scope.setTimeout(function() {
+			callback1(currTime + timeToCall);
+		},timeToCall);
+		lastTime = currTime + timeToCall;
+		return id;
+	};
+}
+if(!scope.cancelAnimationFrame) {
+	scope.cancelAnimationFrame = function(id1) {
+		scope.clearTimeout(id1);
+	};
+}
+if(typeof(scope.performance) == "undefined") {
+	scope.performance = { };
+}
+if(typeof(scope.performance.now) == "undefined") {
+	var nowOffset = new Date().getTime();
+	if(scope.performance.timing && scope.performance.timing.navigationStart) {
+		nowOffset = scope.performance.timing.navigationStart;
+	}
+	var now = function() {
+		return new Date() - nowOffset;
+	};
+	scope.performance.now = now;
+}
 dots_Query.doc = document;
 Main.main();
 })();

@@ -6,6 +6,7 @@ using thx.Maps;
 import fancy.Table;
 import fancy.table.util.CellContent;
 import fancy.table.util.RowData;
+import fancy.table.Coords;
 
 class Main {
   static function main() {
@@ -269,10 +270,16 @@ class Main {
 
     new Table(elNested, Nested(toRowData(cards)), {
       fixedTop: 1,
-      fixedLeft: 1
+      fixedLeft: 1,
+      onFocus: function() trace("focus table #1"),
+      onBlur: function() trace("blur table #1"),
+      focusOnHover: false,
+      rangeSelectionEnabled: false
     });
 
-    new Table(elFlat, Tabular(toFlatData(cards)), {
+    var flat = toFlatData(cards);
+
+    new Table(elFlat, Tabular(flat), {
       fixedTop: 1,
       fixedLeft: 1,
       selection: {
@@ -280,6 +287,29 @@ class Main {
         minCol: 1,
         maxRow: 2,
         maxCol: 3
+      },
+      onFocus: function() trace("focus table #2"),
+      onBlur: function() trace("blur table #2"),
+      onKey: function(key: String, shift: Bool, coords: Coords) {
+        var item = flat[coords.row][coords.col];
+        trace('received $key, $shift at ${coords.toString()}');
+        // trace(item);
+        return switch item {
+          case RawValue(v):
+            switch key {
+              case "Backspace":
+                Some(flat[coords.row][coords.col] = RawValue(v.substring(0, v.length-1)));
+              case other if(other.length == 1):
+                Some(flat[coords.row][coords.col] = RawValue(v+other));
+              case _:
+                None;
+            }
+          case _: None;
+        };
+      },
+      onDoubleClick: function(coords: Coords) {
+        trace('dbl click at ${coords.toString()}');
+        return None;
       }
     });
   }

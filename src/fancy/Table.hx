@@ -3,16 +3,21 @@ package fancy;
 import js.html.Element;
 
 using thx.Arrays;
-using thx.Functions;
 import thx.Ints;
+
+import haxe.ds.Option;
+using thx.Functions;
 using thx.Options;
 
+import fancy.table.Coords;
 import fancy.table.FancyTableSettings;
+import fancy.table.Range;
 import fancy.table.Row;
 import fancy.table.util.CellContent;
 import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
 import fancy.table.util.RowData;
+import js.html.*;
 
 import fancy.Grid;
 
@@ -28,11 +33,13 @@ enum FancyTableData {
   return the instance of the table for easy chaining.
 **/
 class Table {
-  var settings(default, null): FancyTableSettings;
-  var grid(default, null): Grid;
-  var rows(default, null): Array<Row> = [];
-  var visibleRows(default, null): Array<Row> = [];
-  var maxColumns(default, null): Int = 0;
+  var settings: FancyTableSettings;
+  var grid: Grid;
+  var rows: Array<Row> = [];
+  var visibleRows: Array<Row> = [];
+  var maxColumns: Int = 0;
+  var selection: Option<Range>;
+  public var hasFocus(default, null): Bool;
 
   /**
     A container element must be provided to the constructor. You may also
@@ -41,6 +48,7 @@ class Table {
   **/
   public function new(parent: Element, data: FancyTableData, ?options: FancyTableOptions) {
     settings = FancyTableSettings.fromOptions(options);
+    selection = Options.ofValue(options.selection).map.fn(new fancy.table.Range(new Coords(_.minRow, _.minCol), new Coords(_.maxRow, _.maxCol)));
 
     // create the grid
     grid = new Grid(parent, {
@@ -62,6 +70,185 @@ class Table {
 
     // fill with any data
     setData(data);
+
+    wireEvents(parent);
+  }
+
+  function wireEvents(el: Element) {
+    // focus related events
+    if(settings.focusOnHover) {
+      el.addEventListener("mouseenter", focus, false);
+      el.addEventListener("mouseleave", blur, false);
+    } else {
+      el.addEventListener("mousedown", function(e: MouseEvent) {
+        e.cancelBubble = true;
+        focus();
+      }, false);
+      // TODO !!! removeEventListener
+      js.Browser.document.addEventListener("mousedown", blur, false);
+    }
+    if(settings.selectionEnabled) {
+      var counter = 0,
+          cancel = function(){};
+      el.addEventListener("click", function(e: MouseEvent) {
+        if(++counter == 1) {
+          // single click
+          cancel = thx.Timer.delay(function() counter = 0, 400);
+          getCoords(cast e.target).each.fn(select(_.row, _.col));
+        } else if(counter == 2) {
+          // double click
+          dblClick(e);
+        } else {
+          counter = 0;
+          cancel();
+        }
+      }, false);
+      // TODO !!! removeEventListener
+      js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
+        if(!hasFocus) return;
+        pressKey(e.key, e.shiftKey);
+      }, false);
+    } else {
+      el.addEventListener("dblclick", dblClick, false);
+    }
+  }
+
+  function dblClick(e: MouseEvent) {
+    getCoords(cast e.target).each(function(coords) {
+      switch settings.onDoubleClick(coords) {
+        case Some(cell):
+          patchCellContent(coords, cell);
+          e.cancelBubble = true;
+          e.preventDefault();
+        case None:
+      };
+    });
+  }
+
+  function getCoords(el: Element): Option<Coords> {
+    var cell = dots.Query.closest(el, "div.cell");
+    if(null == cell) return None; // NOT FOUND, weird
+    var row = Std.parseInt(cell.getAttribute("data-row")),
+        col = Std.parseInt(cell.getAttribute("data-col"));
+    return Some(new Coords(row, col));
+  }
+
+  public function pressKey(key: String, shift: Bool) {
+    switch [key.toLowerCase(), shift, settings.rangeSelectionEnabled] {
+      case ["enter", false, _]: goNext();
+      case ["enter", true, _]: goPrevious();
+      case ["arrowdown", true, true]: selectDown();
+      case ["arrowdown", false, _]: goDown();
+      case ["arrowup", true, true]: selectUp();
+      case ["arrowup", false, _]: goUp();
+      case ["arrowleft", true, true]: selectLeft();
+      case ["arrowleft", false, _]: goLeft();
+      case ["arrowright", true, true]: selectRight();
+      case ["arrowright", false, _]: goRight();
+      case [other, shift, rangeSelectionEnabled]:
+        switch selection {
+          case Some(range):
+            maybePatchCellContent(range.active, settings.onKey(key, shift, range.active));
+          case None:
+        }
+    }
+  }
+
+  function maybePatchCellContent(coords: Coords, maybeCell: Option<CellContent>) {
+    maybeCell.each(patchCellContent.bind(coords, _));
+  }
+
+  function patchCellContent(coords: Coords, cell: CellContent) {
+    // TODO !!! do something with the result
+    trace("PATCH CELL CONTENT");
+    // var el = renderGridCell();
+    visibleRows
+      .getOption(coords.row)
+      .map(function(r) {
+        var el = cell.render(r.classSettings.cellContent, this, coords.row, coords.col);
+        return r.renderCellContainer([], el);
+    //     return r.cells.getOption(coords.col);
+      })
+      .each(function(el) {
+        grid.patchCellContent(coords.row, coords.col, el); // TODO !!!
+      });
+    //   .map(function(cellContent) {
+    //     return cell.render(cellContent, table, coords.row, coords.col);
+    //   });
+  }
+
+  public function select(row: Int, col: Int) {
+    selectRange(row, col, row, col, row, col);
+  }
+
+  public function goFirst() {
+    // TODO !!!
+    selectRange(0, 0, 0, 0, 0, 0);
+  }
+
+  function selectFromRange(f: Range -> Range) {
+    switch selection {
+      case None:
+        goFirst();
+      case Some(range):
+        selectWithRange(f(range));
+    }
+  }
+
+  public function goNext() selectFromRange.fn(_.next());
+  public function goPrevious() selectFromRange.fn(_.previous());
+  public function goLeft() selectFromRange.fn(_.left());
+  public function goRight() selectFromRange.fn(_.right());
+  public function goUp() selectFromRange.fn(_.up());
+  public function goDown() selectFromRange.fn(_.down());
+
+  public function selectLeft() selectFromRange.fn(_.selectLeft());
+  public function selectRight() selectFromRange.fn(_.selectRight());
+  public function selectUp() selectFromRange.fn(_.selectUp());
+  public function selectDown() selectFromRange.fn(_.selectDown());
+
+
+  public function selectWithRange(range: Range) {
+    selectRange(range.min.row, range.min.col, range.max.row, range.max.col, range.active.row, range.active.col);
+  }
+
+  public function selectRange(minRow: Int, minCol: Int, maxRow: Int, maxCol: Int, ?row: Int = 0, ?col: Int = 0) {
+    if(!settings.selectionEnabled) return;
+    if(!settings.rangeSelectionEnabled) {
+      maxRow = minRow;
+      maxCol = minCol;
+    }
+    if(row < minRow)
+      row = minRow;
+    else if(row > maxRow)
+      row = maxRow;
+    if(col < minCol)
+      col = minCol;
+    else if(col > maxCol)
+      col = maxCol;
+
+    switch selection {
+      case Some(range):
+        grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
+      case None: // do nothing
+    }
+    var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
+    range.active.row = row;
+    range.active.col = col;
+    selection = Some(range);
+
+    grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
+    scrollToCell(row, col); // TODO !!!
+  }
+
+  public function deselect() {
+    selection = None;
+    scrollToCell(0, 0); // TODO !!!
+  }
+
+  function scrollToCell(row: Int, col: Int) {
+    grid.scrollTo(Visible(Cells(col)), Visible(Cells(row)));
+
   }
 
   function assignVSize(row: Int): CellDimension {
@@ -70,17 +257,14 @@ class Table {
     });
   }
 
-  // function isSelected(row: Int, col: Int): Bool {
-
-  // }
-
   function renderGridCell(row: Int, col: Int): Element {
+    // TODO !!!
     // var selected = isSelected(row, col),
     //     selectedTop = ,
     //     selectedRight = ,
     //     selectedBottom = ,
     //     selectedLeft = ;
-    var classes = switch settings.selection {
+    var classes = switch selection {
       case None: [];
       case Some(range):
         var buff = [];
@@ -103,6 +287,18 @@ class Table {
     return visibleRows.getOption(row)
       .flatMap.fn(_.renderCell(this, row, col, classes))
       .getOrElse(settings.fallbackCell.render(["ft-cell-content"].concat(classes).join(" "), this, row, col));
+  }
+
+  public function focus() {
+    if(hasFocus) return;
+    hasFocus = true;
+    settings.onFocus();
+  }
+
+  public function blur() {
+    if(!hasFocus) return;
+    hasFocus = false;
+    settings.onBlur();
   }
 
   /**
