@@ -280,6 +280,42 @@ class Main {
 
     var flat = toFlatData(cards);
 
+    function edit(coords: Coords, typed: String, table: Table) {
+      var value = switch flat[coords.row][coords.col] {
+        case RawValue(v):v;
+        case _: "";
+      };
+      var input = js.Browser.document.createInputElement();
+      switch typed {
+        case "F2":
+          input.value = value;
+        case "Backspace":
+          input.value = value.substring(0, value.length - 1);
+        case "Delete":
+          input.value = "";
+        case other if(other.length == 1): // normal char
+          input.value = value + typed;
+        case "":
+          input.value = value;
+        case _:
+          trace('no behavior for $typed');
+          return;
+      }
+      thx.Timer.delay(input.focus, 10); // needed because the element is still not attached to the DOM
+      input.onkeydown = function(e: js.html.KeyboardEvent) {
+        e.cancelBubble = true;
+      }
+      input.onkeyup = function(e: js.html.KeyboardEvent) {
+        e.cancelBubble = true;
+        if(e.key == "Enter")
+          table.renderCell(coords.row, coords.col, flat[coords.row][coords.col]);
+      }
+      input.oninput = function(e: js.html.KeyboardEvent) {
+        flat[coords.row][coords.col] = RawValue(input.value);
+      }
+      table.renderCell(coords.row, coords.col, Element(input));
+    }
+
     new Table(elFlat, Tabular(flat), {
       fixedTop: 1,
       fixedLeft: 1,
@@ -292,23 +328,10 @@ class Main {
       onFocus: function() trace("focus table #2"),
       onBlur: function() trace("blur table #2"),
       onKey: function(e: KeyEvent, coords: Coords, table: Table) {
-        var item = flat[coords.row][coords.col];
-        trace('received ${e.toString()} at ${coords.toString()}');
-        // trace(item);
-        switch item {
-          case RawValue(v):
-            switch e.key {
-              case "Backspace":
-                table.renderCell(coords.row, coords.col, flat[coords.row][coords.col] = RawValue(v.substring(0, v.length-1)));
-              case other if(other.length == 1):
-                table.renderCell(coords.row, coords.col, flat[coords.row][coords.col] = RawValue(v + other));
-              case _:
-            }
-          case _:
-        };
+        edit(coords, e.key, table);
       },
       onDoubleClick: function(coords: Coords, table: Table) {
-        trace('dbl click at ${coords.toString()}');
+        edit(coords, "", table);
       }
     });
   }

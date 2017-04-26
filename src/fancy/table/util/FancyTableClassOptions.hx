@@ -7,3 +7,4 @@ typedef FancyTableClassOptions = {
   ?rowFoldHeader: String,
   ?rowIndent: String
 };
+

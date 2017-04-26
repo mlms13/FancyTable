@@ -277,34 +277,74 @@ Main.main = function() {
 		console.log("blur table #1");
 	}, focusOnHover : false, rangeSelectionEnabled : false});
 	var flat = toFlatData(cards);
+	var edit = function(coords,typed,table) {
+		var value1;
+		var flat1 = coords.get_row();
+		var _g5 = flat[flat1][coords.get_col()];
+		if(_g5[1] == 0) {
+			var v = _g5[2];
+			value1 = v;
+		} else {
+			value1 = "";
+		}
+		var input = window.document.createElement("input");
+		switch(typed) {
+		case "":
+			var other = typed;
+			if(other.length == 1) {
+				input.value = value1 + typed;
+			} else {
+				input.value = value1;
+			}
+			break;
+		case "Backspace":
+			input.value = value1.substring(0,value1.length - 1);
+			break;
+		case "Delete":
+			input.value = "";
+			break;
+		case "F2":
+			input.value = value1;
+			break;
+		default:
+			var other1 = typed;
+			if(other1.length == 1) {
+				input.value = value1 + typed;
+			} else {
+				console.log("no behavior for " + typed);
+				return;
+			}
+		}
+		thx_Timer.delay($bind(input,input.focus),10);
+		input.onkeydown = function(e1) {
+			e1.cancelBubble = true;
+		};
+		input.onkeyup = function(e2) {
+			e2.cancelBubble = true;
+			if(e2.key == "Enter") {
+				var edit1 = coords.get_row();
+				var edit2 = coords.get_col();
+				var flat2 = coords.get_row();
+				var flat3 = flat[flat2][coords.get_col()];
+				table.renderCell(edit1,edit2,flat3);
+			}
+		};
+		input.oninput = function(e3) {
+			var flat4 = coords.get_row();
+			flat[flat4][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(input.value);
+		};
+		var edit3 = coords.get_row();
+		var edit4 = coords.get_col();
+		table.renderCell(edit3,edit4,fancy_table_util_CellContentImpl.Element(input));
+	};
 	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(flat),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onFocus : function() {
 		console.log("focus table #2");
 	}, onBlur : function() {
 		console.log("blur table #2");
-	}, onKey : function(e1,coords,table) {
-		var flat1 = coords.get_row();
-		var item = flat[flat1][coords.get_col()];
-		console.log("received " + e1.toString() + " at " + coords.toString());
-		if(item[1] == 0) {
-			var v = item[2];
-			var _g5 = e1.key;
-			if(_g5 == "Backspace") {
-				var tmp = coords.get_row();
-				var tmp1 = coords.get_col();
-				var flat2 = coords.get_row();
-				table.renderCell(tmp,tmp1,flat[flat2][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v.substring(0,v.length - 1)));
-			} else {
-				var other = _g5;
-				if(other.length == 1) {
-					var tmp2 = coords.get_row();
-					var tmp3 = coords.get_col();
-					var flat3 = coords.get_row();
-					table.renderCell(tmp2,tmp3,flat[flat3][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v + other));
-				}
-			}
-		}
-	}, onDoubleClick : function(coords1,table1) {
-		console.log("dbl click at " + coords1.toString());
+	}, onKey : function(e4,coords1,table1) {
+		edit(coords1,e4.key,table1);
+	}, onDoubleClick : function(coords2,table2) {
+		edit(coords2,"",table2);
 	}});
 };
 Math.__name__ = true;
@@ -3145,9 +3185,6 @@ fancy_table_Coords.prototype = {
 			return false;
 		}
 	}
-	,toString: function() {
-		return "{row:" + this.get_row() + ", col:" + this.get_col() + "}";
-	}
 	,get_row: function() {
 		return this.row;
 	}
@@ -3407,15 +3444,6 @@ fancy_table_KeyEvent.__name__ = true;
 fancy_table_KeyEvent.fromKeyboardEvent = function(e) {
 	return new fancy_table_KeyEvent(e.key,e.shiftKey);
 };
-fancy_table_KeyEvent.prototype = {
-	toString: function() {
-		var acc = [];
-		if(this.shift) {
-			acc.push("shift");
-		}
-		return "`" + this.key + "`" + (acc.length == 0 ? "" : " (" + acc.join(", ") + ")");
-	}
-};
 var fancy_table_Range = function(min,max) {
 	this.min = min;
 	this.max = max;
@@ -3643,9 +3671,10 @@ fancy_table_Row.prototype = {
 		this.expanded = !this.expanded;
 	}
 };
-var fancy_table_util_CellContentImpl = { __ename__ : true, __constructs__ : ["RawValue","LazyElement"] };
+var fancy_table_util_CellContentImpl = { __ename__ : true, __constructs__ : ["RawValue","LazyElement","Element"] };
 fancy_table_util_CellContentImpl.RawValue = function(v) { var $x = ["RawValue",0,v]; $x.__enum__ = fancy_table_util_CellContentImpl; $x.toString = $estr; return $x; };
 fancy_table_util_CellContentImpl.LazyElement = function(fn) { var $x = ["LazyElement",1,fn]; $x.__enum__ = fancy_table_util_CellContentImpl; $x.toString = $estr; return $x; };
+fancy_table_util_CellContentImpl.Element = function(e) { var $x = ["Element",2,e]; $x.__enum__ = fancy_table_util_CellContentImpl; $x.toString = $estr; return $x; };
 var fancy_table_util__$CellContent_CellContent_$Impl_$ = {};
 fancy_table_util__$CellContent_CellContent_$Impl_$.__name__ = true;
 fancy_table_util__$CellContent_CellContent_$Impl_$.fromString = function(s) {
@@ -3698,6 +3727,9 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(this1,class
 	case 1:
 		var fn = this1[2];
 		return fn(t,row,col);
+	case 2:
+		var el1 = this1[2];
+		return el1;
 	}
 };
 var fancy_table_util_NestedData = function() { };
