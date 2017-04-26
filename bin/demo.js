@@ -676,9 +676,7 @@ fancy_Grid.__name__ = true;
 fancy_Grid.prototype = {
 	patchCellContent: function(row,col,el) {
 		var s = ".row-" + row + ".col-" + col;
-		console.log("PATCH IT NOW: " + s);
 		var p = this.grid9.el.querySelector(s);
-		console.log(p);
 		if(null == p) {
 			return;
 		}

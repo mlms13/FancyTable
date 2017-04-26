@@ -313,7 +313,7 @@ class Main {
       input.oninput = function(e: js.html.KeyboardEvent) {
         flat[coords.row][coords.col] = RawValue(input.value);
       }
-      table.renderCell(coords.row, coords.col, Element(input));
+      table.renderCell(coords.row, coords.col, CellContent.fromElement(input));
     }
 
     new Table(elFlat, Tabular(flat), {
