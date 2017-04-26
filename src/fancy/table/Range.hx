@@ -206,6 +206,10 @@ class Range {
     return active.row - min.row;
   public function activeCol()
     return active.col - min.col;
+
+  public function equals(b: Range) {
+    return min.equals(b.min) && max.equals(b.max) && active.equals(b.active);
+  }
 }
 
 class ActiveCoords extends Coords {

@@ -19,10 +19,12 @@ typedef FancyTableOptions = {
   ?selection: { minRow: Int, minCol: Int, maxRow: Int, maxCol: Int },
   ?active: { row: Int, col: Int },
   ?focusOnHover: Bool,
-  ?onScroll: Float -> Float -> Float -> Float -> Void,
-  ?onResize: Float -> Float -> Float -> Float -> Void,
-  ?onFocus: Void -> Void,
-  ?onBlur: Void -> Void,
+
+  ?onScroll: Float -> Float -> Float -> Float -> Table -> Void,
+  ?onResize: Float -> Float -> Float -> Float -> Table -> Void,
+  ?onFocus: Table -> Void,
+  ?onBlur: Table -> Void,
   ?onKey: KeyEvent -> Coords -> Table -> Void,
-  ?onDoubleClick: Coords -> Table -> Void
+  ?onDoubleClick: Coords -> Table -> Void,
+  ?onRangeChange: Range -> Table -> Void
 };

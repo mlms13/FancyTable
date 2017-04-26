@@ -328,6 +328,9 @@ class Main {
       },
       onDoubleClick: function(coords: Coords, table: Table) {
         edit(coords, "", table);
+      },
+      onRangeChange: function(range, table) {
+        trace(range.toString());
       }
     });
   }

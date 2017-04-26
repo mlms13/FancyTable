@@ -19,6 +19,7 @@ import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
 import fancy.table.util.RowData;
 import js.html.*;
+import thx.Dynamics;
 
 import fancy.Grid;
 
@@ -66,8 +67,8 @@ class Table {
       hSize: function (col: Int) {
         return settings.hSize(col, maxColumns);
       },
-      onScroll: settings.onScroll,
-      onResize: settings.onResize
+      onScroll: settings.onScroll.bind(_, _, _, _, this),
+      onResize: settings.onResize.bind(_, _, _, _, this),
     });
 
     // fill with any data
@@ -218,6 +219,11 @@ class Table {
     if(!settings.canSelect(range.active.row, range.active.col)) return; // unselectable
 
     switch selection {
+      case Some(old) if(old.equals(range)): return; // range has not changed
+      case _:
+    }
+
+    switch selection {
       case Some(range):
         grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
       case None: // do nothing
@@ -226,7 +232,8 @@ class Table {
     selection = Some(range);
 
     grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
-    scrollToCell(row, col); // TODO !!!
+    scrollToCell(row, col);
+    settings.onRangeChange(range, this);
   }
 
   public function deselect() {
@@ -258,13 +265,13 @@ class Table {
   public function focus() {
     if(hasFocus) return;
     hasFocus = true;
-    settings.onFocus();
+    settings.onFocus(this);
   }
 
   public function blur() {
     if(!hasFocus) return;
     hasFocus = false;
-    settings.onBlur();
+    settings.onBlur(this);
   }
 
   /**

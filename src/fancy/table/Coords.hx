@@ -14,6 +14,9 @@ class Coords {
   public function toString()
     return '{row:$row, col:$col}';
 
+  public function equals(b: Coords)
+    return row == b.row && col == b.col;
+
   function get_row() return row;
   function get_col() return col;
   function set_row(v: Int) return row = v;
