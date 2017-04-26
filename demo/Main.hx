@@ -272,8 +272,6 @@ class Main {
     new Table(elNested, Nested(toRowData(cards)), {
       fixedTop: 1,
       fixedLeft: 1,
-      onFocus: function() trace("focus table #1"),
-      onBlur: function() trace("blur table #1"),
       focusOnHover: false,
       rangeSelectionEnabled: false
     });
@@ -325,8 +323,6 @@ class Main {
         maxRow: 2,
         maxCol: 3
       },
-      onFocus: function() trace("focus table #2"),
-      onBlur: function() trace("blur table #2"),
       onKey: function(e: KeyEvent, coords: Coords, table: Table) {
         edit(coords, e.key, table);
       },

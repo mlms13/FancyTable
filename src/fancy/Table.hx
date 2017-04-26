@@ -39,7 +39,7 @@ class Table {
   var rows: Array<Row> = [];
   var visibleRows: Array<Row> = [];
   var maxColumns: Int = 0;
-  var selection: Option<Range>;
+  public var selection(default, null): Option<Range>;
   public var hasFocus(default, null): Bool;
 
   /**
@@ -154,10 +154,10 @@ class Table {
       .getOption(row)
       .map(function(r) {
         var el = content.render(r.classSettings.cellContent, this, row, col);
-        return r.renderCellContainer([], el); // TODO !!! inject classes ?
+        return r.renderCellContainer([], el, row, col);
       })
       .each(function(el) {
-        grid.patchCellContent(row, col, el); // TODO !!!
+        grid.patchCellContent(row, col, el);
       });
   }
 
@@ -242,32 +242,7 @@ class Table {
   }
 
   function renderGridCell(row: Int, col: Int): Element {
-    // TODO !!!
-    // var selected = isSelected(row, col),
-    //     selectedTop = ,
-    //     selectedRight = ,
-    //     selectedBottom = ,
-    //     selectedLeft = ;
-    var classes = switch selection {
-      case None: [];
-      case Some(range):
-        var buff = [];
-        if(range.contains(row, col)) {
-          if(range.isActive(row, col))
-            buff.push("active"); // TODO !!!
-          buff.push("selected"); // TODO !!!
-          if(range.isOnTop(row))
-            buff.push("selected-top"); // TODO !!!
-          if(range.isOnRight(col))
-            buff.push("selected-right"); // TODO !!!
-          if(range.isOnBottom(row))
-            buff.push("selected-bottom"); // TODO !!!
-          if(range.isOnLeft(col))
-            buff.push("selected-left"); // TODO !!!
-        }
-        buff;
-    };
-
+    var classes = [];
     return visibleRows.getOption(row)
       .flatMap.fn(_.renderCell(this, row, col, classes))
       .getOrElse(settings.fallbackCell.render(["ft-cell-content"].concat(classes).join(" "), this, row, col));
@@ -295,8 +270,8 @@ class Table {
   public function setData(data: FancyTableData, resetScroll = true): Table {
     // convert the new data to rows
     var newRows = switch data {
-      case Tabular(d): d.map.fn(new Row(_, settings.classes, RenderSmart));
-      case Nested(d): d.toRows(settings.classes);
+      case Tabular(d): d.map.fn(new Row(this, _, settings.classes, RenderSmart));
+      case Nested(d): d.toRows(this, settings.classes);
     };
 
     // empty the current table and set new rows

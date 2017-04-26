@@ -271,11 +271,7 @@ Main.main = function() {
 			return [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.name),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.cmc)),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.color),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.type),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.rarity),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.draftval)),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.tcgprice))];
 		}));
 	};
-	new fancy_Table(elNested,fancy_FancyTableData.Nested(toRowData(cards)),{ fixedTop : 1, fixedLeft : 1, onFocus : function() {
-		console.log("focus table #1");
-	}, onBlur : function() {
-		console.log("blur table #1");
-	}, focusOnHover : false, rangeSelectionEnabled : false});
+	new fancy_Table(elNested,fancy_FancyTableData.Nested(toRowData(cards)),{ fixedTop : 1, fixedLeft : 1, focusOnHover : false, rangeSelectionEnabled : false});
 	var flat = toFlatData(cards);
 	var edit = function(coords,typed,table) {
 		var value1;
@@ -337,11 +333,7 @@ Main.main = function() {
 		var edit4 = coords.get_col();
 		table.renderCell(edit3,edit4,fancy_table_util_CellContentImpl.Element(input));
 	};
-	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(flat),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onFocus : function() {
-		console.log("focus table #2");
-	}, onBlur : function() {
-		console.log("blur table #2");
-	}, onKey : function(e4,coords1,table1) {
+	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(flat),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onKey : function(e4,coords1,table1) {
 		edit(coords1,e4.key,table1);
 	}, onDoubleClick : function(coords2,table2) {
 		edit(coords2,"",table2);
@@ -1785,7 +1777,7 @@ fancy_Table.prototype = {
 		var _gthis = this;
 		thx_Options.each(thx_Options.map(thx_Arrays.getOption(this.visibleRows,row),function(r) {
 			var el = fancy_table_util__$CellContent_CellContent_$Impl_$.render(content,r.classSettings.cellContent,_gthis,row,col);
-			return r.renderCellContainer([],el);
+			return r.renderCellContainer([],el,row,col);
 		}),function(el1) {
 			_gthis.grid.patchCellContent(row,col,el1);
 		});
@@ -1911,36 +1903,7 @@ fancy_Table.prototype = {
 	}
 	,renderGridCell: function(row,col) {
 		var _gthis = this;
-		var classes;
-		var _g = this.selection;
-		switch(_g[1]) {
-		case 0:
-			var range = _g[2];
-			var buff = [];
-			if(range.contains(row,col)) {
-				if(range.isActive(row,col)) {
-					buff.push("active");
-				}
-				buff.push("selected");
-				if(range.isOnTop(row)) {
-					buff.push("selected-top");
-				}
-				if(range.isOnRight(col)) {
-					buff.push("selected-right");
-				}
-				if(range.isOnBottom(row)) {
-					buff.push("selected-bottom");
-				}
-				if(range.isOnLeft(col)) {
-					buff.push("selected-left");
-				}
-			}
-			classes = buff;
-			break;
-		case 1:
-			classes = [];
-			break;
-		}
+		var classes = [];
 		var _e = thx_Arrays.getOption(this.visibleRows,row);
 		return thx_Options.getOrElse((function(callback) {
 			return thx_Options.flatMap(_e,callback);
@@ -1972,12 +1935,12 @@ fancy_Table.prototype = {
 		case 0:
 			var d = data[2];
 			newRows = d.map(function(_) {
-				return new fancy_table_Row(_,_gthis.settings.classes,fancy_CellDimension.RenderSmart);
+				return new fancy_table_Row(_gthis,_,_gthis.settings.classes,fancy_CellDimension.RenderSmart);
 			});
 			break;
 		case 1:
 			var d1 = data[2];
-			newRows = fancy_table_util_NestedData.toRows(d1,this.settings.classes);
+			newRows = fancy_table_util_NestedData.toRows(d1,this,this.settings.classes);
 			break;
 		}
 		this.rows = [];
@@ -3590,7 +3553,7 @@ fancy_table_ActiveCoords.prototype = $extend(fancy_table_Coords.prototype,{
 		return fancy_table_Coords.prototype.set_col.call(this,v);
 	}
 });
-var fancy_table_Row = function(cells,classSettings,height,customClasses,expanded,indentation) {
+var fancy_table_Row = function(table,cells,classSettings,height,customClasses,expanded,indentation) {
 	if(indentation == null) {
 		indentation = 0;
 	}
@@ -3598,6 +3561,7 @@ var fancy_table_Row = function(cells,classSettings,height,customClasses,expanded
 		expanded = true;
 	}
 	this.rows = [];
+	this.table = table;
 	this.cells = cells;
 	this.classSettings = classSettings;
 	this.height = height;
@@ -3619,30 +3583,61 @@ fancy_table_Row.prototype = {
 		var _gthis = this;
 		return thx_Options.map(thx_Arrays.getOption(this.cells,col),function(cell) {
 			var tmp = fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,_gthis.classSettings.cellContent,table,row,col);
-			return _gthis.renderCellContainer(classes,tmp);
+			return _gthis.renderCellContainer(classes,tmp,row,col);
 		});
 	}
-	,renderCellContainer: function(classes,content) {
+	,renderCellContainer: function(classes,content,row,col) {
+		var _g = this.table.selection;
+		var classes1;
+		switch(_g[1]) {
+		case 0:
+			var range = _g[2];
+			var buff = [];
+			if(range.contains(row,col)) {
+				if(range.isActive(row,col)) {
+					buff.push("active");
+				}
+				buff.push("selected");
+				if(range.isOnTop(row)) {
+					buff.push("selected-top");
+				}
+				if(range.isOnRight(col)) {
+					buff.push("selected-right");
+				}
+				if(range.isOnBottom(row)) {
+					buff.push("selected-bottom");
+				}
+				if(range.isOnLeft(col)) {
+					buff.push("selected-left");
+				}
+			}
+			classes1 = buff;
+			break;
+		case 1:
+			classes1 = [];
+			break;
+		}
+		var classes2 = classes1.concat(classes);
 		var doc = null;
 		if(null == doc) {
 			doc = window.document;
 		}
 		var el = doc.createElement("div");
-		var _g1 = 0;
-		var _g2 = [];
-		while(_g1 < _g2.length) {
-			var o = _g2[_g1];
-			++_g1;
+		var _g2 = 0;
+		var _g3 = [];
+		while(_g2 < _g3.length) {
+			var o = _g3[_g2];
+			++_g2;
 			el.setAttribute(o.name,o.value);
 		}
-		var _g11 = new haxe_ds_StringMap();
-		var value = this.getClasses().concat(classes).join(" ");
+		var _g21 = new haxe_ds_StringMap();
+		var value = this.getClasses().concat(classes2).join(" ");
 		if(__map_reserved["class"] != null) {
-			_g11.setReserved("class",value);
+			_g21.setReserved("class",value);
 		} else {
-			_g11.h["class"] = value;
+			_g21.h["class"] = value;
 		}
-		var attrs = _g11;
+		var attrs = _g21;
 		if(null != attrs) {
 			var attr = attrs.keys();
 			while(attr.hasNext()) {
@@ -3652,10 +3647,10 @@ fancy_table_Row.prototype = {
 		}
 		var children = [content];
 		if(null != children) {
-			var _g21 = 0;
-			while(_g21 < children.length) {
-				var child = children[_g21];
-				++_g21;
+			var _g31 = 0;
+			while(_g31 < children.length) {
+				var child = children[_g31];
+				++_g31;
 				el.appendChild(child);
 			}
 		}
@@ -3732,7 +3727,7 @@ fancy_table_util__$CellContent_CellContent_$Impl_$.render = function(this1,class
 };
 var fancy_table_util_NestedData = function() { };
 fancy_table_util_NestedData.__name__ = true;
-fancy_table_util_NestedData.toRows = function(data,classes,indentation) {
+fancy_table_util_NestedData.toRows = function(data,table,classes,indentation) {
 	if(indentation == null) {
 		indentation = 0;
 	}
@@ -3746,9 +3741,9 @@ fancy_table_util_NestedData.toRows = function(data,classes,indentation) {
 		if(curr.meta.height == null) {
 			curr.meta.height = fancy_CellDimension.RenderSmart;
 		}
-		var newRow = new fancy_table_Row(curr.values,classes,curr.meta.height,curr.meta.classes,curr.meta.expanded,indentation);
+		var newRow = new fancy_table_Row(table,curr.values,classes,curr.meta.height,curr.meta.classes,curr.meta.expanded,indentation);
 		if(curr.data.length > 0) {
-			var children = fancy_table_util_NestedData.toRows(curr.data,classes,indentation + 1);
+			var children = fancy_table_util_NestedData.toRows(curr.data,table,classes,indentation + 1);
 			newRow.rows = newRow.rows.concat(children);
 		}
 		return thx_Arrays.append(acc,newRow);

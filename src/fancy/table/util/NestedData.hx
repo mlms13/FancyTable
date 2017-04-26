@@ -37,16 +37,16 @@ class NestedData {
     Builds rows and cells for all of the RowData, returning an array of nested
     Row objects (each with 0 or more Row children).
   **/
-  public static function toRows(data: Array<RowData>, classes: FancyTableClasses, indentation = 0): Array<Row> {
+  public static function toRows(data: Array<RowData>, table: Table, classes: FancyTableClasses, indentation = 0): Array<Row> {
     return data.reduce(function (acc: Array<Row>, curr: RowData) {
       if (curr.meta == null) curr.meta = {};
       if (curr.data == null) curr.data = [];
       if (curr.meta.height == null) curr.meta.height = RenderSmart;
 
-      var newRow = new Row(curr.values, classes, curr.meta.height, curr.meta.classes, curr.meta.expanded, indentation);
+      var newRow = new Row(table, curr.values, classes, curr.meta.height, curr.meta.classes, curr.meta.expanded, indentation);
 
       if (curr.data.length > 0)
-        newRow.addChildRows(toRows(curr.data, classes, indentation + 1));
+        newRow.addChildRows(toRows(curr.data, table, classes, indentation + 1));
 
       return acc.append(newRow);
     }, []);
