@@ -1,8 +1,5 @@
 package fancy.table;
 
-import haxe.ds.Option;
-using thx.Functions;
-using thx.Options;
 using thx.Nulls;
 
 import fancy.table.util.CellContent;
@@ -31,8 +28,8 @@ class FancyTableSettings {
   public var onResize(default, null) : Float -> Float -> Float -> Float -> Void;
   public var onFocus(default, null) : Void -> Void;
   public var onBlur(default, null) : Void -> Void;
-  public var onKey(default, null): String -> Bool -> Coords -> Option<CellContent>;
-  public var onDoubleClick(default, null): Coords -> Option<CellContent>;
+  public var onKey(default, null): KeyEvent -> Coords -> Table -> Void;
+  public var onDoubleClick(default, null): Coords -> Table -> Void;
 
   // TODO !!! use
   public var canSelect(default, null): Int -> Int -> Bool;
@@ -103,8 +100,8 @@ class FancyTableSettings {
       opts.onResize.or(function(_, _, _, _) {}),
       opts.onFocus.or(function() {}),
       opts.onBlur.or(function() {}),
-      opts.onKey.or(function(_, _, _) { return None; }),
-      opts.onDoubleClick.or(function(_) { return None; })
+      opts.onKey.or(function(_, _, _) { }),
+      opts.onDoubleClick.or(function(_, _) { })
     );
   }
 }

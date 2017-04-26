@@ -1,7 +1,8 @@
 package fancy.table.util;
 
 import fancy.Grid;
-import haxe.ds.Option;
+import fancy.Table;
+import fancy.table.KeyEvent;
 
 typedef FancyTableOptions = {
   ?fixedTop: Int,
@@ -22,6 +23,6 @@ typedef FancyTableOptions = {
   ?onResize: Float -> Float -> Float -> Float -> Void,
   ?onFocus: Void -> Void,
   ?onBlur: Void -> Void,
-  ?onKey: String -> Bool -> Coords -> Option<CellContent>,
-  ?onDoubleClick: Coords -> Option<CellContent>
+  ?onKey: KeyEvent -> Coords -> Table -> Void,
+  ?onDoubleClick: Coords -> Table -> Void
 };

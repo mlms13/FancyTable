@@ -281,30 +281,30 @@ Main.main = function() {
 		console.log("focus table #2");
 	}, onBlur : function() {
 		console.log("blur table #2");
-	}, onKey : function(key,shift,coords) {
+	}, onKey : function(e1,coords,table) {
 		var flat1 = coords.get_row();
 		var item = flat[flat1][coords.get_col()];
-		console.log("received " + key + ", " + (shift == null ? "null" : "" + shift) + " at " + coords.toString());
+		console.log("received " + e1.toString() + " at " + coords.toString());
 		if(item[1] == 0) {
 			var v = item[2];
-			if(key == "Backspace") {
+			var _g5 = e1.key;
+			if(_g5 == "Backspace") {
+				var tmp = coords.get_row();
+				var tmp1 = coords.get_col();
 				var flat2 = coords.get_row();
-				return haxe_ds_Option.Some(flat[flat2][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v.substring(0,v.length - 1)));
+				table.renderCell(tmp,tmp1,flat[flat2][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v.substring(0,v.length - 1)));
 			} else {
-				var other = key;
+				var other = _g5;
 				if(other.length == 1) {
+					var tmp2 = coords.get_row();
+					var tmp3 = coords.get_col();
 					var flat3 = coords.get_row();
-					return haxe_ds_Option.Some(flat[flat3][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v + other));
-				} else {
-					return haxe_ds_Option.None;
+					table.renderCell(tmp2,tmp3,flat[flat3][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(v + other));
 				}
 			}
-		} else {
-			return haxe_ds_Option.None;
 		}
-	}, onDoubleClick : function(coords1) {
+	}, onDoubleClick : function(coords1,table1) {
 		console.log("dbl click at " + coords1.toString());
-		return haxe_ds_Option.None;
 	}});
 };
 Math.__name__ = true;
@@ -1591,7 +1591,8 @@ fancy_Table.prototype = {
 				if(!_gthis.hasFocus) {
 					return;
 				}
-				_gthis.pressKey(e2.key,e2.shiftKey);
+				var tmp2 = fancy_table_KeyEvent.fromKeyboardEvent(e2);
+				_gthis.pressKey(tmp2);
 			},false);
 		} else {
 			el.addEventListener("dblclick",$bind(this,this.dblClick),false);
@@ -1600,17 +1601,7 @@ fancy_Table.prototype = {
 	,dblClick: function(e) {
 		var _gthis = this;
 		thx_Options.each(this.getCoords(e.target),function(coords) {
-			var _g = _gthis.settings.onDoubleClick(coords);
-			switch(_g[1]) {
-			case 0:
-				var cell = _g[2];
-				_gthis.patchCellContent(coords,cell);
-				e.cancelBubble = true;
-				e.preventDefault();
-				break;
-			case 1:
-				break;
-			}
+			_gthis.settings.onDoubleClick(coords,_gthis);
 		});
 	}
 	,getCoords: function(el) {
@@ -1622,12 +1613,13 @@ fancy_Table.prototype = {
 		var col = Std.parseInt(cell.getAttribute("data-col"));
 		return haxe_ds_Option.Some(new fancy_table_Coords(row,col));
 	}
-	,pressKey: function(key,shift) {
+	,pressKey: function(e) {
 		var _g = this.settings.rangeSelectionEnabled;
-		var _g1 = key.toLowerCase();
-		switch(_g1) {
+		var _g1 = e.shift;
+		var _g2 = e.key.toLowerCase();
+		switch(_g2) {
 		case "arrowdown":
-			switch(shift) {
+			switch(_g1) {
 			case false:
 				this.goDown();
 				break;
@@ -1635,14 +1627,14 @@ fancy_Table.prototype = {
 				if(_g == true) {
 					this.selectDown();
 				} else {
-					var other = _g1;
-					var shift1 = shift;
+					var other = _g2;
+					var shift = _g1;
 					var rangeSelectionEnabled = _g;
-					var _g2 = this.selection;
-					switch(_g2[1]) {
+					var _g3 = this.selection;
+					switch(_g3[1]) {
 					case 0:
-						var range = _g2[2];
-						this.maybePatchCellContent(range.active,this.settings.onKey(key,shift1,range.active));
+						var range = _g3[2];
+						this.settings.onKey(e,range.active,this);
 						break;
 					case 1:
 						break;
@@ -1652,7 +1644,7 @@ fancy_Table.prototype = {
 			}
 			break;
 		case "arrowleft":
-			switch(shift) {
+			switch(_g1) {
 			case false:
 				this.goLeft();
 				break;
@@ -1660,14 +1652,14 @@ fancy_Table.prototype = {
 				if(_g == true) {
 					this.selectLeft();
 				} else {
-					var other1 = _g1;
-					var shift2 = shift;
+					var other1 = _g2;
+					var shift1 = _g1;
 					var rangeSelectionEnabled1 = _g;
-					var _g3 = this.selection;
-					switch(_g3[1]) {
+					var _g4 = this.selection;
+					switch(_g4[1]) {
 					case 0:
-						var range1 = _g3[2];
-						this.maybePatchCellContent(range1.active,this.settings.onKey(key,shift2,range1.active));
+						var range1 = _g4[2];
+						this.settings.onKey(e,range1.active,this);
 						break;
 					case 1:
 						break;
@@ -1677,7 +1669,7 @@ fancy_Table.prototype = {
 			}
 			break;
 		case "arrowright":
-			switch(shift) {
+			switch(_g1) {
 			case false:
 				this.goRight();
 				break;
@@ -1685,14 +1677,14 @@ fancy_Table.prototype = {
 				if(_g == true) {
 					this.selectRight();
 				} else {
-					var other2 = _g1;
-					var shift3 = shift;
+					var other2 = _g2;
+					var shift2 = _g1;
 					var rangeSelectionEnabled2 = _g;
-					var _g4 = this.selection;
-					switch(_g4[1]) {
+					var _g5 = this.selection;
+					switch(_g5[1]) {
 					case 0:
-						var range2 = _g4[2];
-						this.maybePatchCellContent(range2.active,this.settings.onKey(key,shift3,range2.active));
+						var range2 = _g5[2];
+						this.settings.onKey(e,range2.active,this);
 						break;
 					case 1:
 						break;
@@ -1702,7 +1694,7 @@ fancy_Table.prototype = {
 			}
 			break;
 		case "arrowup":
-			switch(shift) {
+			switch(_g1) {
 			case false:
 				this.goUp();
 				break;
@@ -1710,14 +1702,14 @@ fancy_Table.prototype = {
 				if(_g == true) {
 					this.selectUp();
 				} else {
-					var other3 = _g1;
-					var shift4 = shift;
+					var other3 = _g2;
+					var shift3 = _g1;
 					var rangeSelectionEnabled3 = _g;
-					var _g5 = this.selection;
-					switch(_g5[1]) {
+					var _g6 = this.selection;
+					switch(_g6[1]) {
 					case 0:
-						var range3 = _g5[2];
-						this.maybePatchCellContent(range3.active,this.settings.onKey(key,shift4,range3.active));
+						var range3 = _g6[2];
+						this.settings.onKey(e,range3.active,this);
 						break;
 					case 1:
 						break;
@@ -1727,7 +1719,7 @@ fancy_Table.prototype = {
 			}
 			break;
 		case "enter":
-			switch(shift) {
+			switch(_g1) {
 			case false:
 				this.goNext();
 				break;
@@ -1738,37 +1730,26 @@ fancy_Table.prototype = {
 			break;
 		default:
 			var rangeSelectionEnabled4 = _g;
-			var shift5 = shift;
-			var other4 = _g1;
-			var _g6 = this.selection;
-			switch(_g6[1]) {
+			var shift4 = _g1;
+			var other4 = _g2;
+			var _g7 = this.selection;
+			switch(_g7[1]) {
 			case 0:
-				var range4 = _g6[2];
-				this.maybePatchCellContent(range4.active,this.settings.onKey(key,shift5,range4.active));
+				var range4 = _g7[2];
+				this.settings.onKey(e,range4.active,this);
 				break;
 			case 1:
 				break;
 			}
 		}
 	}
-	,maybePatchCellContent: function(coords,maybeCell) {
-		var f = $bind(this,this.patchCellContent);
-		var a1 = coords;
-		thx_Options.each(maybeCell,function(a2) {
-			f(a1,a2);
-		});
-	}
-	,patchCellContent: function(coords,cell) {
+	,renderCell: function(row,col,content) {
 		var _gthis = this;
-		console.log("PATCH CELL CONTENT");
-		thx_Options.each(thx_Options.map(thx_Arrays.getOption(this.visibleRows,coords.get_row()),function(r) {
-			var r1 = r.classSettings.cellContent;
-			var el = coords.get_row();
-			var el1 = coords.get_col();
-			var el2 = fancy_table_util__$CellContent_CellContent_$Impl_$.render(cell,r1,_gthis,el,el1);
-			return r.renderCellContainer([],el2);
-		}),function(el3) {
-			_gthis.grid.patchCellContent(coords.get_row(),coords.get_col(),el3);
+		thx_Options.each(thx_Options.map(thx_Arrays.getOption(this.visibleRows,row),function(r) {
+			var el = fancy_table_util__$CellContent_CellContent_$Impl_$.render(content,r.classSettings.cellContent,_gthis,row,col);
+			return r.renderCellContainer([],el);
+		}),function(el1) {
+			_gthis.grid.patchCellContent(row,col,el1);
 		});
 	}
 	,select: function(row,col) {
@@ -3415,10 +3396,25 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	},t12 != null ? t12 : function() {
 	},t13 != null ? t13 : function() {
 	},t14 != null ? t14 : function(_20,_21,_22) {
-		return haxe_ds_Option.None;
-	},t15 != null ? t15 : function(_23) {
-		return haxe_ds_Option.None;
+	},t15 != null ? t15 : function(_23,_24) {
 	});
+};
+var fancy_table_KeyEvent = function(key,shift) {
+	this.key = key;
+	this.shift = shift;
+};
+fancy_table_KeyEvent.__name__ = true;
+fancy_table_KeyEvent.fromKeyboardEvent = function(e) {
+	return new fancy_table_KeyEvent(e.key,e.shiftKey);
+};
+fancy_table_KeyEvent.prototype = {
+	toString: function() {
+		var acc = [];
+		if(this.shift) {
+			acc.push("shift");
+		}
+		return "`" + this.key + "`" + (acc.length == 0 ? "" : " (" + acc.join(", ") + ")");
+	}
 };
 var fancy_table_Range = function(min,max) {
 	this.min = min;

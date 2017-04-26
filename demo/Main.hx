@@ -7,6 +7,7 @@ import fancy.Table;
 import fancy.table.util.CellContent;
 import fancy.table.util.RowData;
 import fancy.table.Coords;
+import fancy.table.KeyEvent;
 
 class Main {
   static function main() {
@@ -290,26 +291,24 @@ class Main {
       },
       onFocus: function() trace("focus table #2"),
       onBlur: function() trace("blur table #2"),
-      onKey: function(key: String, shift: Bool, coords: Coords) {
+      onKey: function(e: KeyEvent, coords: Coords, table: Table) {
         var item = flat[coords.row][coords.col];
-        trace('received $key, $shift at ${coords.toString()}');
+        trace('received ${e.toString()} at ${coords.toString()}');
         // trace(item);
-        return switch item {
+        switch item {
           case RawValue(v):
-            switch key {
+            switch e.key {
               case "Backspace":
-                Some(flat[coords.row][coords.col] = RawValue(v.substring(0, v.length-1)));
+                table.renderCell(coords.row, coords.col, flat[coords.row][coords.col] = RawValue(v.substring(0, v.length-1)));
               case other if(other.length == 1):
-                Some(flat[coords.row][coords.col] = RawValue(v+other));
+                table.renderCell(coords.row, coords.col, flat[coords.row][coords.col] = RawValue(v + other));
               case _:
-                None;
             }
-          case _: None;
+          case _:
         };
       },
-      onDoubleClick: function(coords: Coords) {
+      onDoubleClick: function(coords: Coords, table: Table) {
         trace('dbl click at ${coords.toString()}');
-        return None;
       }
     });
   }

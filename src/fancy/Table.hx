@@ -13,6 +13,7 @@ import fancy.table.Coords;
 import fancy.table.FancyTableSettings;
 import fancy.table.Range;
 import fancy.table.Row;
+import fancy.table.KeyEvent;
 import fancy.table.util.CellContent;
 import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
@@ -106,7 +107,7 @@ class Table {
       // TODO !!! removeEventListener
       js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
         if(!hasFocus) return;
-        pressKey(e.key, e.shiftKey);
+        pressKey(KeyEvent.fromKeyboardEvent(e));
       }, false);
     } else {
       el.addEventListener("dblclick", dblClick, false);
@@ -115,13 +116,7 @@ class Table {
 
   function dblClick(e: MouseEvent) {
     getCoords(cast e.target).each(function(coords) {
-      switch settings.onDoubleClick(coords) {
-        case Some(cell):
-          patchCellContent(coords, cell);
-          e.cancelBubble = true;
-          e.preventDefault();
-        case None:
-      };
+      settings.onDoubleClick(coords, this);
     });
   }
 
@@ -133,8 +128,8 @@ class Table {
     return Some(new Coords(row, col));
   }
 
-  public function pressKey(key: String, shift: Bool) {
-    switch [key.toLowerCase(), shift, settings.rangeSelectionEnabled] {
+  public function pressKey(e: KeyEvent) {
+    switch [e.key.toLowerCase(), e.shift, settings.rangeSelectionEnabled] {
       case ["enter", false, _]: goNext();
       case ["enter", true, _]: goPrevious();
       case ["arrowdown", true, true]: selectDown();
@@ -148,33 +143,22 @@ class Table {
       case [other, shift, rangeSelectionEnabled]:
         switch selection {
           case Some(range):
-            maybePatchCellContent(range.active, settings.onKey(key, shift, range.active));
+            settings.onKey(e, range.active, this);
           case None:
         }
     }
   }
 
-  function maybePatchCellContent(coords: Coords, maybeCell: Option<CellContent>) {
-    maybeCell.each(patchCellContent.bind(coords, _));
-  }
-
-  function patchCellContent(coords: Coords, cell: CellContent) {
-    // TODO !!! do something with the result
-    trace("PATCH CELL CONTENT");
-    // var el = renderGridCell();
+  public function renderCell(row: Int, col: Int, content: CellContent) {
     visibleRows
-      .getOption(coords.row)
+      .getOption(row)
       .map(function(r) {
-        var el = cell.render(r.classSettings.cellContent, this, coords.row, coords.col);
-        return r.renderCellContainer([], el);
-    //     return r.cells.getOption(coords.col);
+        var el = content.render(r.classSettings.cellContent, this, row, col);
+        return r.renderCellContainer([], el); // TODO !!! inject classes ?
       })
       .each(function(el) {
-        grid.patchCellContent(coords.row, coords.col, el); // TODO !!!
+        grid.patchCellContent(row, col, el); // TODO !!!
       });
-    //   .map(function(cellContent) {
-    //     return cell.render(cellContent, table, coords.row, coords.col);
-    //   });
   }
 
   public function select(row: Int, col: Int) {
