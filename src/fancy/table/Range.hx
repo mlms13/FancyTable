@@ -80,6 +80,48 @@ class Range {
     }
   }
 
+  public function nextHorizontal() {
+    if(rows() == 1 && cols() == 1)
+      return right();
+    if(activeRow() == rows() -1 && activeCol() == cols() - 1) { // last position
+      var range = new Range(min, max);
+      range.active.row = min.row;
+      range.active.col = min.col;
+      return range;
+    } else if(activeCol() == cols() - 1) {
+      var range = new Range(min, max);
+      range.active.row = active.row + 1;
+      range.active.col = min.col;
+      return range;
+    } else {
+      var range = new Range(min, max);
+      range.active.row = active.row;
+      range.active.col = active.col + 1;
+      return range;
+    }
+  }
+
+  public function previousHorizontal() {
+    if(rows() == 1 && cols() == 1)
+      return left();
+    if(activeRow() == 0 && activeCol() == 0) { // first position
+      var range = new Range(min, max);
+      range.active.row = max.row;
+      range.active.col = max.col;
+      return range;
+    } else if(activeCol() == 0) {
+      var range = new Range(min, max);
+      range.active.row = active.row - 1;
+      range.active.col = max.col;
+      return range;
+    } else {
+      var range = new Range(min, max);
+      range.active.row = active.row;
+      range.active.col = active.col - 1;
+      return range;
+    }
+  }
+
   public function left() {
     var coord = new Coords(active.row, active.col - 1);
     return new Range(coord, coord); // TODO !!!

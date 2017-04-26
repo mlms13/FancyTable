@@ -1621,6 +1621,7 @@ fancy_Table.prototype = {
 				if(!_gthis.hasFocus) {
 					return;
 				}
+				e2.preventDefault();
 				var tmp2 = fancy_table_KeyEvent.fromKeyboardEvent(e2);
 				_gthis.pressKey(tmp2);
 			},false);
@@ -1758,6 +1759,16 @@ fancy_Table.prototype = {
 				break;
 			}
 			break;
+		case "tab":
+			switch(_g1) {
+			case false:
+				this.goNextHorizontal();
+				break;
+			case true:
+				this.goPreviousHorizontal();
+				break;
+			}
+			break;
 		default:
 			var rangeSelectionEnabled4 = _g;
 			var shift4 = _g1;
@@ -1799,6 +1810,16 @@ fancy_Table.prototype = {
 			this.goFirst();
 			break;
 		}
+	}
+	,goNextHorizontal: function() {
+		this.selectFromRange(function(_) {
+			return _.nextHorizontal();
+		});
+	}
+	,goPreviousHorizontal: function() {
+		this.selectFromRange(function(_) {
+			return _.previousHorizontal();
+		});
 	}
 	,goNext: function() {
 		this.selectFromRange(function(_) {
@@ -1867,30 +1888,29 @@ fancy_Table.prototype = {
 			maxRow = minRow;
 			maxCol = minCol;
 		}
-		if(row < minRow) {
-			row = minRow;
-		} else if(row > maxRow) {
-			row = maxRow;
+		if(minRow < 0 || minCol < 0) {
+			return;
 		}
-		if(col < minCol) {
-			col = minCol;
-		} else if(col > maxCol) {
-			col = maxCol;
+		if(maxRow > this.bottomRight.get_row() || maxCol > this.bottomRight.get_col()) {
+			return;
+		}
+		var range = new fancy_table_Range(new fancy_table_Coords(minRow,minCol),new fancy_table_Coords(maxRow,maxCol));
+		range.active.set_row(row);
+		range.active.set_col(col);
+		if(!this.settings.canSelect(range.active.get_row(),range.active.get_col())) {
+			return;
 		}
 		var _g = this.selection;
 		switch(_g[1]) {
 		case 0:
-			var range = _g[2];
-			this.grid.resetCacheForRange(range.min.get_row(),range.min.get_col(),range.max.get_row(),range.max.get_col());
+			var range1 = _g[2];
+			this.grid.resetCacheForRange(range1.min.get_row(),range1.min.get_col(),range1.max.get_row(),range1.max.get_col());
 			break;
 		case 1:
 			break;
 		}
-		var range1 = new fancy_table_Range(new fancy_table_Coords(minRow,minCol),new fancy_table_Coords(maxRow,maxCol));
-		range1.active.set_row(row);
-		range1.active.set_col(col);
-		this.selection = haxe_ds_Option.Some(range1);
-		this.grid.resetCacheForRange(range1.min.get_row(),range1.min.get_col(),range1.max.get_row(),range1.max.get_col());
+		this.selection = haxe_ds_Option.Some(range);
+		this.grid.resetCacheForRange(range.min.get_row(),range.min.get_col(),range.max.get_row(),range.max.get_col());
 		this.scrollToCell(row,col);
 	}
 	,scrollToCell: function(row,col) {
@@ -1947,6 +1967,7 @@ fancy_Table.prototype = {
 		this.maxColumns = 0;
 		thx_Arrays.reduce(newRows,fancy_Table.tableAppendRow,this);
 		this.visibleRows = fancy_Table.flattenVisibleRows(this.rows);
+		this.bottomRight = new fancy_table_Coords(this.visibleRows.length,this.maxColumns);
 		var a = this.visibleRows.length;
 		var a1 = this.maxColumns;
 		this.grid.setRowsAndColumns(a > 1 ? a : 1,a1 > 1 ? a1 : 1);
@@ -1963,6 +1984,7 @@ fancy_Table.prototype = {
 		thx_Options.map(thx_Arrays.getOption(this.visibleRows,index),function(r) {
 			r.toggle();
 			_gthis.visibleRows = fancy_Table.flattenVisibleRows(_gthis.rows);
+			_gthis.bottomRight = new fancy_table_Coords(_gthis.visibleRows.length,_gthis.maxColumns);
 			var a = _gthis.visibleRows.length;
 			var a1 = _gthis.maxColumns;
 			_gthis.grid.setRowsAndColumns(a > 1 ? a : 1,a1 > 1 ? a1 : 1);
@@ -3472,6 +3494,48 @@ fancy_table_Range.prototype = {
 		} else {
 			var range2 = new fancy_table_Range(this.min,this.max);
 			range2.active.set_row(this.max.get_row());
+			range2.active.set_col(this.active.get_col() - 1);
+			return range2;
+		}
+	}
+	,nextHorizontal: function() {
+		if(this.rows() == 1 && this.cols() == 1) {
+			return this.right();
+		}
+		if(this.activeRow() == this.rows() - 1 && this.activeCol() == this.cols() - 1) {
+			var range = new fancy_table_Range(this.min,this.max);
+			range.active.set_row(this.min.get_row());
+			range.active.set_col(this.min.get_col());
+			return range;
+		} else if(this.activeCol() == this.cols() - 1) {
+			var range1 = new fancy_table_Range(this.min,this.max);
+			range1.active.set_row(this.active.get_row() + 1);
+			range1.active.set_col(this.min.get_col());
+			return range1;
+		} else {
+			var range2 = new fancy_table_Range(this.min,this.max);
+			range2.active.set_row(this.active.get_row());
+			range2.active.set_col(this.active.get_col() + 1);
+			return range2;
+		}
+	}
+	,previousHorizontal: function() {
+		if(this.rows() == 1 && this.cols() == 1) {
+			return this.left();
+		}
+		if(this.activeRow() == 0 && this.activeCol() == 0) {
+			var range = new fancy_table_Range(this.min,this.max);
+			range.active.set_row(this.max.get_row());
+			range.active.set_col(this.max.get_col());
+			return range;
+		} else if(this.activeCol() == 0) {
+			var range1 = new fancy_table_Range(this.min,this.max);
+			range1.active.set_row(this.active.get_row() - 1);
+			range1.active.set_col(this.max.get_col());
+			return range1;
+		} else {
+			var range2 = new fancy_table_Range(this.min,this.max);
+			range2.active.set_row(this.active.get_row());
 			range2.active.set_col(this.active.get_col() - 1);
 			return range2;
 		}

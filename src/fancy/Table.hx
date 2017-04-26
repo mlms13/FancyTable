@@ -41,6 +41,7 @@ class Table {
   var maxColumns: Int = 0;
   public var selection(default, null): Option<Range>;
   public var hasFocus(default, null): Bool;
+  public var bottomRight(default, null): Coords;
 
   /**
     A container element must be provided to the constructor. You may also
@@ -107,6 +108,7 @@ class Table {
       // TODO !!! removeEventListener
       js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
         if(!hasFocus) return;
+        e.preventDefault();
         pressKey(KeyEvent.fromKeyboardEvent(e));
       }, false);
     } else {
@@ -132,6 +134,8 @@ class Table {
     switch [e.key.toLowerCase(), e.shift, settings.rangeSelectionEnabled] {
       case ["enter", false, _]: goNext();
       case ["enter", true, _]: goPrevious();
+      case ["tab", false, _]: goNextHorizontal();
+      case ["tab", true, _]: goPreviousHorizontal();
       case ["arrowdown", true, true]: selectDown();
       case ["arrowdown", false, _]: goDown();
       case ["arrowup", true, true]: selectUp();
@@ -179,6 +183,8 @@ class Table {
     }
   }
 
+  public function goNextHorizontal() selectFromRange.fn(_.nextHorizontal());
+  public function goPreviousHorizontal() selectFromRange.fn(_.previousHorizontal());
   public function goNext() selectFromRange.fn(_.next());
   public function goPrevious() selectFromRange.fn(_.previous());
   public function goLeft() selectFromRange.fn(_.left());
@@ -202,23 +208,21 @@ class Table {
       maxRow = minRow;
       maxCol = minCol;
     }
-    if(row < minRow)
-      row = minRow;
-    else if(row > maxRow)
-      row = maxRow;
-    if(col < minCol)
-      col = minCol;
-    else if(col > maxCol)
-      col = maxCol;
+
+    if(minRow < 0 || minCol < 0) return; // negative values
+    if(maxRow > bottomRight.row || maxCol > bottomRight.col) return; // out of bounds
+
+    var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
+    range.active.row = row;
+    range.active.col = col;
+    if(!settings.canSelect(range.active.row, range.active.col)) return; // unselectable
 
     switch selection {
       case Some(range):
         grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
       case None: // do nothing
     }
-    var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
-    range.active.row = row;
-    range.active.col = col;
+
     selection = Some(range);
 
     grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
@@ -226,13 +230,16 @@ class Table {
   }
 
   public function deselect() {
+    switch selection {
+      case Some(range):
+        grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
+      case None: // do nothing
+    }
     selection = None;
-    scrollToCell(0, 0); // TODO !!!
   }
 
   function scrollToCell(row: Int, col: Int) {
     grid.scrollTo(Visible(Cells(col)), Visible(Cells(row)));
-
   }
 
   function assignVSize(row: Int): CellDimension {
@@ -300,6 +307,7 @@ class Table {
 
   inline function resetVisibleRowsAndRedraw() : Void {
     visibleRows = flattenVisibleRows(rows);
+    bottomRight = new Coords(visibleRows.length, maxColumns);
     grid.setRowsAndColumns(Ints.max(visibleRows.length, 1), Ints.max(maxColumns, 1));
   }
 
