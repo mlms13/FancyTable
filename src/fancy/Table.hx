@@ -211,7 +211,7 @@ class Table {
     }
 
     if(minRow < 0 || minCol < 0) return; // negative values
-    if(maxRow > bottomRight.row || maxCol > bottomRight.col) return; // out of bounds
+    if(maxRow >= bottomRight.row || maxCol >= bottomRight.col) return; // out of bounds
 
     var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
     range.active.row = row;
