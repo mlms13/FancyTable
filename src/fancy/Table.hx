@@ -19,7 +19,6 @@ import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
 import fancy.table.util.RowData;
 import js.html.*;
-import thx.Dynamics;
 
 import fancy.Grid;
 
