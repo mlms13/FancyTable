@@ -9,11 +9,14 @@ import haxe.ds.Option;
 using thx.Functions;
 using thx.Options;
 
+import fancy.table.CellEvent;
 import fancy.table.Coords;
 import fancy.table.FancyTableSettings;
-import fancy.table.Range;
-import fancy.table.Row;
 import fancy.table.KeyEvent;
+import fancy.table.ResizeEvent;
+import fancy.table.Row;
+import fancy.table.Range;
+import fancy.table.ScrollEvent;
 import fancy.table.util.CellContent;
 import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
@@ -66,8 +69,8 @@ class Table {
       hSize: function (col: Int) {
         return settings.hSize(col, maxColumns);
       },
-      onScroll: settings.onScroll.bind(_, _, _, _, this),
-      onResize: settings.onResize.bind(_, _, _, _, this),
+      onScroll: function(x, y, ox, oy) settings.onScroll(new ScrollEvent(this, x, y, ox, oy)),
+      onResize: function(x, y, ox, oy) settings.onResize(new ResizeEvent(this, x, y, ox, oy)),
     });
 
     // fill with any data
@@ -96,7 +99,7 @@ class Table {
         if(++counter == 1) {
           // single click
           cancel = thx.Timer.delay(function() counter = 0, 400);
-          getCoords(cast e.target).each.fn(select(_.row, _.col));
+          singleClick(e);
         } else if(counter == 2) {
           // double click
           dblClick(e);
@@ -108,8 +111,7 @@ class Table {
       // TODO !!! removeEventListener
       js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
         if(!hasFocus) return;
-        e.preventDefault();
-        pressKey(KeyEvent.fromKeyboardEvent(e));
+        pressKey(KeyEvent.fromKeyboardEvent(this, e));
       }, false);
     } else {
       el.addEventListener("dblclick", dblClick, false);
@@ -117,9 +119,14 @@ class Table {
   }
 
   function dblClick(e: MouseEvent) {
-    getCoords(cast e.target).each(function(coords) {
-      settings.onDoubleClick(coords, this);
-    });
+    getCoords(cast e.target)
+      .each(coords -> settings.onDoubleClick(new CellEvent(this, coords)));
+  }
+
+  function singleClick(e: MouseEvent) {
+    getCoords(cast e.target)
+      .each.fn(select(_.row, _.col))
+      .each(coords -> settings.onClick(new CellEvent(this, coords)));
   }
 
   function getCoords(el: Element): Option<Coords> {
@@ -131,26 +138,46 @@ class Table {
   }
 
   public function pressKey(e: KeyEvent) {
-    switch [e.key.toLowerCase(), e.shift, settings.rangeSelectionEnabled] {
-      case ["enter", false, _]: goNext();
-      case ["enter", true, _]: goPrevious();
-      case ["tab", false, _]: goNextHorizontal();
-      case ["tab", true, _]: goPreviousHorizontal();
-      case ["arrowdown", true, true]: selectDown();
-      case ["arrowdown", false, _]: goDown();
-      case ["arrowup", true, true]: selectUp();
-      case ["arrowup", false, _]: goUp();
-      case ["arrowleft", true, true]: selectLeft();
-      case ["arrowleft", false, _]: goLeft();
-      case ["arrowright", true, true]: selectRight();
-      case ["arrowright", false, _]: goRight();
-      case [other, shift, rangeSelectionEnabled]:
-        switch selection {
-          case Some(range):
-            settings.onKey(e, range.active, this);
-          case None:
-        }
+    switch e.key.toLowerCase() {
+      case "enter":
+        e.preventDefault();
+        if(e.shift)
+          goPrevious();
+        else
+          goNext();
+      case "tab":
+        e.preventDefault();
+        if(e.shift)
+          goPreviousHorizontal();
+        else
+          goNextHorizontal();
+      case "arrowdown":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectDown();
+        else
+          goDown();
+      case "arrowup":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectUp();
+        else
+          goUp();
+      case "arrowleft":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectLeft();
+        else
+          goLeft();
+      case "arrowright":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectRight();
+        else
+          goRight();
+      case _:
     }
+    settings.onKey(e);
   }
 
   public function renderCell(row: Int, col: Int, content: CellContent) {
@@ -232,7 +259,7 @@ class Table {
 
     grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
     scrollToCell(row, col);
-    settings.onRangeChange(range, this);
+    settings.onRangeChange(this);
   }
 
   public function deselect() {
@@ -242,6 +269,7 @@ class Table {
       case None: // do nothing
     }
     selection = None;
+    settings.onRangeChange(this);
   }
 
   function scrollToCell(row: Int, col: Int) {

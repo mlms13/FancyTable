@@ -3,6 +3,8 @@ package fancy.table.util;
 import fancy.Grid;
 import fancy.Table;
 import fancy.table.KeyEvent;
+import fancy.table.ResizeEvent;
+import fancy.table.ScrollEvent;
 
 typedef FancyTableOptions = {
   ?fixedTop: Int,
@@ -20,11 +22,12 @@ typedef FancyTableOptions = {
   ?active: { row: Int, col: Int },
   ?focusOnHover: Bool,
 
-  ?onScroll: Float -> Float -> Float -> Float -> Table -> Void,
-  ?onResize: Float -> Float -> Float -> Float -> Table -> Void,
+  ?onScroll: ScrollEvent -> Void,
+  ?onResize: ResizeEvent -> Void,
   ?onFocus: Table -> Void,
   ?onBlur: Table -> Void,
-  ?onKey: KeyEvent -> Coords -> Table -> Void,
-  ?onDoubleClick: Coords -> Table -> Void,
-  ?onRangeChange: Range -> Table -> Void
+  ?onKey: KeyEvent -> Void,
+  ?onClick: CellEvent -> Void,
+  ?onDoubleClick: CellEvent -> Void,
+  ?onRangeChange: Table -> Void
 };

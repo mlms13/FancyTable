@@ -2,10 +2,12 @@ using dots.Dom;
 
 using thx.Arrays;
 using thx.Maps;
+using thx.Options;
 
 import fancy.Table;
 import fancy.table.util.CellContent;
 import fancy.table.util.RowData;
+import fancy.table.CellEvent;
 import fancy.table.Coords;
 import fancy.table.KeyEvent;
 
@@ -323,14 +325,11 @@ class Main {
         maxRow: 2,
         maxCol: 3
       },
-      onKey: function(e: KeyEvent, coords: Coords, table: Table) {
-        edit(coords, e.key, table);
+      onKey: function(e: KeyEvent) {
+        e.coords.each(coords -> edit(coords, e.key, e.table));
       },
-      onDoubleClick: function(coords: Coords, table: Table) {
-        edit(coords, "", table);
-      },
-      onRangeChange: function(range, table) {
-        trace(range.toString());
+      onDoubleClick: function(event: CellEvent) {
+        edit(event.coords, "", event.table);
       }
     });
   }
