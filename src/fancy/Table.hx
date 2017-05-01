@@ -327,6 +327,10 @@ class Table {
     return this;
   }
 
+  public function refresh() : Void {
+    grid.scrollTo(null, null);
+  }
+
   public function resetScroll() : Void {
     grid.scrollTo(settings.initialScrollX, settings.initialScrollY);
   }
