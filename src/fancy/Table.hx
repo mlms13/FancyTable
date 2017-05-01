@@ -13,6 +13,7 @@ import fancy.table.CellEvent;
 import fancy.table.Coords;
 import fancy.table.FancyTableSettings;
 import fancy.table.KeyEvent;
+import fancy.table.RangeEvent;
 import fancy.table.ResizeEvent;
 import fancy.table.Row;
 import fancy.table.Range;
@@ -255,11 +256,12 @@ class Table {
       case None: // do nothing
     }
 
+    var oldRange = selection;
     selection = Some(range);
 
     grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
     scrollToCell(row, col);
-    settings.onRangeChange(this);
+    settings.onRangeChange(new RangeEvent(this, oldRange, selection));
   }
 
   public function deselect() {
@@ -268,8 +270,9 @@ class Table {
         grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
       case None: // do nothing
     }
+    var oldRange = selection;
     selection = None;
-    settings.onRangeChange(this);
+    settings.onRangeChange(new RangeEvent(this, oldRange, selection));
   }
 
   function scrollToCell(row: Int, col: Int) {

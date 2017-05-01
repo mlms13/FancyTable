@@ -32,7 +32,7 @@ class FancyTableSettings {
   public var onKey(default, null): KeyEvent -> Void;
   public var onClick(default, null): CellEvent -> Void;
   public var onDoubleClick(default, null): CellEvent -> Void;
-  public var onRangeChange(default, null): Table -> Void;
+  public var onRangeChange(default, null): RangeEvent -> Void;
 
   // TODO !!! use
   public var canSelect(default, null): Int -> Int -> Bool;

@@ -3,6 +3,7 @@ package fancy.table.util;
 import fancy.Grid;
 import fancy.Table;
 import fancy.table.KeyEvent;
+import fancy.table.RangeEvent;
 import fancy.table.ResizeEvent;
 import fancy.table.ScrollEvent;
 
@@ -29,5 +30,5 @@ typedef FancyTableOptions = {
   ?onKey: KeyEvent -> Void,
   ?onClick: CellEvent -> Void,
   ?onDoubleClick: CellEvent -> Void,
-  ?onRangeChange: Table -> Void
+  ?onRangeChange: RangeEvent -> Void
 };

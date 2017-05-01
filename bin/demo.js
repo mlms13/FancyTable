@@ -1883,10 +1883,11 @@ fancy_Table.prototype = {
 		case 1:
 			break;
 		}
+		var oldRange = this.selection;
 		this.selection = haxe_ds_Option.Some(range);
 		this.grid.resetCacheForRange(range.min.get_row(),range.min.get_col(),range.max.get_row(),range.max.get_col());
 		this.scrollToCell(row,col);
-		this.settings.onRangeChange(this);
+		this.settings.onRangeChange(new fancy_table_RangeEvent(this,oldRange,this.selection));
 	}
 	,scrollToCell: function(row,col) {
 		this.grid.scrollTo(fancy_HorizontalScrollPosition.Visible(fancy_ScrollUnit.Cells(col)),fancy_VerticalScrollPosition.Visible(fancy_ScrollUnit.Cells(row)));
@@ -3657,6 +3658,12 @@ fancy_table_ActiveCoords.prototype = $extend(fancy_table_Coords.prototype,{
 		return fancy_table_Coords.prototype.set_col.call(this,v);
 	}
 });
+var fancy_table_RangeEvent = function(table,oldRange,newRange) {
+	this.table = table;
+	this.oldRange = oldRange;
+	this.newRange = newRange;
+};
+fancy_table_RangeEvent.__name__ = true;
 var fancy_table_ResizeEvent = function(table,width,height,oldWidth,oldHeight) {
 	this.table = table;
 	this.width = width;
