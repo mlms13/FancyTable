@@ -162,8 +162,9 @@ class Main {
 
   static function flattenNestedDataRows(nestedDataRows : Array<NestedDataRow>) : Array<NestedDataRow> {
     return nestedDataRows.reduce(function(acc : Array<NestedDataRow>, row : NestedDataRow) : Array<NestedDataRow> {
-      trace(row);
+      //trace(row);
       acc.push(row);
+      // If the row is expanded, append the child rows recursively
       if (row.isExpanded) {
         acc = acc.concat(flattenNestedDataRows(row.childRows));
       }
@@ -173,7 +174,7 @@ class Main {
 
   static function getNestedRowCellByCoords(row : Int, col: Int) : Option<{ row: NestedDataRow, cell: DataCell }> {
     //trace(nestedDataRows);
-    trace('-----------------');
+    //trace('-----------------');
     var flattenedNestedDataRows = flattenNestedDataRows(nestedDataRows);
     //trace(flattenedNestedDataRows);
     return flattenedNestedDataRows.getOption(row)

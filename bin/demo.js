@@ -126,7 +126,6 @@ Main.nestedDataRowToRowData = function(nestedDataRow) {
 };
 Main.flattenNestedDataRows = function(nestedDataRows) {
 	return thx_Arrays.reduce(nestedDataRows,function(acc,row) {
-		console.log(row);
 		acc.push(row);
 		if(row.isExpanded) {
 			acc = acc.concat(Main.flattenNestedDataRows(row.childRows));
@@ -135,7 +134,6 @@ Main.flattenNestedDataRows = function(nestedDataRows) {
 	},[]);
 };
 Main.getNestedRowCellByCoords = function(row,col) {
-	console.log("-----------------");
 	var flattenedNestedDataRows = Main.flattenNestedDataRows(Main.nestedDataRows);
 	return thx_Options.flatMap(thx_Arrays.getOption(flattenedNestedDataRows,row),function(row1) {
 		var _g = row1.type;
