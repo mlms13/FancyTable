@@ -132,20 +132,15 @@
 .col-0 .ft-row-indent-3 .ft-cell-content {
   padding-left: 56px;
 }
-
-/* Selection */
-
 .fancy-grid .selected {
   background-color: #e9f3ff;
 }
 .fancy-grid .selected-left {
   border-left: 1px solid #0086f8;
 }
-
 .fancy-grid .selected-right {
   border-right: 1px solid #0086f8;
 }
-
 .fancy-grid .selected-top {
   border-top: 1px solid #0086f8;
 }
