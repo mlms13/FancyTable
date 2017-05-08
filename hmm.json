@@ -11,8 +11,8 @@
       "name": "fancygrid",
       "type": "git",
       "dir": "src",
-      "ref": "443a655",
-      "url": "git@github.com:mlms13/FancyGrid"
+      "ref": "c3f0737",
+      "url": "git@github.com:fponticelli/FancyGrid"
     },
     {
       "name": "thx.core",
