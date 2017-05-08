@@ -76,7 +76,7 @@ Main.main = function() {
 };
 Main.createNestedDataRows = function(cards) {
 	var headerRow = { type : NestedDataRowType.HeaderRow([DataCell.CText("Cards"),DataCell.CText("CMC"),DataCell.CText("Draft value"),DataCell.CText("Price")]), isExpanded : true, childRows : []};
-	var bodyRows = Main.createNestedDataRowsWithGroupBys(cards,[function(card) {
+	var bodyRows = Main.createNestedDataRowsUsingGroupBys(cards,[function(card) {
 		return card.color;
 	},function(card1) {
 		return card1.rarity;
@@ -87,7 +87,7 @@ Main.createNestedDataRows = function(cards) {
 	}]);
 	return [headerRow].concat(bodyRows);
 };
-Main.createNestedDataRowsWithGroupBys = function(cards,groupBys) {
+Main.createNestedDataRowsUsingGroupBys = function(cards,groupBys) {
 	return thx_Maps.tuples(thx_Arrays.groupByAppend(cards,groupBys[0],new haxe_ds_StringMap())).map(function(tuple) {
 		var groupKey = tuple._0;
 		var groupCards = tuple._1;
@@ -98,7 +98,7 @@ Main.createNestedDataRowsWithGroupBys = function(cards,groupBys) {
 		} else {
 			var row = { type : NestedDataRowType.GroupRow(DataCell.CTextFold(groupKey,function() {
 				return row.isExpanded = !row.isExpanded;
-			})), isExpanded : true, childRows : Main.createNestedDataRowsWithGroupBys(groupCards,restOfGroupBys)};
+			})), isExpanded : true, childRows : Main.createNestedDataRowsUsingGroupBys(groupCards,restOfGroupBys)};
 			return row;
 		}
 	});

@@ -52,7 +52,6 @@ enum DataCell {
 }
 
 class Main {
-  // these are our state/lookup tables for rendering cells by coordinates
   static var nestedDataRows(default, null) : Array<NestedDataRow>;
   static var flatDataRows(default, null) : Array<FlatDataRow>;
 
@@ -99,7 +98,7 @@ class Main {
       isExpanded: true,
       childRows: []
     };
-    var bodyRows : Array<NestedDataRow> = createNestedDataRowsWithGroupBys(cards, [
+    var bodyRows : Array<NestedDataRow> = createNestedDataRowsUsingGroupBys(cards, [
       function (card) return card.color,
       function (card) return card.rarity,
       function (card) return card.type,
@@ -108,7 +107,7 @@ class Main {
     return [headerRow].concat(bodyRows);
   }
 
-  static function createNestedDataRowsWithGroupBys(cards : Array<Card>, groupBys : Array<Card -> String>) : Array<NestedDataRow> {
+  static function createNestedDataRowsUsingGroupBys(cards : Array<Card>, groupBys : Array<Card -> String>) : Array<NestedDataRow> {
     return cards.groupByAppend(groupBys[0], new Map())
       .tuples()
       .map(function(tuple : Tuple<String, Array<Card>>) : NestedDataRow {
@@ -136,7 +135,7 @@ class Main {
           row = {
             type: GroupRow(CTextFold(groupKey, () -> row.isExpanded = !row.isExpanded)),
             isExpanded: true,
-            childRows: createNestedDataRowsWithGroupBys(groupCards, restOfGroupBys)
+            childRows: createNestedDataRowsUsingGroupBys(groupCards, restOfGroupBys)
           };
           row;
         }
@@ -144,14 +143,14 @@ class Main {
   }
 
   static function nestedDataRowToRowData(nestedDataRow : NestedDataRow) : RowData {
-    // Don't bind the cells/values in the render functions here - we want to use a lookup function, so we
-    // can change the underlying data and re-render different things
     var cells = switch nestedDataRow.type {
       case HeaderRow(cells) : cells;
       case GroupRow(cell) : [cell];
       case CardRow(cells) : cells;
     };
     return {
+      // Don't bind the cell values to the render function here - we want the render function
+      // to do a lookup in our NestedDataRow data structure.
       values: cells.map(_ -> CellContent.fromCellRenderer(renderNestedRowDataCell)),
       data: nestedDataRow.childRows.map(nestedDataRowToRowData),
       meta: {
@@ -162,9 +161,7 @@ class Main {
 
   static function flattenNestedDataRows(nestedDataRows : Array<NestedDataRow>) : Array<NestedDataRow> {
     return nestedDataRows.reduce(function(acc : Array<NestedDataRow>, row : NestedDataRow) : Array<NestedDataRow> {
-      //trace(row);
       acc.push(row);
-      // If the row is expanded, append the child rows recursively
       if (row.isExpanded) {
         acc = acc.concat(flattenNestedDataRows(row.childRows));
       }
@@ -173,10 +170,12 @@ class Main {
   }
 
   static function getNestedRowCellByCoords(row : Int, col: Int) : Option<{ row: NestedDataRow, cell: DataCell }> {
-    //trace(nestedDataRows);
-    //trace('-----------------');
+    // row is an absolute row index, but to get the desired row in our nested structure, we have
+    // to recursively traverse the tree to find the right row.
+    // !!! TODO !!!
+    // flattening the nested rows for each lookup is slow... there
+    // should be a faster way to get the nested row by index
     var flattenedNestedDataRows = flattenNestedDataRows(nestedDataRows);
-    //trace(flattenedNestedDataRows);
     return flattenedNestedDataRows.getOption(row)
       .flatMap(function(row : NestedDataRow) : Option<{ row: NestedDataRow, cell: DataCell }> {
         return (switch row.type {
@@ -230,8 +229,8 @@ class Main {
   }
 
   static function flatDataRowToCellContents(flatDataRow : FlatDataRow) : Array<CellContent> {
-    // Don't bind the `cell` to the renderer here - we want to use a lookup function, so we
-    // can change the underlying data
+    // Don't bind the cell value to the render here - we want to use a lookup function to
+    // dynamically render the cell from the current data structure state.
     return flatDataRow.cells.map(_ -> CellContent.fromCellRenderer(renderFlatRowDataCell));
   }
 
@@ -244,6 +243,7 @@ class Main {
   }
 
   static function getFlatRowCellByCoords(row : Int, col: Int) : Option<{ row: FlatDataRow, cell: DataCell }> {
+    // Our flat structure matches the view structure, so we can do a direct lookup by row/col
     return flatDataRows.getOption(row)
       .flatMap(function(row : FlatDataRow) : Option<{ row: FlatDataRow, cell: DataCell }> {
         return row.cells
@@ -286,19 +286,17 @@ class Main {
         ])
       ];
     }
-
     var element = Dom.create("div.ft-cell-content", children);
-
-    // If this is a fold header - add the click handler to update our state, and toggle the row via the fancy table API
+    // If this is a fold cell - add the click handler to update our state, and toggle the row via the fancy table API
     switch options.cell {
       case CTextFold(_, onToggle) :
         element.addEventListener("click", function(e : js.html.Event) {
-          onToggle();
+          onToggle(); // this has to be done before table.toggleRow, because we need to update
+                      // our internal "isExpanded" state before the cells are re-rendered
           options.table.toggleRow(options.row);
         });
-      case _ : // no-op
+      case _ : // no-op: cell has no click handler
     };
-
     return element;
   }
 
@@ -347,7 +345,7 @@ class Main {
   }
 
   static function getCards() : Array<Card> {
-    // intentional duplicates just to get a higher volume of cards
+    // There are intentional duplicates here just to get a greater number of cards.
     // The dupes are filtered out for the "nested" view, but show up in the flattened view.
     return [
       { name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52 },
