@@ -46,12 +46,12 @@ HxOverrides.iter = function(a) {
 		return this.arr[this.cur++];
 	}};
 };
-var NestedDataRow = { __ename__ : true, __constructs__ : ["HeaderRow","GroupRow","CardRow"] };
-NestedDataRow.HeaderRow = function(cells) { var $x = ["HeaderRow",0,cells]; $x.__enum__ = NestedDataRow; $x.toString = $estr; return $x; };
-NestedDataRow.GroupRow = function(cell,childRows) { var $x = ["GroupRow",1,cell,childRows]; $x.__enum__ = NestedDataRow; $x.toString = $estr; return $x; };
-NestedDataRow.CardRow = function(cells) { var $x = ["CardRow",2,cells]; $x.__enum__ = NestedDataRow; $x.toString = $estr; return $x; };
+var NestedDataRowType = { __ename__ : true, __constructs__ : ["HeaderRow","GroupRow","CardRow"] };
+NestedDataRowType.HeaderRow = function(cells) { var $x = ["HeaderRow",0,cells]; $x.__enum__ = NestedDataRowType; $x.toString = $estr; return $x; };
+NestedDataRowType.GroupRow = function(cell) { var $x = ["GroupRow",1,cell]; $x.__enum__ = NestedDataRowType; $x.toString = $estr; return $x; };
+NestedDataRowType.CardRow = function(cells) { var $x = ["CardRow",2,cells]; $x.__enum__ = NestedDataRowType; $x.toString = $estr; return $x; };
 var DataCell = { __ename__ : true, __constructs__ : ["CTextFold","CText","CInt","CFloat","CLink"] };
-DataCell.CTextFold = function(text) { var $x = ["CTextFold",0,text]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
+DataCell.CTextFold = function(text,onToggle) { var $x = ["CTextFold",0,text,onToggle]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
 DataCell.CText = function(text) { var $x = ["CText",1,text]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
 DataCell.CInt = function(num) { var $x = ["CInt",2,num]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
 DataCell.CFloat = function(num) { var $x = ["CFloat",3,num]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
@@ -75,7 +75,7 @@ Main.main = function() {
 	}});
 };
 Main.createNestedDataRows = function(cards) {
-	var headerRow = NestedDataRow.HeaderRow([DataCell.CText("Cards"),DataCell.CText("CMC"),DataCell.CText("Draft value"),DataCell.CText("Price")]);
+	var headerRow = { type : NestedDataRowType.HeaderRow([DataCell.CText("Cards"),DataCell.CText("CMC"),DataCell.CText("Draft value"),DataCell.CText("Price")]), isExpanded : true, childRows : []};
 	var bodyRows = Main.createNestedDataRowsWithGroupBys(cards,[function(card) {
 		return card.color;
 	},function(card1) {
@@ -92,73 +92,65 @@ Main.createNestedDataRowsWithGroupBys = function(cards,groupBys) {
 		var groupKey = tuple._0;
 		var groupCards = tuple._1;
 		var restOfGroupBys = groupBys.slice(1);
-		console.log(groupKey);
 		if(restOfGroupBys.length == 0) {
 			var card = groupCards[0];
-			return NestedDataRow.CardRow([DataCell.CLink(card.name,"http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId),DataCell.CInt(card.cmc),DataCell.CFloat(card.draftval),DataCell.CFloat(card.tcgprice)]);
+			return { type : NestedDataRowType.CardRow([DataCell.CLink(card.name,"http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId),DataCell.CInt(card.cmc),DataCell.CFloat(card.draftval),DataCell.CFloat(card.tcgprice)]), isExpanded : true, childRows : []};
 		} else {
-			return NestedDataRow.GroupRow(DataCell.CText(groupKey),Main.createNestedDataRowsWithGroupBys(groupCards,restOfGroupBys));
+			var row = { type : NestedDataRowType.GroupRow(DataCell.CTextFold(groupKey,function() {
+				return row.isExpanded = !row.isExpanded;
+			})), isExpanded : true, childRows : Main.createNestedDataRowsWithGroupBys(groupCards,restOfGroupBys)};
+			return row;
 		}
 	});
 };
 Main.nestedDataRowToRowData = function(nestedDataRow) {
-	switch(nestedDataRow[1]) {
+	var cells;
+	var _g = nestedDataRow.type;
+	switch(_g[1]) {
 	case 0:
-		var cells = nestedDataRow[2];
-		return { values : cells.map(function(_) {
-			return fancy_table_util_CellContentImpl.LazyElement(Main.renderNestedRowDataCell);
-		})};
+		var cells1 = _g[2];
+		cells = cells1;
+		break;
 	case 1:
-		var childRows = nestedDataRow[3];
-		var cell = nestedDataRow[2];
-		return { values : [cell].map(function(_1) {
-			return fancy_table_util_CellContentImpl.LazyElement(Main.renderNestedRowDataCell);
-		}), data : childRows.map(Main.nestedDataRowToRowData)};
+		var cell = _g[2];
+		cells = [cell];
+		break;
 	case 2:
-		var cells1 = nestedDataRow[2];
-		return { values : cells1.map(function(_2) {
-			return fancy_table_util_CellContentImpl.LazyElement(Main.renderNestedRowDataCell);
-		})};
+		var cells2 = _g[2];
+		cells = cells2;
+		break;
 	}
+	return { values : cells.map(function(_) {
+		return fancy_table_util_CellContentImpl.LazyElement(Main.renderNestedRowDataCell);
+	}), data : nestedDataRow.childRows.map(Main.nestedDataRowToRowData), meta : { expanded : nestedDataRow.isExpanded}};
 };
 Main.flattenNestedDataRows = function(nestedDataRows) {
 	return thx_Arrays.reduce(nestedDataRows,function(acc,row) {
+		console.log(row);
 		acc.push(row);
-		var childRows;
-		switch(row[1]) {
-		case 0:
-			childRows = [];
-			break;
-		case 1:
-			var childRows1 = row[3];
-			childRows = childRows1;
-			break;
-		case 2:
-			childRows = [];
-			break;
+		if(row.isExpanded) {
+			acc = acc.concat(Main.flattenNestedDataRows(row.childRows));
 		}
-		acc = acc.concat(Main.flattenNestedDataRows(childRows));
 		return acc;
 	},[]);
 };
 Main.getNestedRowCellByCoords = function(row,col) {
-	console.log(Main.nestedDataRows);
+	console.log("-----------------");
 	var flattenedNestedDataRows = Main.flattenNestedDataRows(Main.nestedDataRows);
-	console.log(flattenedNestedDataRows);
 	return thx_Options.flatMap(thx_Arrays.getOption(flattenedNestedDataRows,row),function(row1) {
+		var _g = row1.type;
 		var tmp;
-		switch(row1[1]) {
+		switch(_g[1]) {
 		case 0:
-			var cells = row1[2];
+			var cells = _g[2];
 			tmp = cells;
 			break;
 		case 1:
-			var childRows = row1[3];
-			var cell = row1[2];
+			var cell = _g[2];
 			tmp = [cell];
 			break;
 		case 2:
-			var cells1 = row1[2];
+			var cells1 = _g[2];
 			tmp = cells1;
 			break;
 		}
@@ -510,23 +502,16 @@ Main.renderDataCell = function(options) {
 		children = [children6,el5];
 		break;
 	}
-	var isFold;
-	var _g18 = options.cell;
-	if(_g18[1] == 0) {
-		isFold = true;
-	} else {
-		isFold = false;
-	}
 	var doc7 = null;
 	if(null == doc7) {
 		doc7 = window.document;
 	}
 	var el7 = doc7.createElement("div");
-	var _g25 = 0;
-	var _g32 = [{ value : "ft-cell-content", name : "class"}];
-	while(_g25 < _g32.length) {
-		var o7 = _g32[_g25];
-		++_g25;
+	var _g18 = 0;
+	var _g25 = [{ value : "ft-cell-content", name : "class"}];
+	while(_g18 < _g25.length) {
+		var o7 = _g25[_g18];
+		++_g18;
 		el7.setAttribute(o7.name,o7.value);
 	}
 	var attrs7 = null;
@@ -539,10 +524,10 @@ Main.renderDataCell = function(options) {
 	}
 	var children9 = children;
 	if(null != children9) {
-		var _g26 = 0;
-		while(_g26 < children9.length) {
-			var child7 = children9[_g26];
-			++_g26;
+		var _g19 = 0;
+		while(_g19 < children9.length) {
+			var child7 = children9[_g19];
+			++_g19;
 			el7.appendChild(child7);
 		}
 	}
@@ -551,8 +536,11 @@ Main.renderDataCell = function(options) {
 		el7.appendChild(doc7.createTextNode(textContent7));
 	}
 	var element = el7;
-	if(isFold) {
+	var _g110 = options.cell;
+	if(_g110[1] == 0) {
+		var onToggle = _g110[3];
 		element.addEventListener("click",function(e) {
+			onToggle();
 			options.table.toggleRow(options.row);
 		});
 	}

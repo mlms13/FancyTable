@@ -27,18 +27,24 @@ typedef Card = {
   tcgprice : Float
 };
 
-enum NestedDataRow {
+enum NestedDataRowType {
   HeaderRow(cells : Array<DataCell>);
-  GroupRow(cell : DataCell, childRows : Array<NestedDataRow>);
+  GroupRow(cell : DataCell);
   CardRow(cells : Array<DataCell>);
 }
+
+typedef NestedDataRow = {
+  type: NestedDataRowType,
+  isExpanded: Bool,
+  childRows: Array<NestedDataRow>
+};
 
 typedef FlatDataRow = {
   cells: Array<DataCell>
 }
 
 enum DataCell {
-  CTextFold(text : String);
+  CTextFold(text : String, onToggle: Void -> Void);
   CText(text : String);
   CInt(num : Int);
   CFloat(num : Float);
@@ -88,7 +94,11 @@ class Main {
   /////////////////////////////////////////////////////////////////////////////
 
   static function createNestedDataRows(cards : Array<Card>) : Array<NestedDataRow> {
-    var headerRow : NestedDataRow =  HeaderRow([CText("Cards"), CText("CMC"), CText("Draft value"), CText("Price")]);
+    var headerRow : NestedDataRow =  {
+      type: HeaderRow([CText("Cards"), CText("CMC"), CText("Draft value"), CText("Price")]),
+      isExpanded: true,
+      childRows: []
+    };
     var bodyRows : Array<NestedDataRow> = createNestedDataRowsWithGroupBys(cards, [
       function (card) return card.color,
       function (card) return card.rarity,
@@ -106,67 +116,71 @@ class Main {
         var groupCards = tuple.right;
         var restOfGroupBys = groupBys.rest();
 
-        trace(groupKey);
-
+        //trace(groupKey);
         return if (restOfGroupBys.length == 0) {
-          //if (groupCards.length != 0) {
-            //throw new thx.Error('group cards should have been reduced to a single card at this point');
-          //}
+          // This is a little weird because groupCards could have multiple cards, but since there is no more grouping to do
+          // and our last grouping was by "name" (which should be unique) we have to assume that we're just interested in one card here
           var card = groupCards[0];
-          // No more group bys to handle - we are at the card level
-          // Nested card row
-          CardRow([
-            CLink(card.name, 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'),
-            CInt(card.cmc),
-            CFloat(card.draftval),
-            CFloat(card.tcgprice)
-          ]);
+          {
+            type: CardRow([
+              CLink(card.name, 'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=${card.multiverseId}'),
+              CInt(card.cmc),
+              CFloat(card.draftval),
+              CFloat(card.tcgprice)
+            ]),
+            isExpanded: true,
+            childRows: []
+          };
         } else {
-          // nested group row
-          GroupRow(CText(groupKey), createNestedDataRowsWithGroupBys(groupCards, restOfGroupBys));
+          var row : NestedDataRow;
+          row = {
+            type: GroupRow(CTextFold(groupKey, () -> row.isExpanded = !row.isExpanded)),
+            isExpanded: true,
+            childRows: createNestedDataRowsWithGroupBys(groupCards, restOfGroupBys)
+          };
+          row;
         }
       });
   }
 
   static function nestedDataRowToRowData(nestedDataRow : NestedDataRow) : RowData {
-    // Don't bind the cells to the renderer functions here - we want to use a lookup function, so we
+    // Don't bind the cells/values in the render functions here - we want to use a lookup function, so we
     // can change the underlying data and re-render different things
-    return switch nestedDataRow {
-      case HeaderRow(cells) : {
-        values: cells.map(_ -> CellContent.fromCellRenderer(renderNestedRowDataCell))
-      };
-      case GroupRow(cell, childRows) : {
-        values: [cell].map(_ -> CellContent.fromCellRenderer(renderNestedRowDataCell)),
-        data: childRows.map(nestedDataRowToRowData)
-      };
-      case CardRow(cells) : {
-        values: cells.map(_ -> CellContent.fromCellRenderer(renderNestedRowDataCell))
-      };
+    var cells = switch nestedDataRow.type {
+      case HeaderRow(cells) : cells;
+      case GroupRow(cell) : [cell];
+      case CardRow(cells) : cells;
+    };
+    return {
+      values: cells.map(_ -> CellContent.fromCellRenderer(renderNestedRowDataCell)),
+      data: nestedDataRow.childRows.map(nestedDataRowToRowData),
+      meta: {
+        expanded: nestedDataRow.isExpanded
+      }
     };
   }
 
   static function flattenNestedDataRows(nestedDataRows : Array<NestedDataRow>) : Array<NestedDataRow> {
     return nestedDataRows.reduce(function(acc : Array<NestedDataRow>, row : NestedDataRow) : Array<NestedDataRow> {
+      trace(row);
       acc.push(row);
-      var childRows = switch row {
-        case HeaderRow(_) : [];
-        case GroupRow(_, childRows) : childRows;
-        case CardRow(_) : [];
-      };
-      acc = acc.concat(flattenNestedDataRows(childRows));
+      if (row.isExpanded) {
+        acc = acc.concat(flattenNestedDataRows(row.childRows));
+      }
       return acc;
     }, []);
   }
 
   static function getNestedRowCellByCoords(row : Int, col: Int) : Option<{ row: NestedDataRow, cell: DataCell }> {
-    trace(nestedDataRows);
+    //trace(nestedDataRows);
+    trace('-----------------');
     var flattenedNestedDataRows = flattenNestedDataRows(nestedDataRows);
-    trace(flattenedNestedDataRows);
+    //trace(flattenedNestedDataRows);
     return flattenedNestedDataRows.getOption(row)
       .flatMap(function(row : NestedDataRow) : Option<{ row: NestedDataRow, cell: DataCell }> {
-        return (switch row {
+        return (switch row.type {
           case HeaderRow(cells) : cells;
-          case GroupRow(cell, childRows) : [cell];
+          case GroupRow(cell) : [cell];
           case CardRow(cells) : cells;
         })
         .getOption(col)
@@ -252,7 +266,7 @@ class Main {
 
   static function renderDataCell(options: { row : Int, col: Int, cell : DataCell, table: Table }) : Element {
     var children = switch options.cell {
-      case CTextFold(text) | CText(text) : [
+      case CTextFold(text, _) | CText(text) : [
         Dom.create('span', text)
       ];
       case CInt(num) : [
@@ -271,23 +285,26 @@ class Main {
         ])
       ];
     }
-    var isFold = switch options.cell {
-      case CTextFold(_) : true;
-      case _ : false;
-    };
+
     var element = Dom.create("div.ft-cell-content", children);
-    if (isFold) {
-      element.addEventListener("click", function(e : js.html.Event) {
-        options.table.toggleRow(options.row);
-      });
-    }
+
+    // If this is a fold header - add the click handler to update our state, and toggle the row via the fancy table API
+    switch options.cell {
+      case CTextFold(_, onToggle) :
+        element.addEventListener("click", function(e : js.html.Event) {
+          onToggle();
+          options.table.toggleRow(options.row);
+        });
+      case _ : // no-op
+    };
+
     return element;
   }
 
   static function onStartEditingFlatRowCell(coords: Coords, typed: String, table: Table) {
     var value : String = getFlatRowCellByCoords(coords.row, coords.col)
       .map(data -> switch data.cell {
-        case CTextFold(text) : text;
+        case CTextFold(text, _) : text;
         case CText(text) : text;
         case CInt(n) : Std.string(n);
         case CFloat(n) : Std.string(n);
