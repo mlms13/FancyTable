@@ -1,5 +1,7 @@
 package fancy.table;
 
+import thx.Ints;
+
 class Range {
   public var min(default, null): Coords;
   public var max(default, null): Coords;
@@ -142,6 +144,62 @@ class Range {
     return new Range(coord, coord); // TODO !!!
   }
 
+  public function firstColumn()
+    return goToColumn(0);
+
+  public function goToColumn(col: Int) {
+    var coord = new Coords(active.row, col);
+    return new Range(coord, coord);
+  }
+
+  public function firstRow() {
+    return goToRow(0);
+  }
+
+  public function upRows(row: Int) {
+    var start = Ints.max(0, active.row - row);
+    return goToRow(start);
+  }
+
+  public function downRows(row: Int, max: Int) {
+    var end = Ints.min(max, active.row + row);
+    return goToRow(end);
+  }
+
+  public function goToRow(row: Int) {
+    var coord = new Coords(row, active.col);
+    return new Range(coord, coord);
+  }
+
+  public function selectToFirstColumn()
+    return selectToColumn(0);
+
+  public function selectToColumn(col: Int) {
+    if(active.col == col) return this;
+    var range = if(col < active.col) {
+      new Range(new Coords(min.row, col), max);
+    } else {
+      new Range(min, new Coords(max.row, col));
+    }
+    range.active.row = active.row;
+    range.active.col = active.col;
+    return range;
+  }
+  public function selectToFirstRow()
+    return selectToRow(0);
+
+  public function selectToRow(row: Int) {
+    if(active.row == row) return this;
+    var range = if(row < active.row) {
+      new Range(new Coords(row, min.col), max);
+    } else {
+      new Range(min, new Coords(row, max.col));
+    }
+    range.active.row = active.row;
+    range.active.col = active.col;
+    return range;
+  }
+
   public function selectLeft() {
     var range = if(cols() == 1 || activeCol() > 0) {
       // expand on the left
@@ -179,6 +237,16 @@ class Range {
     range.active.row = active.row;
     range.active.col = active.col;
     return range;
+  }
+
+  public function selectUpRows(rows: Int) {
+    var start = Ints.max(0, active.row - rows);
+    return selectToRow(start);
+  }
+
+  public function selectDownRows(rows: Int, max: Int) {
+    var end = Ints.min(max, active.row + rows);
+    return selectToRow(end);
   }
 
   public function selectDown() {

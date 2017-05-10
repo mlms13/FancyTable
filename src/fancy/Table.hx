@@ -139,7 +139,32 @@ class Table {
   }
 
   public function pressKey(e: KeyEvent) {
+    trace(e.key.toLowerCase());
     switch e.key.toLowerCase() {
+      case "home":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectToFirstColumn();
+        else
+          goFirstColumn();
+      case "end":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectToLastColumn();
+        else
+          goLastColumn();
+      case "pageup":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectPageUp();
+        else
+          goPageUp();
+      case "pagedown":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectPageDown();
+        else
+          goPageDown();
       case "enter":
         e.preventDefault();
         if(e.shift)
@@ -154,28 +179,72 @@ class Table {
           goNextHorizontal();
       case "arrowdown":
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
-          selectDown();
-        else
-          goDown();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToLastRow();
+          } else {
+            selectDown();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goLastRow();
+          } else {
+            goDown();
+          }
+        }
       case "arrowup":
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
-          selectUp();
-        else
-          goUp();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToFirstRow();
+          } else {
+            selectUp();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goFirstRow();
+          } else {
+            goUp();
+          }
+        }
       case "arrowleft":
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
-          selectLeft();
-        else
-          goLeft();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToFirstColumn();
+          } else {
+            selectLeft();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goFirstColumn();
+          } else {
+            goLeft();
+          }
+        }
       case "arrowright":
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
-          selectRight();
-        else
-          goRight();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToLastColumn();
+          } else {
+            selectRight();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goLastColumn();
+          } else {
+            goRight();
+          }
+        }
       case _:
     }
     settings.onKey(e);
@@ -200,10 +269,22 @@ class Table {
     selectRange(row, col, row, col, row, col);
   }
 
-  public function goFirst() {
-    // TODO !!!
+  public function goFirst()
     selectRange(0, 0, 0, 0, 0, 0);
-  }
+
+  public function goFirstColumn() selectFromRange.fn(_.firstColumn());
+  public function goLastColumn() selectFromRange.fn(_.goToColumn(grid.columns - 1));
+  public function goFirstRow() selectFromRange.fn(_.firstRow());
+  public function goLastRow() selectFromRange.fn(_.goToRow(grid.rows - 1));
+  public function goPageUp() selectFromRange.fn(_.upRows(10));
+  public function goPageDown() selectFromRange.fn(_.downRows(10, grid.rows - 1));
+
+  public function selectToFirstColumn() selectFromRange.fn(_.selectToFirstColumn());
+  public function selectToLastColumn() selectFromRange.fn(_.selectToColumn(grid.columns - 1));
+  public function selectToFirstRow() selectFromRange.fn(_.selectToFirstRow());
+  public function selectToLastRow() selectFromRange.fn(_.selectToRow(grid.rows - 1));
+  public function selectPageUp() selectFromRange.fn(_.selectUpRows(10));
+  public function selectPageDown() selectFromRange.fn(_.selectDownRows(10, grid.rows - 1));
 
   function selectFromRange(f: Range -> Range) {
     switch selection {

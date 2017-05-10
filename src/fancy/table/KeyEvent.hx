@@ -43,6 +43,13 @@ class KeyEvent {
     this.defaultPrevented = defaultPrevented;
   }
 
+  public static var isMac(default, null): Bool = js.Browser.navigator.platform.toUpperCase().indexOf('MAC')>=0;
+
+  public function isCmdOnMacOrCtrl() {
+    if(!ctrl && !meta) return false;
+    return (isMac && meta) || (!isMac && ctrl);
+  }
+
   public function toString() {
     var acc = [];
     if(alt) acc.push("alt");

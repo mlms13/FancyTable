@@ -1697,12 +1697,19 @@ fancy_Table.prototype = {
 		return haxe_ds_Option.Some(new fancy_table_Coords(row,col));
 	}
 	,pressKey: function(e) {
+		console.log(e.key.toLowerCase());
 		var _g = e.key.toLowerCase();
 		switch(_g) {
 		case "arrowdown":
 			e.preventDefault();
 			if(e.shift && this.settings.rangeSelectionEnabled) {
-				this.selectDown();
+				if(e.isCmdOnMacOrCtrl()) {
+					this.selectToLastRow();
+				} else {
+					this.selectDown();
+				}
+			} else if(e.isCmdOnMacOrCtrl()) {
+				this.goLastRow();
 			} else {
 				this.goDown();
 			}
@@ -1710,7 +1717,13 @@ fancy_Table.prototype = {
 		case "arrowleft":
 			e.preventDefault();
 			if(e.shift && this.settings.rangeSelectionEnabled) {
-				this.selectLeft();
+				if(e.isCmdOnMacOrCtrl()) {
+					this.selectToFirstColumn();
+				} else {
+					this.selectLeft();
+				}
+			} else if(e.isCmdOnMacOrCtrl()) {
+				this.goFirstColumn();
 			} else {
 				this.goLeft();
 			}
@@ -1718,7 +1731,13 @@ fancy_Table.prototype = {
 		case "arrowright":
 			e.preventDefault();
 			if(e.shift && this.settings.rangeSelectionEnabled) {
-				this.selectRight();
+				if(e.isCmdOnMacOrCtrl()) {
+					this.selectToLastColumn();
+				} else {
+					this.selectRight();
+				}
+			} else if(e.isCmdOnMacOrCtrl()) {
+				this.goLastColumn();
 			} else {
 				this.goRight();
 			}
@@ -1726,9 +1745,23 @@ fancy_Table.prototype = {
 		case "arrowup":
 			e.preventDefault();
 			if(e.shift && this.settings.rangeSelectionEnabled) {
-				this.selectUp();
+				if(e.isCmdOnMacOrCtrl()) {
+					this.selectToFirstRow();
+				} else {
+					this.selectUp();
+				}
+			} else if(e.isCmdOnMacOrCtrl()) {
+				this.goFirstRow();
 			} else {
 				this.goUp();
+			}
+			break;
+		case "end":
+			e.preventDefault();
+			if(e.shift && this.settings.rangeSelectionEnabled) {
+				this.selectToLastColumn();
+			} else {
+				this.goLastColumn();
 			}
 			break;
 		case "enter":
@@ -1737,6 +1770,30 @@ fancy_Table.prototype = {
 				this.goPrevious();
 			} else {
 				this.goNext();
+			}
+			break;
+		case "home":
+			e.preventDefault();
+			if(e.shift && this.settings.rangeSelectionEnabled) {
+				this.selectToFirstColumn();
+			} else {
+				this.goFirstColumn();
+			}
+			break;
+		case "pagedown":
+			e.preventDefault();
+			if(e.shift && this.settings.rangeSelectionEnabled) {
+				this.selectPageDown();
+			} else {
+				this.goPageDown();
+			}
+			break;
+		case "pageup":
+			e.preventDefault();
+			if(e.shift && this.settings.rangeSelectionEnabled) {
+				this.selectPageUp();
+			} else {
+				this.goPageUp();
 			}
 			break;
 		case "tab":
@@ -1765,6 +1822,72 @@ fancy_Table.prototype = {
 	}
 	,goFirst: function() {
 		this.selectRange(0,0,0,0,0,0);
+	}
+	,goFirstColumn: function() {
+		this.selectFromRange(function(_) {
+			return _.firstColumn();
+		});
+	}
+	,goLastColumn: function() {
+		var _gthis = this;
+		this.selectFromRange(function(_) {
+			return _.goToColumn(_gthis.grid.columns - 1);
+		});
+	}
+	,goFirstRow: function() {
+		this.selectFromRange(function(_) {
+			return _.firstRow();
+		});
+	}
+	,goLastRow: function() {
+		var _gthis = this;
+		this.selectFromRange(function(_) {
+			return _.goToRow(_gthis.grid.rows - 1);
+		});
+	}
+	,goPageUp: function() {
+		this.selectFromRange(function(_) {
+			return _.upRows(10);
+		});
+	}
+	,goPageDown: function() {
+		var _gthis = this;
+		this.selectFromRange(function(_) {
+			return _.downRows(10,_gthis.grid.rows - 1);
+		});
+	}
+	,selectToFirstColumn: function() {
+		this.selectFromRange(function(_) {
+			return _.selectToFirstColumn();
+		});
+	}
+	,selectToLastColumn: function() {
+		var _gthis = this;
+		this.selectFromRange(function(_) {
+			return _.selectToColumn(_gthis.grid.columns - 1);
+		});
+	}
+	,selectToFirstRow: function() {
+		this.selectFromRange(function(_) {
+			return _.selectToFirstRow();
+		});
+	}
+	,selectToLastRow: function() {
+		var _gthis = this;
+		this.selectFromRange(function(_) {
+			return _.selectToRow(_gthis.grid.rows - 1);
+		});
+	}
+	,selectPageUp: function() {
+		this.selectFromRange(function(_) {
+			return _.selectUpRows(10);
+		});
+	}
+	,selectPageDown: function() {
+		var _gthis = this;
+		this.selectFromRange(function(_) {
+			return _.selectDownRows(10,_gthis.grid.rows - 1);
+		});
 	}
 	,selectFromRange: function(f) {
 		var _g = this.selection;
@@ -3455,7 +3578,21 @@ fancy_table_KeyEvent.fromKeyboardEvent = function(table,e) {
 	});
 };
 fancy_table_KeyEvent.prototype = {
-	get_coords: function() {
+	isCmdOnMacOrCtrl: function() {
+		if(!this.ctrl && !this.meta) {
+			return false;
+		}
+		if(!(fancy_table_KeyEvent.isMac && this.meta)) {
+			if(!fancy_table_KeyEvent.isMac) {
+				return this.ctrl;
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+	,get_coords: function() {
 		return thx_Options.map(this.table.selection,function(range) {
 			return range.active;
 		});
@@ -3590,6 +3727,54 @@ fancy_table_Range.prototype = {
 		var coord = new fancy_table_Coords(this.active.get_row() + 1,this.active.get_col());
 		return new fancy_table_Range(coord,coord);
 	}
+	,firstColumn: function() {
+		return this.goToColumn(0);
+	}
+	,goToColumn: function(col) {
+		var coord = new fancy_table_Coords(this.active.get_row(),col);
+		return new fancy_table_Range(coord,coord);
+	}
+	,firstRow: function() {
+		return this.goToRow(0);
+	}
+	,upRows: function(row) {
+		var b = this.active.get_row() - row;
+		var start = 0 > b ? 0 : b;
+		return this.goToRow(start);
+	}
+	,downRows: function(row,max) {
+		var b = this.active.get_row() + row;
+		var end = max < b ? max : b;
+		return this.goToRow(end);
+	}
+	,goToRow: function(row) {
+		var coord = new fancy_table_Coords(row,this.active.get_col());
+		return new fancy_table_Range(coord,coord);
+	}
+	,selectToFirstColumn: function() {
+		return this.selectToColumn(0);
+	}
+	,selectToColumn: function(col) {
+		if(this.active.get_col() == col) {
+			return this;
+		}
+		var range = col < this.active.get_col() ? new fancy_table_Range(new fancy_table_Coords(this.min.get_row(),col),this.max) : new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row(),col));
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
+	}
+	,selectToFirstRow: function() {
+		return this.selectToRow(0);
+	}
+	,selectToRow: function(row) {
+		if(this.active.get_row() == row) {
+			return this;
+		}
+		var range = row < this.active.get_row() ? new fancy_table_Range(new fancy_table_Coords(row,this.min.get_col()),this.max) : new fancy_table_Range(this.min,new fancy_table_Coords(row,this.max.get_col()));
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
+	}
 	,selectLeft: function() {
 		var range = this.cols() == 1 || this.activeCol() > 0 ? new fancy_table_Range(new fancy_table_Coords(this.min.get_row(),this.min.get_col() - 1),this.max) : new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row(),this.max.get_col() - 1));
 		range.active.set_row(this.active.get_row());
@@ -3607,6 +3792,16 @@ fancy_table_Range.prototype = {
 		range.active.set_row(this.active.get_row());
 		range.active.set_col(this.active.get_col());
 		return range;
+	}
+	,selectUpRows: function(rows) {
+		var b = this.active.get_row() - rows;
+		var start = 0 > b ? 0 : b;
+		return this.selectToRow(start);
+	}
+	,selectDownRows: function(rows,max) {
+		var b = this.active.get_row() + rows;
+		var end = max < b ? max : b;
+		return this.selectToRow(end);
 	}
 	,selectDown: function() {
 		var range = this.rows() == 1 || this.activeRow() < this.rows() - 1 ? new fancy_table_Range(this.min,new fancy_table_Coords(this.max.get_row() + 1,this.max.get_col())) : new fancy_table_Range(new fancy_table_Coords(this.min.get_row() + 1,this.min.get_col()),this.max);
@@ -4219,5 +4414,6 @@ if(typeof(scope.performance.now) == "undefined") {
 	scope.performance.now = now;
 }
 dots_Query.doc = document;
+fancy_table_KeyEvent.isMac = window.navigator.platform.toUpperCase().indexOf("MAC") >= 0;
 Main.main();
 })();
