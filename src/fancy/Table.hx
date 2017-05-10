@@ -181,6 +181,9 @@ class Table {
     settings.onKey(e);
   }
 
+  public function resetCacheForRange(minRow:Int, minCol: Int, maxRow: Int, maxCol: Int)
+    grid.resetCacheForRange(minRow, minCol, maxRow, maxCol);
+
   public function renderCell(row: Int, col: Int, content: CellContent) {
     visibleRows
       .getOption(row)
