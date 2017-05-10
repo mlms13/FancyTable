@@ -46,301 +46,585 @@ HxOverrides.iter = function(a) {
 		return this.arr[this.cur++];
 	}};
 };
+var NestedDataRowType = { __ename__ : true, __constructs__ : ["HeaderRow","GroupRow","CardRow"] };
+NestedDataRowType.HeaderRow = function(cells) { var $x = ["HeaderRow",0,cells]; $x.__enum__ = NestedDataRowType; $x.toString = $estr; return $x; };
+NestedDataRowType.GroupRow = function(cell) { var $x = ["GroupRow",1,cell]; $x.__enum__ = NestedDataRowType; $x.toString = $estr; return $x; };
+NestedDataRowType.CardRow = function(cells) { var $x = ["CardRow",2,cells]; $x.__enum__ = NestedDataRowType; $x.toString = $estr; return $x; };
+var DataCell = { __ename__ : true, __constructs__ : ["CTextFold","CText","CInt","CFloat","CLink"] };
+DataCell.CTextFold = function(text,onToggle) { var $x = ["CTextFold",0,text,onToggle]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
+DataCell.CText = function(text) { var $x = ["CText",1,text]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
+DataCell.CInt = function(num) { var $x = ["CInt",2,num]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
+DataCell.CFloat = function(num) { var $x = ["CFloat",3,num]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
+DataCell.CLink = function(label,href) { var $x = ["CLink",4,label,href]; $x.__enum__ = DataCell; $x.toString = $estr; return $x; };
 var Main = function() { };
 Main.__name__ = true;
 Main.main = function() {
+	var cards = Main.getCards();
+	Main.nestedDataRows = Main.createNestedDataRows(cards);
+	Main.flatDataRows = Main.createFlatDataRows(cards);
 	var elNested = window.document.querySelector(".table-container-nested");
+	new fancy_Table(elNested,fancy_FancyTableData.Nested(Main.nestedDataRows.map(Main.nestedDataRowToRowData)),{ fixedTop : 1, fixedLeft : 1, focusOnHover : false, rangeSelectionEnabled : false});
 	var elFlat = window.document.querySelector(".table-container-flat");
-	var cards = [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25},{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25},{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25},{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
-	var foldHeader = function(text) {
-		return function(ft,row,col) {
-			var doc = null;
-			if(null == doc) {
-				doc = window.document;
-			}
-			var el = doc.createElement("div");
-			var _g = 0;
-			var _g1 = [{ value : "ft-cell-content", name : "class"}];
-			while(_g < _g1.length) {
-				var o = _g1[_g];
-				++_g;
-				el.setAttribute(o.name,o.value);
-			}
-			var attrs = null;
-			if(null != attrs) {
-				var attr = attrs.keys();
-				while(attr.hasNext()) {
-					var attr1 = attr.next();
-					el.setAttribute(attr1,__map_reserved[attr1] != null ? attrs.getReserved(attr1) : attrs.h[attr1]);
-				}
-			}
-			var children = null;
-			if(null != children) {
-				var _g2 = 0;
-				while(_g2 < children.length) {
-					var child = children[_g2];
-					++_g2;
-					el.appendChild(child);
-				}
-			}
-			var textContent = text;
-			if(null != textContent) {
-				el.appendChild(doc.createTextNode(textContent));
-			}
-			var cell = el;
-			var f = function() {
-				ft.toggleRow(row);
-			};
-			cell.addEventListener("click",function(e) {
-				e.preventDefault();
-				f();
-			});
-			return cell;
-		};
-	};
-	var cardsToRowData = null;
-	cardsToRowData = function(cards1,groupBy) {
-		return thx_Maps.tuples(thx_Arrays.groupByAppend(cards1,groupBy[0],new haxe_ds_StringMap())).map(function(tuple) {
-			var restOfGroupBys = groupBy.slice(1);
-			if(restOfGroupBys.length == 0) {
-				var array = tuple._1.map(function(card) {
-					return [fancy_table_util_CellContentImpl.LazyElement(function(_,_1,_2) {
-						var doc1 = null;
-						if(null == doc1) {
-							doc1 = window.document;
-						}
-						var el1 = doc1.createElement("div");
-						var _g11 = 0;
-						var _g21 = [{ value : "ft-cell-content", name : "class"}];
-						while(_g11 < _g21.length) {
-							var o1 = _g21[_g11];
-							++_g11;
-							el1.setAttribute(o1.name,o1.value);
-						}
-						var attrs1 = null;
-						if(null != attrs1) {
-							var attr2 = attrs1.keys();
-							while(attr2.hasNext()) {
-								var attr3 = attr2.next();
-								el1.setAttribute(attr3,__map_reserved[attr3] != null ? attrs1.getReserved(attr3) : attrs1.h[attr3]);
-							}
-						}
-						var doc2 = null;
-						if(null == doc2) {
-							doc2 = window.document;
-						}
-						var el2 = doc2.createElement("span");
-						var _g12 = 0;
-						var _g22 = [];
-						while(_g12 < _g22.length) {
-							var o2 = _g22[_g12];
-							++_g12;
-							el2.setAttribute(o2.name,o2.value);
-						}
-						var attrs2 = null;
-						if(null != attrs2) {
-							var attr4 = attrs2.keys();
-							while(attr4.hasNext()) {
-								var attr5 = attr4.next();
-								el2.setAttribute(attr5,__map_reserved[attr5] != null ? attrs2.getReserved(attr5) : attrs2.h[attr5]);
-							}
-						}
-						var children1 = null;
-						if(null != children1) {
-							var _g13 = 0;
-							while(_g13 < children1.length) {
-								var child1 = children1[_g13];
-								++_g13;
-								el2.appendChild(child1);
-							}
-						}
-						var textContent1 = card.name;
-						if(null != textContent1) {
-							el2.appendChild(doc2.createTextNode(textContent1));
-						}
-						var children2 = el2;
-						var doc3 = null;
-						if(null == doc3) {
-							doc3 = window.document;
-						}
-						var el3 = doc3.createElement("a");
-						var _g23 = 0;
-						var _g3 = [];
-						while(_g23 < _g3.length) {
-							var o3 = _g3[_g23];
-							++_g23;
-							el3.setAttribute(o3.name,o3.value);
-						}
-						var _g24 = new haxe_ds_StringMap();
-						var value = "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId;
-						if(__map_reserved["href"] != null) {
-							_g24.setReserved("href",value);
-						} else {
-							_g24.h["href"] = value;
-						}
-						var attrs3 = _g24;
-						if(null != attrs3) {
-							var attr6 = attrs3.keys();
-							while(attr6.hasNext()) {
-								var attr7 = attr6.next();
-								el3.setAttribute(attr7,__map_reserved[attr7] != null ? attrs3.getReserved(attr7) : attrs3.h[attr7]);
-							}
-						}
-						var doc4 = null;
-						if(null == doc4) {
-							doc4 = window.document;
-						}
-						var el4 = doc4.createElement("i");
-						var _g31 = 0;
-						var _g4 = [{ value : "fa fa-external-link-square", name : "class"}];
-						while(_g31 < _g4.length) {
-							var o4 = _g4[_g31];
-							++_g31;
-							el4.setAttribute(o4.name,o4.value);
-						}
-						var attrs4 = null;
-						if(null != attrs4) {
-							var attr8 = attrs4.keys();
-							while(attr8.hasNext()) {
-								var attr9 = attr8.next();
-								el4.setAttribute(attr9,__map_reserved[attr9] != null ? attrs4.getReserved(attr9) : attrs4.h[attr9]);
-							}
-						}
-						var children3 = null;
-						if(null != children3) {
-							var _g32 = 0;
-							while(_g32 < children3.length) {
-								var child2 = children3[_g32];
-								++_g32;
-								el4.appendChild(child2);
-							}
-						}
-						var textContent2 = null;
-						if(null != textContent2) {
-							el4.appendChild(doc4.createTextNode(textContent2));
-						}
-						var children4 = [el4];
-						if(null != children4) {
-							var _g33 = 0;
-							while(_g33 < children4.length) {
-								var child3 = children4[_g33];
-								++_g33;
-								el3.appendChild(child3);
-							}
-						}
-						var textContent3 = null;
-						if(null != textContent3) {
-							el3.appendChild(doc3.createTextNode(textContent3));
-						}
-						var children5 = [children2,el3];
-						if(null != children5) {
-							var _g25 = 0;
-							while(_g25 < children5.length) {
-								var child4 = children5[_g25];
-								++_g25;
-								el1.appendChild(child4);
-							}
-						}
-						var textContent4 = null;
-						if(null != textContent4) {
-							el1.appendChild(doc1.createTextNode(textContent4));
-						}
-						return el1;
-					}),fancy_table_util_CellContentImpl.RawValue(Std.string(card.cmc)),fancy_table_util_CellContentImpl.RawValue(Std.string(card.draftval)),fancy_table_util_CellContentImpl.RawValue(Std.string(card.tcgprice))];
-				});
-				return { values : Array.prototype.concat.apply([],array), data : []};
-			} else {
-				return { values : [fancy_table_util_CellContentImpl.LazyElement(foldHeader(tuple._0))], data : cardsToRowData(tuple._1,restOfGroupBys)};
-			}
-		});
-	};
-	var cardsToRowData1 = cardsToRowData;
-	var toRowData = function(cards2) {
-		return [{ values : [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Cards"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("CMC"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Draft Value"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Price")]}].concat(cardsToRowData1(cards2,[function(card1) {
-			return card1.color;
-		},function(card2) {
-			return card2.rarity;
-		},function(card3) {
-			return card3.type;
-		},function(card4) {
-			return card4.name;
-		}]));
-	};
-	var toFlatData = function(cards3) {
-		return [[fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Cards"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("CMC"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Color"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Type"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Rarity"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Draft Value"),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString("Price")]].concat(cards3.map(function(card5) {
-			return [fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.name),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.cmc)),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.color),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.type),fancy_table_util__$CellContent_CellContent_$Impl_$.fromString(card5.rarity),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.draftval)),fancy_table_util_CellContentImpl.RawValue(Std.string(card5.tcgprice))];
-		}));
-	};
-	new fancy_Table(elNested,fancy_FancyTableData.Nested(toRowData(cards)),{ fixedTop : 1, fixedLeft : 1, focusOnHover : false, rangeSelectionEnabled : false});
-	var flat = toFlatData(cards);
-	var edit = function(coords,typed,table) {
-		var value1;
-		var flat1 = coords.get_row();
-		var _g5 = flat[flat1][coords.get_col()];
-		if(_g5[1] == 0) {
-			var v = _g5[2];
-			value1 = v;
-		} else {
-			value1 = "";
-		}
-		var input = window.document.createElement("input");
-		switch(typed) {
-		case "":
-			var other = typed;
-			if(other.length == 1) {
-				input.value = value1 + typed;
-			} else {
-				input.value = value1;
-			}
-			break;
-		case "Backspace":
-			input.value = value1.substring(0,value1.length - 1);
-			break;
-		case "Delete":
-			input.value = "";
-			break;
-		case "F2":
-			input.value = value1;
-			break;
-		default:
-			var other1 = typed;
-			if(other1.length == 1) {
-				input.value = value1 + typed;
-			} else {
-				console.log("no behavior for " + typed);
-				return;
-			}
-		}
-		thx_Timer.delay($bind(input,input.focus),10);
-		input.onkeydown = function(e1) {
-			e1.cancelBubble = true;
-		};
-		input.onkeyup = function(e2) {
-			e2.cancelBubble = true;
-			if(e2.key == "Enter") {
-				var edit1 = coords.get_row();
-				var edit2 = coords.get_col();
-				var flat2 = coords.get_row();
-				var flat3 = flat[flat2][coords.get_col()];
-				table.renderCell(edit1,edit2,flat3);
-			}
-		};
-		input.oninput = function(e3) {
-			var flat4 = coords.get_row();
-			flat[flat4][coords.get_col()] = fancy_table_util_CellContentImpl.RawValue(input.value);
-		};
-		var edit3 = coords.get_row();
-		var edit4 = coords.get_col();
-		table.renderCell(edit3,edit4,fancy_table_util_CellContentImpl.Element(input));
-	};
-	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(flat),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onKey : function(e4) {
-		thx_Options.each(e4.get_coords(),function(coords1) {
-			edit(coords1,e4.key,e4.table);
+	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(Main.flatDataRows.map(Main.flatDataRowToCellContents)),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onKey : function(e) {
+		thx_Options.each(e.get_coords(),function(coords) {
+			Main.onStartEditingFlatRowCell(coords,e.key,e.table);
 			return;
 		});
 	}, onDoubleClick : function(event) {
-		edit(event.coords,"",event.table);
+		Main.onStartEditingFlatRowCell(event.coords,"",event.table);
 	}});
+};
+Main.createNestedDataRows = function(cards) {
+	var headerRow = { type : NestedDataRowType.HeaderRow([DataCell.CText("Cards"),DataCell.CText("CMC"),DataCell.CText("Draft value"),DataCell.CText("Price")]), isExpanded : true, childRows : []};
+	var bodyRows = Main.createNestedDataRowsUsingGroupBys(cards,[function(card) {
+		return card.color;
+	},function(card1) {
+		return card1.rarity;
+	},function(card2) {
+		return card2.type;
+	},function(card3) {
+		return card3.name;
+	}]);
+	return [headerRow].concat(bodyRows);
+};
+Main.createNestedDataRowsUsingGroupBys = function(cards,groupBys) {
+	return thx_Maps.tuples(thx_Arrays.groupByAppend(cards,groupBys[0],new haxe_ds_StringMap())).map(function(tuple) {
+		var groupKey = tuple._0;
+		var groupCards = tuple._1;
+		var restOfGroupBys = groupBys.slice(1);
+		if(restOfGroupBys.length == 0) {
+			var card = groupCards[0];
+			return { type : NestedDataRowType.CardRow([DataCell.CLink(card.name,"http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId),DataCell.CInt(card.cmc),DataCell.CFloat(card.draftval),DataCell.CFloat(card.tcgprice)]), isExpanded : true, childRows : []};
+		} else {
+			var row = { type : NestedDataRowType.GroupRow(DataCell.CTextFold(groupKey,function() {
+				return row.isExpanded = !row.isExpanded;
+			})), isExpanded : true, childRows : Main.createNestedDataRowsUsingGroupBys(groupCards,restOfGroupBys)};
+			return row;
+		}
+	});
+};
+Main.nestedDataRowToRowData = function(nestedDataRow) {
+	var cells;
+	var _g = nestedDataRow.type;
+	switch(_g[1]) {
+	case 0:
+		var cells1 = _g[2];
+		cells = cells1;
+		break;
+	case 1:
+		var cell = _g[2];
+		cells = [cell];
+		break;
+	case 2:
+		var cells2 = _g[2];
+		cells = cells2;
+		break;
+	}
+	return { values : cells.map(function(_) {
+		return fancy_table_util_CellContentImpl.LazyElement(Main.renderNestedRowDataCell);
+	}), data : nestedDataRow.childRows.map(Main.nestedDataRowToRowData), meta : { expanded : nestedDataRow.isExpanded}};
+};
+Main.flattenNestedDataRows = function(nestedDataRows) {
+	return thx_Arrays.reduce(nestedDataRows,function(acc,row) {
+		acc.push(row);
+		if(row.isExpanded) {
+			acc = acc.concat(Main.flattenNestedDataRows(row.childRows));
+		}
+		return acc;
+	},[]);
+};
+Main.getNestedRowCellByCoords = function(row,col) {
+	var flattenedNestedDataRows = Main.flattenNestedDataRows(Main.nestedDataRows);
+	return thx_Options.flatMap(thx_Arrays.getOption(flattenedNestedDataRows,row),function(row1) {
+		var _g = row1.type;
+		var tmp;
+		switch(_g[1]) {
+		case 0:
+			var cells = _g[2];
+			tmp = cells;
+			break;
+		case 1:
+			var cell = _g[2];
+			tmp = [cell];
+			break;
+		case 2:
+			var cells1 = _g[2];
+			tmp = cells1;
+			break;
+		}
+		return thx_Options.map(thx_Arrays.getOption(tmp,col),function(cell1) {
+			return { row : row1, cell : cell1};
+		});
+	});
+};
+Main.renderNestedRowDataCell = function(table,row,col) {
+	return thx_Options.cataf(Main.getNestedRowCellByCoords(row,col),function() {
+		return Main.renderUnknownCell(row,col);
+	},function(data) {
+		return Main.renderDataCell({ row : row, col : col, cell : data.cell, table : table});
+	});
+};
+Main.createFlatDataRows = function(cards) {
+	var headerRow = { cells : [DataCell.CText("Cards"),DataCell.CText("CMC"),DataCell.CText("Color"),DataCell.CText("Type"),DataCell.CText("Rarity"),DataCell.CText("Draft value"),DataCell.CText("Price")]};
+	var bodyRows = cards.map(function(card) {
+		return { cells : [DataCell.CLink(card.name,"http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=" + card.multiverseId),DataCell.CInt(card.cmc),DataCell.CText(card.color),DataCell.CText(card.type),DataCell.CText(card.rarity),DataCell.CFloat(card.draftval),DataCell.CFloat(card.tcgprice)]};
+	});
+	return [headerRow].concat(bodyRows);
+};
+Main.flatDataRowToCellContents = function(flatDataRow) {
+	return flatDataRow.cells.map(function(_) {
+		return fancy_table_util_CellContentImpl.LazyElement(Main.renderFlatRowDataCell);
+	});
+};
+Main.renderFlatRowDataCell = function(table,row,col) {
+	return thx_Options.cataf(Main.getFlatRowCellByCoords(row,col),function() {
+		return Main.renderUnknownCell(row,col);
+	},function(rowCell) {
+		return Main.renderDataCell({ row : row, col : col, cell : rowCell.cell, table : table});
+	});
+};
+Main.getFlatRowCellByCoords = function(row,col) {
+	return thx_Options.flatMap(thx_Arrays.getOption(Main.flatDataRows,row),function(row1) {
+		return thx_Options.map(thx_Arrays.getOption(row1.cells,col),function(cell) {
+			return { row : row1, cell : cell};
+		});
+	});
+};
+Main.setFlatRowCellByCoords = function(row,col,cell) {
+	thx_Options.each(thx_Arrays.getOption(Main.flatDataRows,row),function(row1) {
+		return row1.cells[col] = cell;
+	});
+};
+Main.renderUnknownCell = function(row,col) {
+	var doc = null;
+	if(null == doc) {
+		doc = window.document;
+	}
+	var el = doc.createElement("div");
+	var _g = 0;
+	var _g1 = [];
+	while(_g < _g1.length) {
+		var o = _g1[_g];
+		++_g;
+		el.setAttribute(o.name,o.value);
+	}
+	var attrs = null;
+	if(null != attrs) {
+		var attr = attrs.keys();
+		while(attr.hasNext()) {
+			var attr1 = attr.next();
+			el.setAttribute(attr1,__map_reserved[attr1] != null ? attrs.getReserved(attr1) : attrs.h[attr1]);
+		}
+	}
+	var children = null;
+	if(null != children) {
+		var _g2 = 0;
+		while(_g2 < children.length) {
+			var child = children[_g2];
+			++_g2;
+			el.appendChild(child);
+		}
+	}
+	var textContent = "cell not found: " + row + " " + col;
+	if(null != textContent) {
+		el.appendChild(doc.createTextNode(textContent));
+	}
+	return el;
+};
+Main.renderDataCell = function(options) {
+	var children;
+	var _g = options.cell;
+	switch(_g[1]) {
+	case 0:
+		var text = _g[2];
+		var doc = null;
+		if(null == doc) {
+			doc = window.document;
+		}
+		var el = doc.createElement("span");
+		var _g1 = 0;
+		var _g11 = [];
+		while(_g1 < _g11.length) {
+			var o = _g11[_g1];
+			++_g1;
+			el.setAttribute(o.name,o.value);
+		}
+		var attrs = null;
+		if(null != attrs) {
+			var attr = attrs.keys();
+			while(attr.hasNext()) {
+				var attr1 = attr.next();
+				el.setAttribute(attr1,__map_reserved[attr1] != null ? attrs.getReserved(attr1) : attrs.h[attr1]);
+			}
+		}
+		var children1 = null;
+		if(null != children1) {
+			var _g2 = 0;
+			while(_g2 < children1.length) {
+				var child = children1[_g2];
+				++_g2;
+				el.appendChild(child);
+			}
+		}
+		var textContent = text;
+		if(null != textContent) {
+			el.appendChild(doc.createTextNode(textContent));
+		}
+		children = [el];
+		break;
+	case 1:
+		var text1 = _g[2];
+		var doc1 = null;
+		if(null == doc1) {
+			doc1 = window.document;
+		}
+		var el1 = doc1.createElement("span");
+		var _g3 = 0;
+		var _g12 = [];
+		while(_g3 < _g12.length) {
+			var o1 = _g12[_g3];
+			++_g3;
+			el1.setAttribute(o1.name,o1.value);
+		}
+		var attrs1 = null;
+		if(null != attrs1) {
+			var attr2 = attrs1.keys();
+			while(attr2.hasNext()) {
+				var attr3 = attr2.next();
+				el1.setAttribute(attr3,__map_reserved[attr3] != null ? attrs1.getReserved(attr3) : attrs1.h[attr3]);
+			}
+		}
+		var children2 = null;
+		if(null != children2) {
+			var _g4 = 0;
+			while(_g4 < children2.length) {
+				var child1 = children2[_g4];
+				++_g4;
+				el1.appendChild(child1);
+			}
+		}
+		var textContent1 = text1;
+		if(null != textContent1) {
+			el1.appendChild(doc1.createTextNode(textContent1));
+		}
+		children = [el1];
+		break;
+	case 2:
+		var num = _g[2];
+		var doc2 = null;
+		if(null == doc2) {
+			doc2 = window.document;
+		}
+		var el2 = doc2.createElement("span");
+		var _g5 = 0;
+		var _g13 = [];
+		while(_g5 < _g13.length) {
+			var o2 = _g13[_g5];
+			++_g5;
+			el2.setAttribute(o2.name,o2.value);
+		}
+		var attrs2 = null;
+		if(null != attrs2) {
+			var attr4 = attrs2.keys();
+			while(attr4.hasNext()) {
+				var attr5 = attr4.next();
+				el2.setAttribute(attr5,__map_reserved[attr5] != null ? attrs2.getReserved(attr5) : attrs2.h[attr5]);
+			}
+		}
+		var children3 = null;
+		if(null != children3) {
+			var _g6 = 0;
+			while(_g6 < children3.length) {
+				var child2 = children3[_g6];
+				++_g6;
+				el2.appendChild(child2);
+			}
+		}
+		var textContent2 = num == null ? "null" : "" + num;
+		if(null != textContent2) {
+			el2.appendChild(doc2.createTextNode(textContent2));
+		}
+		children = [el2];
+		break;
+	case 3:
+		var num1 = _g[2];
+		var doc3 = null;
+		if(null == doc3) {
+			doc3 = window.document;
+		}
+		var el3 = doc3.createElement("span");
+		var _g7 = 0;
+		var _g14 = [];
+		while(_g7 < _g14.length) {
+			var o3 = _g14[_g7];
+			++_g7;
+			el3.setAttribute(o3.name,o3.value);
+		}
+		var attrs3 = null;
+		if(null != attrs3) {
+			var attr6 = attrs3.keys();
+			while(attr6.hasNext()) {
+				var attr7 = attr6.next();
+				el3.setAttribute(attr7,__map_reserved[attr7] != null ? attrs3.getReserved(attr7) : attrs3.h[attr7]);
+			}
+		}
+		var children4 = null;
+		if(null != children4) {
+			var _g8 = 0;
+			while(_g8 < children4.length) {
+				var child3 = children4[_g8];
+				++_g8;
+				el3.appendChild(child3);
+			}
+		}
+		var textContent3 = num1 == null ? "null" : "" + num1;
+		if(null != textContent3) {
+			el3.appendChild(doc3.createTextNode(textContent3));
+		}
+		children = [el3];
+		break;
+	case 4:
+		var href = _g[3];
+		var label = _g[2];
+		var doc4 = null;
+		if(null == doc4) {
+			doc4 = window.document;
+		}
+		var el4 = doc4.createElement("span");
+		var _g9 = 0;
+		var _g15 = [];
+		while(_g9 < _g15.length) {
+			var o4 = _g15[_g9];
+			++_g9;
+			el4.setAttribute(o4.name,o4.value);
+		}
+		var attrs4 = null;
+		if(null != attrs4) {
+			var attr8 = attrs4.keys();
+			while(attr8.hasNext()) {
+				var attr9 = attr8.next();
+				el4.setAttribute(attr9,__map_reserved[attr9] != null ? attrs4.getReserved(attr9) : attrs4.h[attr9]);
+			}
+		}
+		var children5 = null;
+		if(null != children5) {
+			var _g10 = 0;
+			while(_g10 < children5.length) {
+				var child4 = children5[_g10];
+				++_g10;
+				el4.appendChild(child4);
+			}
+		}
+		var textContent4 = label;
+		if(null != textContent4) {
+			el4.appendChild(doc4.createTextNode(textContent4));
+		}
+		var children6 = el4;
+		var doc5 = null;
+		if(null == doc5) {
+			doc5 = window.document;
+		}
+		var el5 = doc5.createElement("a");
+		var _g16 = 0;
+		var _g21 = [];
+		while(_g16 < _g21.length) {
+			var o5 = _g21[_g16];
+			++_g16;
+			el5.setAttribute(o5.name,o5.value);
+		}
+		var _g17 = new haxe_ds_StringMap();
+		if(__map_reserved["href"] != null) {
+			_g17.setReserved("href",href);
+		} else {
+			_g17.h["href"] = href;
+		}
+		if(__map_reserved["target"] != null) {
+			_g17.setReserved("target","_blank");
+		} else {
+			_g17.h["target"] = "_blank";
+		}
+		var attrs5 = _g17;
+		if(null != attrs5) {
+			var attr10 = attrs5.keys();
+			while(attr10.hasNext()) {
+				var attr11 = attr10.next();
+				el5.setAttribute(attr11,__map_reserved[attr11] != null ? attrs5.getReserved(attr11) : attrs5.h[attr11]);
+			}
+		}
+		var doc6 = null;
+		if(null == doc6) {
+			doc6 = window.document;
+		}
+		var el6 = doc6.createElement("i");
+		var _g22 = 0;
+		var _g31 = [{ value : "fa fa-external-link-square", name : "class"}];
+		while(_g22 < _g31.length) {
+			var o6 = _g31[_g22];
+			++_g22;
+			el6.setAttribute(o6.name,o6.value);
+		}
+		var attrs6 = null;
+		if(null != attrs6) {
+			var attr12 = attrs6.keys();
+			while(attr12.hasNext()) {
+				var attr13 = attr12.next();
+				el6.setAttribute(attr13,__map_reserved[attr13] != null ? attrs6.getReserved(attr13) : attrs6.h[attr13]);
+			}
+		}
+		var children7 = null;
+		if(null != children7) {
+			var _g23 = 0;
+			while(_g23 < children7.length) {
+				var child5 = children7[_g23];
+				++_g23;
+				el6.appendChild(child5);
+			}
+		}
+		var textContent5 = null;
+		if(null != textContent5) {
+			el6.appendChild(doc6.createTextNode(textContent5));
+		}
+		var children8 = [el6];
+		if(null != children8) {
+			var _g24 = 0;
+			while(_g24 < children8.length) {
+				var child6 = children8[_g24];
+				++_g24;
+				el5.appendChild(child6);
+			}
+		}
+		var textContent6 = null;
+		if(null != textContent6) {
+			el5.appendChild(doc5.createTextNode(textContent6));
+		}
+		children = [children6,el5];
+		break;
+	}
+	var doc7 = null;
+	if(null == doc7) {
+		doc7 = window.document;
+	}
+	var el7 = doc7.createElement("div");
+	var _g18 = 0;
+	var _g25 = [{ value : "ft-cell-content", name : "class"}];
+	while(_g18 < _g25.length) {
+		var o7 = _g25[_g18];
+		++_g18;
+		el7.setAttribute(o7.name,o7.value);
+	}
+	var attrs7 = null;
+	if(null != attrs7) {
+		var attr14 = attrs7.keys();
+		while(attr14.hasNext()) {
+			var attr15 = attr14.next();
+			el7.setAttribute(attr15,__map_reserved[attr15] != null ? attrs7.getReserved(attr15) : attrs7.h[attr15]);
+		}
+	}
+	var children9 = children;
+	if(null != children9) {
+		var _g19 = 0;
+		while(_g19 < children9.length) {
+			var child7 = children9[_g19];
+			++_g19;
+			el7.appendChild(child7);
+		}
+	}
+	var textContent7 = null;
+	if(null != textContent7) {
+		el7.appendChild(doc7.createTextNode(textContent7));
+	}
+	var element = el7;
+	var _g110 = options.cell;
+	if(_g110[1] == 0) {
+		var onToggle = _g110[3];
+		element.addEventListener("click",function(e) {
+			onToggle();
+			options.table.toggleRow(options.row);
+		});
+	}
+	return element;
+};
+Main.onStartEditingFlatRowCell = function(coords,typed,table) {
+	var value = thx_Options.getOrElse(thx_Options.map(Main.getFlatRowCellByCoords(coords.get_row(),coords.get_col()),function(data) {
+		var _g = data.cell;
+		switch(_g[1]) {
+		case 0:
+			var text = _g[2];
+			return text;
+		case 1:
+			var text1 = _g[2];
+			return text1;
+		case 2:
+			var n = _g[2];
+			if(n == null) {
+				return "null";
+			} else {
+				return "" + n;
+			}
+			break;
+		case 3:
+			var n1 = _g[2];
+			if(n1 == null) {
+				return "null";
+			} else {
+				return "" + n1;
+			}
+			break;
+		case 4:
+			var href = _g[3];
+			var text2 = _g[2];
+			return text2;
+		}
+	}),"");
+	var input = window.document.createElement("input");
+	switch(typed) {
+	case "":
+		var other = typed;
+		if(other.length == 1) {
+			input.value = value + typed;
+		} else {
+			input.value = value;
+		}
+		break;
+	case "Backspace":
+		input.value = value.substring(0,value.length - 1);
+		break;
+	case "Delete":
+		input.value = "";
+		break;
+	case "F2":
+		input.value = value;
+		break;
+	default:
+		var other1 = typed;
+		if(other1.length == 1) {
+			input.value = value + typed;
+		} else {
+			console.log("no behavior for " + typed);
+			return;
+		}
+	}
+	thx_Timer.delay($bind(input,input.focus),10);
+	input.onkeydown = function(e) {
+		e.stopPropagation();
+	};
+	input.onkeyup = function(e1) {
+		e1.stopPropagation();
+		if(e1.key == "Enter") {
+			var tmp = coords.get_row();
+			var tmp1 = coords.get_col();
+			table.renderCell(tmp,tmp1,fancy_table_util_CellContentImpl.LazyElement(Main.renderFlatRowDataCell));
+		}
+	};
+	input.oninput = function(e2) {
+		Main.setFlatRowCellByCoords(coords.get_row(),coords.get_col(),DataCell.CText(input.value));
+	};
+	var tmp2 = coords.get_row();
+	var tmp3 = coords.get_col();
+	table.renderCell(tmp2,tmp3,fancy_table_util_CellContentImpl.Element(input));
+};
+Main.getCards = function() {
+	return [{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25},{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25},{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25},{ name : "Quarantine Field", color : "White", type : "Enchantment", rarity : "Mythic", multiverseId : "402001", cmc : 2, draftval : 5, tcgprice : 2.52},{ name : "Hero of Goma Fada", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401913", cmc : 5, draftval : 3.5, tcgprice : 0.25},{ name : "Felidar Sovereign", color : "White", type : "Creature", rarity : "Rare", multiverseId : "401878", cmc : 6, draftval : 4, tcgprice : 0.56},{ name : "Part the Waterveil", color : "Blue", type : "Sorcery", rarity : "Mythic", multiverseId : "401982", cmc : 6, draftval : 2.0, tcgprice : 1.29},{ name : "Guardian of Tazeem", color : "Blue", type : "Creature", rarity : "Rare", multiverseId : "401906", cmc : 5, draftval : 4.5, tcgprice : 0.25}];
 };
 Math.__name__ = true;
 var Std = function() { };
@@ -4331,6 +4615,15 @@ thx_Options.cata = function(option,ifNone,f) {
 		return f(v);
 	case 1:
 		return ifNone;
+	}
+};
+thx_Options.cataf = function(option,ifNone,f) {
+	switch(option[1]) {
+	case 0:
+		var v = option[2];
+		return f(v);
+	case 1:
+		return ifNone();
 	}
 };
 thx_Options.getOrElse = function(option,alt) {
