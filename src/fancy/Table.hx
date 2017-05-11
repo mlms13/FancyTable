@@ -96,7 +96,7 @@ class Table {
     if(settings.selectionEnabled) {
       var counter = 0,
           cancel = function(){};
-      el.addEventListener("click", function(e: MouseEvent) {
+      el.addEventListener("mousedown", function(e: MouseEvent) {
         if(++counter == 1) {
           cancel = thx.Timer.delay(function() counter = 0, 400);
           // single click is managed by mousedown
@@ -107,8 +107,6 @@ class Table {
           counter = 0;
           cancel();
         }
-      }, false);
-      el.addEventListener("mousedown", function(e: MouseEvent) {
         beginDrag(e);
         js.Browser.document.addEventListener("mousemove", mouseMove, false);
         js.Browser.document.addEventListener("mouseup", mouseUp, false);
@@ -120,14 +118,12 @@ class Table {
   }
 
   function mouseMove(e: MouseEvent) {
-    e.preventDefault();
     dragging(e);
   }
 
   function mouseUp(e: MouseEvent) {
     js.Browser.document.removeEventListener("mousemove", mouseMove, false);
     js.Browser.document.removeEventListener("mouseup", mouseUp, false);
-    e.preventDefault();
   }
 
   function keyDown(e: KeyboardEvent) {
@@ -136,6 +132,7 @@ class Table {
   }
 
   function dblClick(e: MouseEvent) {
+    // e.preventDefault();
     getCoords(cast e.target)
       .each(coords -> settings.onDoubleClick(new CellEvent(this, coords)));
   }
