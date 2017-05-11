@@ -120,7 +120,6 @@ class Table {
           js.Browser.document.removeEventListener("mousemove", mouseMove, false);
           js.Browser.document.removeEventListener("mouseup", mouseUp, false);
           e.preventDefault();
-          endDrag(e);
         }
         js.Browser.document.addEventListener("mousemove", mouseMove, false);
         js.Browser.document.addEventListener("mouseup", mouseUp, false);
@@ -140,20 +139,12 @@ class Table {
       .each(coords -> settings.onDoubleClick(new CellEvent(this, coords)));
   }
 
-  // function singleClick(e: MouseEvent) {
-
-  // }
-
   function beginDrag(e: MouseEvent) {
     if(e.shiftKey) {
       selectToCoords(e.target);
     } else {
       selectAtCoords(e.target);
     }
-  }
-
-  function endDrag(e: MouseEvent) {
-    // selectToCoords(e.target);
   }
 
   function dragging(e: MouseEvent) {
@@ -185,7 +176,6 @@ class Table {
   }
 
   public function pressKey(e: KeyEvent) {
-    trace(e.key.toLowerCase());
     switch e.key.toLowerCase() {
       case "home":
         e.preventDefault();
@@ -318,29 +308,26 @@ class Table {
   public function goFirst()
     selectRange(0, 0, 0, 0, 0, 0);
 
-  public function goFirstColumn() selectFromRange.fn(_.firstColumn());
-  public function goLastColumn() selectFromRange.fn(_.goToColumn(grid.columns - 1));
-  public function goFirstRow() selectFromRange.fn(_.firstRow());
-  public function goLastRow() selectFromRange.fn(_.goToRow(grid.rows - 1));
-  public function goPageUp() selectFromRange.fn(_.upRows(10));
-  public function goPageDown() selectFromRange.fn(_.downRows(10, grid.rows - 1));
-
-  public function selectToFirstColumn() selectFromRange.fn(_.selectToFirstColumn());
-  public function selectToLastColumn() selectFromRange.fn(_.selectToColumn(grid.columns - 1));
-  public function selectToFirstRow() selectFromRange.fn(_.selectToFirstRow());
-  public function selectToLastRow() selectFromRange.fn(_.selectToRow(grid.rows - 1));
-  public function selectPageUp() selectFromRange.fn(_.selectUpRows(10));
-  public function selectPageDown() selectFromRange.fn(_.selectDownRows(10, grid.rows - 1));
-
-  public function selectCurrentToCell(row: Int, col: Int) selectFromRange.fn(_.selectCurrentToCell(row, col));
-
-  function selectFromRange(f: Range -> Range) {
-    switch selection {
-      case None:
-        goFirst();
-      case Some(range):
-        selectWithRange(f(range));
-    }
+  public function goFirstColumn() {
+    selectFromRange.fn(_.firstColumn());
+  }
+  public function goLastColumn() {
+    var last = grid.columns - 1;
+    selectFromRange.fn(_.goToColumn(last));
+  }
+  public function goFirstRow() {
+    selectFromRange.fn(_.firstRow());
+  }
+  public function goLastRow() {
+    var last = grid.rows - 1;
+    selectFromRange.fn(_.goToRow(last));
+  }
+  public function goPageUp() {
+    selectFromRange.fn(_.upRows(10)); // TODO !!!
+  }
+  public function goPageDown() {
+    var last = grid.rows - 1;
+    selectFromRange.fn(_.downRows(10, last)); // TODO !!!
   }
 
   public function goNextHorizontal() selectFromRange.fn(_.nextHorizontal());
@@ -352,10 +339,101 @@ class Table {
   public function goUp() selectFromRange.fn(_.up());
   public function goDown() selectFromRange.fn(_.down());
 
-  public function selectLeft() selectFromRange.fn(_.selectLeft());
-  public function selectRight() selectFromRange.fn(_.selectRight());
-  public function selectUp() selectFromRange.fn(_.selectUp());
-  public function selectDown() selectFromRange.fn(_.selectDown());
+  public function selectToFirstColumn() {
+    selectFromRange.fn(_.selectToFirstColumn());
+    scrollToCol(0);
+  }
+  public function selectToLastColumn() {
+    var last = grid.columns - 1;
+    selectFromRange.fn(_.selectToColumn(last));
+    scrollToCol(last);
+  }
+  public function selectToFirstRow() {
+    selectFromRange.fn(_.selectToFirstRow());
+    scrollToRow(0);
+  }
+  public function selectToLastRow() {
+    var last = grid.rows - 1;
+    selectFromRange.fn(_.selectToRow(last));
+    scrollToRow(last);
+  }
+  public function selectPageUp() {
+    selectFromRange.fn(_.selectUpRows(10)); // TODO !!!
+  }
+  public function selectPageDown() {
+    var last = grid.rows - 1;
+    selectFromRange.fn(_.selectDownRows(10, last)); // TODO !!!
+  }
+
+  public function selectCurrentToCell(row: Int, col: Int) {
+    selectFromRange.fn(_.selectCurrentToCell(row, col));
+    scrollToCell(row, col);
+  }
+
+  function selectFromRange(f: Range -> Range) {
+    switch selection {
+      case None:
+        goFirst();
+      case Some(range):
+        selectWithRange(f(range));
+    }
+  }
+
+  public function selectLeft() {
+    var left = getRange(r -> r.selectLeft());
+    selectWithRange(left);
+    switch selection {
+      case Some(r):
+        if(r.active.col > r.min.col)
+          scrollToCol(r.min.col);
+        else
+          scrollToCol(r.max.col);
+      case None: // do nothing
+    }
+  }
+  public function selectRight() {
+    var right = getRange(r -> r.selectRight());
+    selectWithRange(right);
+    switch selection {
+      case Some(r):
+        if(r.active.col < r.max.col)
+          scrollToCol(r.max.col);
+        else
+          scrollToCol(r.min.col);
+      case None: // do nothing
+    }
+  }
+  public function selectUp() {
+    var up = getRange(r -> r.selectUp());
+    selectWithRange(up);
+    switch selection {
+      case Some(r):
+        if(r.active.row > r.min.row)
+          scrollToRow(r.min.row);
+        else
+          scrollToRow(r.max.row);
+      case None: // do nothing
+    }
+  }
+  public function selectDown() {
+    var down = getRange(r -> r.selectDown());
+    selectWithRange(down);
+    switch selection {
+      case Some(r):
+        if(r.active.row < r.max.row)
+          scrollToRow(r.max.row);
+        else
+          scrollToRow(r.min.row);
+      case None: // do nothing
+    }
+  }
+
+  function getRange(f: Range -> Range) {
+    return switch selection {
+      case None: new Range(new Coords(0, 0), new Coords(0, 0));
+      case Some(r): f(r);
+    };
+  }
 
 
   public function selectWithRange(range: Range) {
@@ -375,7 +453,6 @@ class Table {
     var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
     range.active.row = row;
     range.active.col = col;
-    if(!settings.canSelect(range.active.row, range.active.col)) return; // unselectable
 
     switch selection {
       case Some(old) if(old.equals(range)): return; // range has not changed
@@ -409,6 +486,14 @@ class Table {
 
   function scrollToCell(row: Int, col: Int) {
     grid.scrollTo(Visible(Cells(col)), Visible(Cells(row)));
+  }
+
+  function scrollToRow(row: Int) {
+    grid.scrollTo(null, Visible(Cells(row)));
+  }
+
+  function scrollToCol(col: Int) {
+    grid.scrollTo(Visible(Cells(col)), null);
   }
 
   function assignVSize(row: Int): CellDimension {

@@ -312,19 +312,11 @@ class Main {
       .getOrElse("");
 
     var input = js.Browser.document.createInputElement();
+    input.value = "";
     switch typed {
-      case "F2":
-        input.value = value;
-      case "Backspace":
-        input.value = value.substring(0, value.length - 1);
-      case "Delete":
-        input.value = "";
       case other if(other.length == 1): // normal char
-        input.value = value + typed;
-      case "":
-        input.value = value;
+        input.value = typed;
       case _:
-        trace('no behavior for $typed');
         return;
     }
     thx.Timer.delay(input.focus, 10); // needed because the element is still not attached to the DOM
@@ -333,12 +325,14 @@ class Main {
     }
     input.onkeyup = function(e: js.html.KeyboardEvent) {
       e.stopPropagation();
+      setFlatRowCellByCoords(coords.row, coords.col, CText(input.value));
       if(e.key == "Enter")
         table.renderCell(coords.row, coords.col, renderFlatRowDataCell);
     }
-    input.oninput = function(e: js.html.KeyboardEvent) {
-      //flat[coords.row][coords.col] = RawValue(input.value);
+    input.onblur = function(e: js.html.MouseEvent) {
+      e.stopPropagation();
       setFlatRowCellByCoords(coords.row, coords.col, CText(input.value));
+      table.renderCell(coords.row, coords.col, renderFlatRowDataCell);
     }
 
     table.renderCell(coords.row, coords.col, CellContent.fromElement(input));
