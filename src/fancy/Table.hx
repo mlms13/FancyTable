@@ -99,7 +99,6 @@ class Table {
         if(++counter == 1) {
           cancel = thx.Timer.delay(function() counter = 0, 400);
           // single click is managed by mousedown
-          // singleClick(e);
         } else if(counter == 2) {
           // double click
           dblClick(e);
@@ -109,7 +108,7 @@ class Table {
         }
       }, false);
       el.addEventListener("mousedown", function(e: MouseEvent) {
-        e.preventDefault();
+        // e.preventDefault();
         beginDrag(e);
         js.Browser.document.addEventListener("mousemove", mouseMove, false);
         js.Browser.document.addEventListener("mouseup", mouseUp, false);
