@@ -2,7 +2,6 @@ package fancy.table.util;
 
 import dots.Dom;
 import js.html.Element;
-using thx.Strings;
 
 typedef CellRenderer = Table -> Int -> Int -> Element;
 
@@ -13,6 +12,7 @@ typedef CellRenderer = Table -> Int -> Int -> Element;
 enum CellContentImpl {
   RawValue(v: String);
   LazyElement(fn: CellRenderer);
+  Element(e: Element);
 }
 
 abstract CellContent(CellContentImpl) from CellContentImpl to CellContentImpl {
@@ -35,10 +35,15 @@ abstract CellContent(CellContentImpl) from CellContentImpl to CellContentImpl {
   public static inline function fromCellRenderer(fn: CellRenderer): CellContent
     return LazyElement(fn);
 
+  @:from
+  public static inline function fromElement(el: Element): CellContent
+    return Element(el);
+
   public function render(className: String, t: Table, row: Int, col: Int): Element {
     return switch this {
       case RawValue(v): Dom.create("div", ["class" => className], v);
       case LazyElement(fn): fn(t, row, col);
+      case Element(el): el;
     };
   }
 }

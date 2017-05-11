@@ -6,9 +6,6 @@ import fancy.table.FancyTableSettings;
 import fancy.table.util.CellContent;
 import js.html.Element;
 using thx.Arrays;
-using thx.Functions;
-using thx.Ints;
-using thx.Objects;
 using thx.Options;
 
 class Row {
@@ -17,10 +14,12 @@ class Row {
   public var expanded(default, null): Bool;
   public var height(default, null): fancy.Grid.CellDimension;
   var indentation: Int;
-  var classSettings: FancyTableClasses;
+  public var classSettings(default, null): FancyTableClasses;
   var customClasses: Array<String>;
+  var table: Table;
 
-  public function new(cells: Array<CellContent>, classSettings, height, ?customClasses, ?expanded = true, ?indentation = 0) {
+  public function new(table: Table, cells: Array<CellContent>, classSettings, height, ?customClasses, ?expanded = true, ?indentation = 0) {
+    this.table = table;
     this.cells = cells;
     this.classSettings = classSettings;
     this.height = height;
@@ -44,12 +43,35 @@ class Row {
     return classes;
   }
 
-  public function renderCell(table: Table, row: Int, col: Int): Option<Element> {
+  public function renderCell(table: Table, row: Int, col: Int, classes: Array<String>): Option<Element> {
     return cells.getOption(col).map(function (cell) {
-      return Dom.create("div", ["class" => getClasses().join(" ")], [
-        cell.render(classSettings.cellContent, table, row, col)
-      ]);
+      return renderCellContainer(classes, cell.render(classSettings.cellContent, table, row, col), row, col);
     });
+  }
+
+  public function renderCellContainer(classes: Array<String>, content: Element, row: Int, col: Int) {
+    var classes = (switch table.selection {
+      case None: [];
+      case Some(range):
+        var buff = [];
+        if(range.contains(row, col)) {
+          if(range.isActive(row, col))
+            buff.push("active"); // TODO !!!
+          buff.push("selected"); // TODO !!!
+          if(range.isOnTop(row))
+            buff.push("selected-top"); // TODO !!!
+          if(range.isOnRight(col))
+            buff.push("selected-right"); // TODO !!!
+          if(range.isOnBottom(row))
+            buff.push("selected-bottom"); // TODO !!!
+          if(range.isOnLeft(col))
+            buff.push("selected-left"); // TODO !!!
+        }
+        buff;
+    }).concat(classes);
+    return Dom.create("div", ["class" => getClasses().concat(classes).join(" ")], [
+      content
+    ]);
   }
 
   public function addChildRow(child: Row) {

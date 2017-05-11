@@ -42,21 +42,19 @@ $headerCellColor = #fff
 .fancy-grid .grid9 .pane.top.left { z-index: 9; }
 .fancy-grid .grid9 .pane.top.right { z-index: 8; }
 .fancy-grid .grid9 .pane.top.center { z-index: 7; }
-.fancy-grid .grid9 .scroller {
-  background-color: rgba(0,0,0,0.2);
-  position: absolute;
-  z-index: 20;
-}
-.fancy-grid .grid9 .scroller:hover {
-  background-color: rgba(0,0,0,0.4);
-}
-.fancy-grid .grid9 .scroller.dragging {
-  background-color: rgba(0,0,0,0.6);
-}
-.fancy-grid .cell {
-  position: absolute;
-}
+.fancy-grid .grid9 .scroller
+  background-color rgba(0,0,0,0.2)
+  position absolute
+  z-index 20
 
+.fancy-grid .grid9 .scroller:hover
+  background-color rgba(0,0,0,0.4);
+
+.fancy-grid .grid9 .scroller.dragging
+  background-color rgba(0,0,0,0.6);
+
+.fancy-grid .cell
+  position absolute
 
 .fancy-grid
   font-size 14px
@@ -115,3 +113,25 @@ $headerCellColor = #fff
       padding-left 40px
     &-indent-3 .ft-cell-content
       padding-left 56px
+
+.fancy-grid
+  user-select: none
+  .selected
+    background-color #E9F3FF
+  .selected-left
+    border-left 1px solid #0086F8
+  .selected-right
+    border-right 1px solid #0086F8
+  .selected-top
+    border-top 1px solid #0086F8
+    .ft-cell-content
+      padding-top 7px
+  .selected-bottom
+    border-bottom 1px solid #0086F8
+    .ft-cell-content
+      padding-bottom 7px
+  .active
+    border 2px solid #0086F8
+    .ft-cell-content
+      padding-bottom 6px
+      padding-top 6px

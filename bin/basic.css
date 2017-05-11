@@ -78,7 +78,6 @@
 .fancy-grid {
   font-size: 14px;
   overflow: hidden;
-  position: relative;
 }
 .fancy-grid .pane {
   background: #fafafa;
@@ -116,14 +115,12 @@
   display: inline-block;
   margin-right: 5px;
   position: relative;
-  -webkit-transition: -webkit-transform 300ms;
   transition: -webkit-transform 300ms;
   transition: transform 300ms;
   transition: transform 300ms, -webkit-transform 300ms;
 }
 .col-0 .ft-row-expanded .ft-cell-content:before {
   -webkit-transform: rotate(90deg);
-      -ms-transform: rotate(90deg);
           transform: rotate(90deg);
 }
 .col-0 .ft-row-indent-1 .ft-cell-content {
@@ -134,4 +131,38 @@
 }
 .col-0 .ft-row-indent-3 .ft-cell-content {
   padding-left: 56px;
+}
+.fancy-grid {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.fancy-grid .selected {
+  background-color: #e9f3ff;
+}
+.fancy-grid .selected-left {
+  border-left: 1px solid #0086f8;
+}
+.fancy-grid .selected-right {
+  border-right: 1px solid #0086f8;
+}
+.fancy-grid .selected-top {
+  border-top: 1px solid #0086f8;
+}
+.fancy-grid .selected-top .ft-cell-content {
+  padding-top: 7px;
+}
+.fancy-grid .selected-bottom {
+  border-bottom: 1px solid #0086f8;
+}
+.fancy-grid .selected-bottom .ft-cell-content {
+  padding-bottom: 7px;
+}
+.fancy-grid .active {
+  border: 2px solid #0086f8;
+}
+.fancy-grid .active .ft-cell-content {
+  padding-bottom: 6px;
+  padding-top: 6px;
 }

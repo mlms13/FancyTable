@@ -3,16 +3,26 @@ package fancy;
 import js.html.Element;
 
 using thx.Arrays;
-using thx.Functions;
 import thx.Ints;
+
+import haxe.ds.Option;
+using thx.Functions;
 using thx.Options;
 
+import fancy.table.CellEvent;
+import fancy.table.Coords;
 import fancy.table.FancyTableSettings;
+import fancy.table.KeyEvent;
+import fancy.table.RangeEvent;
+import fancy.table.ResizeEvent;
 import fancy.table.Row;
+import fancy.table.Range;
+import fancy.table.ScrollEvent;
 import fancy.table.util.CellContent;
 import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
 import fancy.table.util.RowData;
+import js.html.*;
 
 import fancy.Grid;
 
@@ -28,11 +38,14 @@ enum FancyTableData {
   return the instance of the table for easy chaining.
 **/
 class Table {
-  var settings(default, null): FancyTableSettings;
-  var grid(default, null): Grid;
-  var rows(default, null): Array<Row> = [];
-  var visibleRows(default, null): Array<Row> = [];
-  var maxColumns(default, null): Int = 0;
+  var settings: FancyTableSettings;
+  var grid: Grid;
+  var rows: Array<Row> = [];
+  var visibleRows: Array<Row> = [];
+  var maxColumns: Int = 0;
+  public var selection(default, null): Option<Range>;
+  public var hasFocus(default, null): Bool;
+  public var bottomRight(default, null): Coords;
 
   /**
     A container element must be provided to the constructor. You may also
@@ -41,6 +54,7 @@ class Table {
   **/
   public function new(parent: Element, data: FancyTableData, ?options: FancyTableOptions) {
     settings = FancyTableSettings.fromOptions(options);
+    selection = Options.ofValue(options.selection).map.fn(new fancy.table.Range(new Coords(_.minRow, _.minCol), new Coords(_.maxRow, _.maxCol)));
 
     // create the grid
     grid = new Grid(parent, {
@@ -56,12 +70,345 @@ class Table {
       hSize: function (col: Int) {
         return settings.hSize(col, maxColumns);
       },
-      onScroll: settings.onScroll,
-      onResize: settings.onResize
+      onScroll: function(x, y, ox, oy) settings.onScroll(new ScrollEvent(this, x, y, ox, oy)),
+      onResize: function(x, y, ox, oy) settings.onResize(new ResizeEvent(this, x, y, ox, oy)),
     });
 
     // fill with any data
     setData(data);
+
+    wireEvents(parent);
+  }
+
+  function wireEvents(el: Element) {
+    // focus related events
+    if(settings.focusOnHover) {
+      el.addEventListener("mouseenter", focus, false);
+      el.addEventListener("mouseleave", blur, false);
+    } else {
+      el.addEventListener("mousedown", function(e: MouseEvent) {
+        e.preventDefault();
+        focus();
+      }, false);
+      // TODO !!! removeEventListener
+      js.Browser.document.addEventListener("mousedown", blur, false);
+    }
+    if(settings.selectionEnabled) {
+      var counter = 0,
+          cancel = function(){};
+      el.addEventListener("click", function(e: MouseEvent) {
+        if(++counter == 1) {
+          cancel = thx.Timer.delay(function() counter = 0, 400);
+          // single click is managed by mousedown
+          // singleClick(e);
+        } else if(counter == 2) {
+          // double click
+          dblClick(e);
+        } else {
+          counter = 0;
+          cancel();
+        }
+      }, false);
+      el.addEventListener("mousedown", function(e: MouseEvent) {
+        e.preventDefault();
+        beginDrag(e);
+        function mouseMove(e: MouseEvent) {
+          e.preventDefault();
+          dragging(e);
+        }
+        function mouseUp(e: MouseEvent) {
+          js.Browser.document.removeEventListener("mousemove", mouseMove, false);
+          js.Browser.document.removeEventListener("mouseup", mouseUp, false);
+          e.preventDefault();
+          endDrag(e);
+        }
+        js.Browser.document.addEventListener("mousemove", mouseMove, false);
+        js.Browser.document.addEventListener("mouseup", mouseUp, false);
+      });
+      // TODO !!! removeEventListener
+      js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
+        if(!hasFocus) return;
+        pressKey(KeyEvent.fromKeyboardEvent(this, e));
+      }, false);
+    } else {
+      el.addEventListener("dblclick", dblClick, false);
+    }
+  }
+
+  function dblClick(e: MouseEvent) {
+    getCoords(cast e.target)
+      .each(coords -> settings.onDoubleClick(new CellEvent(this, coords)));
+  }
+
+  // function singleClick(e: MouseEvent) {
+
+  // }
+
+  function beginDrag(e: MouseEvent) {
+    if(e.shiftKey) {
+      selectToCoords(e.target);
+    } else {
+      selectAtCoords(e.target);
+    }
+  }
+
+  function endDrag(e: MouseEvent) {
+    // selectToCoords(e.target);
+  }
+
+  function dragging(e: MouseEvent) {
+    selectToCoords(e.target);
+  }
+
+  function selectAtCoords(target: js.html.EventTarget) {
+    getCoords(cast target)
+      .each.fn(select(_.row, _.col))
+      .each(coords -> settings.onClick(new CellEvent(this, coords)));
+  }
+
+  function selectToCoords(target: js.html.EventTarget) {
+    getCoords(cast target)
+      .each.fn(selectCurrentToCell(_.row, _.col));
+  }
+
+  function getCoords(el: Element): Option<Coords> {
+    var cell = dots.Query.closest(el, "div.cell");
+    if(null == cell) return None; // NOT FOUND, weird
+    var row = Std.parseInt(cell.getAttribute("data-row")),
+        col = Std.parseInt(cell.getAttribute("data-col"));
+    return Some(new Coords(row, col));
+  }
+
+  function getCoordsIfNotActive(el: Element): Option<Coords> {
+    return getCoords(el)
+      .flatMap(c -> matchActive(c.row, c.col) ? None: Some(c));
+  }
+
+  public function pressKey(e: KeyEvent) {
+    trace(e.key.toLowerCase());
+    switch e.key.toLowerCase() {
+      case "home":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectToFirstColumn();
+        else
+          goFirstColumn();
+      case "end":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectToLastColumn();
+        else
+          goLastColumn();
+      case "pageup":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectPageUp();
+        else
+          goPageUp();
+      case "pagedown":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled)
+          selectPageDown();
+        else
+          goPageDown();
+      case "enter":
+        e.preventDefault();
+        if(e.shift)
+          goPrevious();
+        else
+          goNext();
+      case "tab":
+        e.preventDefault();
+        if(e.shift)
+          goPreviousHorizontal();
+        else
+          goNextHorizontal();
+      case "arrowdown":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToLastRow();
+          } else {
+            selectDown();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goLastRow();
+          } else {
+            goDown();
+          }
+        }
+      case "arrowup":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToFirstRow();
+          } else {
+            selectUp();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goFirstRow();
+          } else {
+            goUp();
+          }
+        }
+      case "arrowleft":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToFirstColumn();
+          } else {
+            selectLeft();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goFirstColumn();
+          } else {
+            goLeft();
+          }
+        }
+      case "arrowright":
+        e.preventDefault();
+        if(e.shift && settings.rangeSelectionEnabled) {
+          // is selection
+          if(e.isCmdOnMacOrCtrl()) {
+            selectToLastColumn();
+          } else {
+            selectRight();
+          }
+        } else {
+          // is movement
+          if(e.isCmdOnMacOrCtrl()) {
+            goLastColumn();
+          } else {
+            goRight();
+          }
+        }
+      case _:
+    }
+    settings.onKey(e);
+  }
+
+  public function resetCacheForRange(minRow:Int, minCol: Int, maxRow: Int, maxCol: Int)
+    grid.resetCacheForRange(minRow, minCol, maxRow, maxCol);
+
+  public function renderCell(row: Int, col: Int, content: CellContent) {
+    visibleRows
+      .getOption(row)
+      .map(function(r) {
+        var el = content.render(r.classSettings.cellContent, this, row, col);
+        return r.renderCellContainer([], el, row, col);
+      })
+      .each(function(el) {
+        grid.patchCellContent(row, col, el);
+      });
+  }
+
+  public function select(row: Int, col: Int) {
+    selectRange(row, col, row, col, row, col);
+  }
+
+  public function goFirst()
+    selectRange(0, 0, 0, 0, 0, 0);
+
+  public function goFirstColumn() selectFromRange.fn(_.firstColumn());
+  public function goLastColumn() selectFromRange.fn(_.goToColumn(grid.columns - 1));
+  public function goFirstRow() selectFromRange.fn(_.firstRow());
+  public function goLastRow() selectFromRange.fn(_.goToRow(grid.rows - 1));
+  public function goPageUp() selectFromRange.fn(_.upRows(10));
+  public function goPageDown() selectFromRange.fn(_.downRows(10, grid.rows - 1));
+
+  public function selectToFirstColumn() selectFromRange.fn(_.selectToFirstColumn());
+  public function selectToLastColumn() selectFromRange.fn(_.selectToColumn(grid.columns - 1));
+  public function selectToFirstRow() selectFromRange.fn(_.selectToFirstRow());
+  public function selectToLastRow() selectFromRange.fn(_.selectToRow(grid.rows - 1));
+  public function selectPageUp() selectFromRange.fn(_.selectUpRows(10));
+  public function selectPageDown() selectFromRange.fn(_.selectDownRows(10, grid.rows - 1));
+
+  public function selectCurrentToCell(row: Int, col: Int) selectFromRange.fn(_.selectCurrentToCell(row, col));
+
+  function selectFromRange(f: Range -> Range) {
+    switch selection {
+      case None:
+        goFirst();
+      case Some(range):
+        selectWithRange(f(range));
+    }
+  }
+
+  public function goNextHorizontal() selectFromRange.fn(_.nextHorizontal());
+  public function goPreviousHorizontal() selectFromRange.fn(_.previousHorizontal());
+  public function goNext() selectFromRange.fn(_.next());
+  public function goPrevious() selectFromRange.fn(_.previous());
+  public function goLeft() selectFromRange.fn(_.left());
+  public function goRight() selectFromRange.fn(_.right());
+  public function goUp() selectFromRange.fn(_.up());
+  public function goDown() selectFromRange.fn(_.down());
+
+  public function selectLeft() selectFromRange.fn(_.selectLeft());
+  public function selectRight() selectFromRange.fn(_.selectRight());
+  public function selectUp() selectFromRange.fn(_.selectUp());
+  public function selectDown() selectFromRange.fn(_.selectDown());
+
+
+  public function selectWithRange(range: Range) {
+    selectRange(range.min.row, range.min.col, range.max.row, range.max.col, range.active.row, range.active.col);
+  }
+
+  public function selectRange(minRow: Int, minCol: Int, maxRow: Int, maxCol: Int, ?row: Int = 0, ?col: Int = 0) {
+    if(!settings.selectionEnabled) return;
+    if(!settings.rangeSelectionEnabled) {
+      maxRow = minRow;
+      maxCol = minCol;
+    }
+
+    if(minRow < 0 || minCol < 0) return; // negative values
+    if(maxRow >= bottomRight.row || maxCol >= bottomRight.col) return; // out of bounds
+
+    var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
+    range.active.row = row;
+    range.active.col = col;
+    if(!settings.canSelect(range.active.row, range.active.col)) return; // unselectable
+
+    switch selection {
+      case Some(old) if(old.equals(range)): return; // range has not changed
+      case _:
+    }
+
+    switch selection {
+      case Some(range):
+        grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
+      case None: // do nothing
+    }
+
+    var oldRange = selection;
+    selection = Some(range);
+
+    grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
+    scrollToCell(row, col);
+    settings.onRangeChange(new RangeEvent(this, oldRange, selection));
+  }
+
+  public function deselect() {
+    switch selection {
+      case Some(range):
+        grid.resetCacheForRange(range.min.row, range.min.col, range.max.row, range.max.col);
+      case None: // do nothing
+    }
+    var oldRange = selection;
+    selection = None;
+    settings.onRangeChange(new RangeEvent(this, oldRange, selection));
+  }
+
+  function scrollToCell(row: Int, col: Int) {
+    grid.scrollTo(Visible(Cells(col)), Visible(Cells(row)));
   }
 
   function assignVSize(row: Int): CellDimension {
@@ -70,9 +417,34 @@ class Table {
     });
   }
 
+  function matchActive(row: Int, col: Int): Bool {
+    return switch selection {
+      case Some(range) if(range.active.row != row || range.active.col != col):
+        false;
+      case Some(_):
+        true;
+      case None:
+        false;
+    };
+  }
+
   function renderGridCell(row: Int, col: Int): Element {
-    return visibleRows.getOption(row).flatMap.fn(_.renderCell(this, row, col))
-      .getOrElse(settings.fallbackCell.render("ft-cell-content", this, row, col));
+    var classes = [];
+    return visibleRows.getOption(row)
+      .flatMap.fn(_.renderCell(this, row, col, classes))
+      .getOrElse(settings.fallbackCell.render(["ft-cell-content"].concat(classes).join(" "), this, row, col));
+  }
+
+  public function focus() {
+    if(hasFocus) return;
+    hasFocus = true;
+    settings.onFocus(this);
+  }
+
+  public function blur() {
+    if(!hasFocus) return;
+    hasFocus = false;
+    settings.onBlur(this);
   }
 
   /**
@@ -85,8 +457,8 @@ class Table {
   public function setData(data: FancyTableData, resetScroll = true): Table {
     // convert the new data to rows
     var newRows = switch data {
-      case Tabular(d): d.map.fn(new Row(_, settings.classes, RenderSmart));
-      case Nested(d): d.toRows(settings.classes);
+      case Tabular(d): d.map.fn(new Row(this, _, settings.classes, RenderSmart));
+      case Nested(d): d.toRows(this, settings.classes);
     };
 
     // empty the current table and set new rows
@@ -99,6 +471,22 @@ class Table {
       this.resetScroll();
 
     return this;
+  }
+
+  public function refresh() : Void {
+    grid.scrollTo(null, null);
+  }
+
+  public function getScrollPosition() : { x: Float, y: Float } {
+    return grid.getScrollPosition();
+  }
+
+  public function scrollToPosition(?x : Float, ?y : Float) : Void {
+    grid.scrollToPosition(x, y);
+  }
+
+  public function scrollTo(?xPos: HorizontalScrollPosition, ?yPos: VerticalScrollPosition) : Void {
+    grid.scrollTo(xPos, yPos);
   }
 
   public function resetScroll() : Void {
@@ -115,6 +503,7 @@ class Table {
 
   inline function resetVisibleRowsAndRedraw() : Void {
     visibleRows = flattenVisibleRows(rows);
+    bottomRight = new Coords(visibleRows.length, maxColumns);
     grid.setRowsAndColumns(Ints.max(visibleRows.length, 1), Ints.max(maxColumns, 1));
   }
 

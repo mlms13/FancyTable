@@ -24,10 +24,23 @@ class FancyTableSettings {
   public var hSize(default, null): Int -> Int -> CellDimension;
   public var initialScrollX(default, null): HorizontalScrollPosition;
   public var initialScrollY(default, null): VerticalScrollPosition;
-  public var onScroll(default, null) : Float -> Float -> Float -> Float -> Void;
-  public var onResize(default, null) : Float -> Float -> Float -> Float -> Void;
 
-  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, onScroll, onResize) {
+  public var onScroll(default, null) : ScrollEvent -> Void;
+  public var onResize(default, null) : ResizeEvent -> Void;
+  public var onFocus(default, null) : Table -> Void;
+  public var onBlur(default, null) : Table -> Void;
+  public var onKey(default, null): KeyEvent -> Void;
+  public var onClick(default, null): CellEvent -> Void;
+  public var onDoubleClick(default, null): CellEvent -> Void;
+  public var onRangeChange(default, null): RangeEvent -> Void;
+
+  // TODO !!! use
+  public var canSelect(default, null): Int -> Int -> Bool;
+  public var selectionEnabled(default, null): Bool;
+  public var rangeSelectionEnabled(default, null): Bool;
+  public var focusOnHover(default, null): Bool;
+
+  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, canSelect, selectionEnabled, rangeSelectionEnabled, focusOnHover, onScroll, onResize, onFocus, onBlur, onKey, onClick, onDoubleClick, onRangeChange) {
     this.fixedTop = fixedTop;
     this.fixedLeft = fixedLeft;
     this.fallbackCell = fallbackCell;
@@ -35,8 +48,21 @@ class FancyTableSettings {
     this.hSize = hSize;
     this.initialScrollX = initialX;
     this.initialScrollY = initialY;
+
+    this.canSelect = canSelect;
+    this.selectionEnabled = selectionEnabled;
+    this.rangeSelectionEnabled = rangeSelectionEnabled;
+
+    this.focusOnHover = focusOnHover;
+
     this.onScroll = onScroll;
     this.onResize = onResize;
+    this.onFocus = onFocus;
+    this.onBlur = onBlur;
+    this.onKey = onKey;
+    this.onDoubleClick = onDoubleClick;
+    this.onClick = onClick;
+    this.onRangeChange = onRangeChange;
   }
 
   static function classesFromOptions(?opts: FancyTableClassOptions): FancyTableClasses {
@@ -49,21 +75,40 @@ class FancyTableSettings {
       rowFoldHeader: opts.rowFoldHeader != null ? opts.rowFoldHeader : "ft-row-fold-header",
       rowIndent: opts.rowIndent != null ? opts.rowIndent : "ft-row-indent-"
     };
+    // TODO !!! add classes for selections
   }
 
   public static function fromOptions(?opts: FancyTableOptions) {
     if (opts == null) opts = {};
 
+/*
+  ?canSelect: Int -> Int -> Bool,
+  ?selectionEnabled: Bool,
+  ?rangeSelectionEnabled: Bool,
+  ?selection: Option<{ minRow: Int, minCol: Int, maxRow: Int, maxCol: Int}>
+*/
+    var fixedTop = opts.fixedTop.or(0),
+        fixedLeft = opts.fixedLeft.or(0);
     return new FancyTableSettings(
-      opts.fixedTop.or(0),
-      opts.fixedLeft.or(0),
+      fixedTop,
+      fixedLeft,
       opts.fallbackCell.or(CellContent.fromString("")),
       classesFromOptions(opts.classes),
       opts.hSize.or(function (_, _) return RenderSmart),
       opts.initialScrollX.or(Left),
       opts.initialScrollY.or(Top),
-      opts.onScroll.or(function(_, _, _, _) {}),
-      opts.onResize.or(function(_, _, _, _) {})
+      opts.canSelect.or(function(r, c) return true),
+      opts.selectionEnabled.or(true),
+      opts.rangeSelectionEnabled.or(true),
+      opts.focusOnHover.or(true),
+      opts.onScroll.or(function(_) {}),
+      opts.onResize.or(function(_) {}),
+      opts.onFocus.or(function(_) {}),
+      opts.onBlur.or(function(_) {}),
+      opts.onKey.or(function(_) { }),
+      opts.onClick.or(function(_) { }),
+      opts.onDoubleClick.or(function(_) { }),
+      opts.onRangeChange.or(function(_) { })
     );
   }
 }
