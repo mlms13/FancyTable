@@ -132,6 +132,12 @@
 .col-0 .ft-row-indent-3 .ft-cell-content {
   padding-left: 56px;
 }
+.fancy-grid {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
 .fancy-grid .selected {
   background-color: #e9f3ff;
 }

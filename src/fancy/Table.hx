@@ -87,7 +87,7 @@ class Table {
       el.addEventListener("mouseleave", blur, false);
     } else {
       el.addEventListener("mousedown", function(e: MouseEvent) {
-        e.cancelBubble = true;
+        e.preventDefault();
         focus();
       }, false);
       // TODO !!! removeEventListener
@@ -98,9 +98,9 @@ class Table {
           cancel = function(){};
       el.addEventListener("click", function(e: MouseEvent) {
         if(++counter == 1) {
-          // single click
           cancel = thx.Timer.delay(function() counter = 0, 400);
-          singleClick(e);
+          // single click is managed by mousedown
+          // singleClick(e);
         } else if(counter == 2) {
           // double click
           dblClick(e);
@@ -109,6 +109,22 @@ class Table {
           cancel();
         }
       }, false);
+      el.addEventListener("mousedown", function(e: MouseEvent) {
+        e.preventDefault();
+        beginDrag(e);
+        function mouseMove(e: MouseEvent) {
+          e.preventDefault();
+          dragging(e);
+        }
+        function mouseUp(e: MouseEvent) {
+          js.Browser.document.removeEventListener("mousemove", mouseMove, false);
+          js.Browser.document.removeEventListener("mouseup", mouseUp, false);
+          e.preventDefault();
+          endDrag(e);
+        }
+        js.Browser.document.addEventListener("mousemove", mouseMove, false);
+        js.Browser.document.addEventListener("mouseup", mouseUp, false);
+      });
       // TODO !!! removeEventListener
       js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
         if(!hasFocus) return;
@@ -124,10 +140,35 @@ class Table {
       .each(coords -> settings.onDoubleClick(new CellEvent(this, coords)));
   }
 
-  function singleClick(e: MouseEvent) {
-    getCoords(cast e.target)
+  // function singleClick(e: MouseEvent) {
+
+  // }
+
+  function beginDrag(e: MouseEvent) {
+    if(e.shiftKey) {
+      selectToCoords(e.target);
+    } else {
+      selectAtCoords(e.target);
+    }
+  }
+
+  function endDrag(e: MouseEvent) {
+    // selectToCoords(e.target);
+  }
+
+  function dragging(e: MouseEvent) {
+    selectToCoords(e.target);
+  }
+
+  function selectAtCoords(target: js.html.EventTarget) {
+    getCoords(cast target)
       .each.fn(select(_.row, _.col))
       .each(coords -> settings.onClick(new CellEvent(this, coords)));
+  }
+
+  function selectToCoords(target: js.html.EventTarget) {
+    getCoords(cast target)
+      .each.fn(selectCurrentToCell(_.row, _.col));
   }
 
   function getCoords(el: Element): Option<Coords> {
@@ -136,6 +177,11 @@ class Table {
     var row = Std.parseInt(cell.getAttribute("data-row")),
         col = Std.parseInt(cell.getAttribute("data-col"));
     return Some(new Coords(row, col));
+  }
+
+  function getCoordsIfNotActive(el: Element): Option<Coords> {
+    return getCoords(el)
+      .flatMap(c -> matchActive(c.row, c.col) ? None: Some(c));
   }
 
   public function pressKey(e: KeyEvent) {
@@ -286,6 +332,8 @@ class Table {
   public function selectPageUp() selectFromRange.fn(_.selectUpRows(10));
   public function selectPageDown() selectFromRange.fn(_.selectDownRows(10, grid.rows - 1));
 
+  public function selectCurrentToCell(row: Int, col: Int) selectFromRange.fn(_.selectCurrentToCell(row, col));
+
   function selectFromRange(f: Range -> Range) {
     switch selection {
       case None:
@@ -367,6 +415,17 @@ class Table {
     return visibleRows.getOption(row).cata(Fixed(0), function (r: Row) {
       return r.height;
     });
+  }
+
+  function matchActive(row: Int, col: Int): Bool {
+    return switch selection {
+      case Some(range) if(range.active.row != row || range.active.col != col):
+        false;
+      case Some(_):
+        true;
+      case None:
+        false;
+    };
   }
 
   function renderGridCell(row: Int, col: Int): Element {

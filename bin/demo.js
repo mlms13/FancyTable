@@ -1916,7 +1916,7 @@ fancy_Table.prototype = {
 			el.addEventListener("mouseleave",$bind(this,this.blur),false);
 		} else {
 			el.addEventListener("mousedown",function(e) {
-				e.cancelBubble = true;
+				e.preventDefault();
 				_gthis.focus();
 			},false);
 			window.document.addEventListener("mousedown",$bind(this,this.blur),false);
@@ -1930,7 +1930,6 @@ fancy_Table.prototype = {
 					cancel = thx_Timer.delay(function() {
 						counter = 0;
 					},400);
-					_gthis.singleClick(e1);
 				} else if(counter == 2) {
 					_gthis.dblClick(e1);
 				} else {
@@ -1938,11 +1937,29 @@ fancy_Table.prototype = {
 					cancel();
 				}
 			},false);
-			window.document.addEventListener("keydown",function(e2) {
+			el.addEventListener("mousedown",function(e2) {
+				e2.preventDefault();
+				_gthis.beginDrag(e2);
+				var mouseMove = function(e3) {
+					e3.preventDefault();
+					_gthis.dragging(e3);
+				};
+				var mouseUp = null;
+				mouseUp = function(e4) {
+					window.document.removeEventListener("mousemove",mouseMove,false);
+					window.document.removeEventListener("mouseup",mouseUp,false);
+					e4.preventDefault();
+					_gthis.endDrag(e4);
+				};
+				var mouseUp1 = mouseUp;
+				window.document.addEventListener("mousemove",mouseMove,false);
+				window.document.addEventListener("mouseup",mouseUp1,false);
+			});
+			window.document.addEventListener("keydown",function(e5) {
 				if(!_gthis.hasFocus) {
 					return;
 				}
-				var tmp = fancy_table_KeyEvent.fromKeyboardEvent(_gthis,e2);
+				var tmp = fancy_table_KeyEvent.fromKeyboardEvent(_gthis,e5);
 				_gthis.pressKey(tmp);
 			},false);
 		} else {
@@ -1956,9 +1973,21 @@ fancy_Table.prototype = {
 			return;
 		});
 	}
-	,singleClick: function(e) {
+	,beginDrag: function(e) {
+		if(e.shiftKey) {
+			this.selectToCoords(e.target);
+		} else {
+			this.selectAtCoords(e.target);
+		}
+	}
+	,endDrag: function(e) {
+	}
+	,dragging: function(e) {
+		this.selectToCoords(e.target);
+	}
+	,selectAtCoords: function(target) {
 		var _gthis = this;
-		var _e = this.getCoords(e.target);
+		var _e = this.getCoords(target);
 		thx_Options.each((function(f) {
 			return thx_Options.each(_e,f);
 		})(function(_) {
@@ -1968,6 +1997,18 @@ fancy_Table.prototype = {
 			return;
 		}),function(coords) {
 			_gthis.settings.onClick(new fancy_table_CellEvent(_gthis,coords));
+			return;
+		});
+	}
+	,selectToCoords: function(target) {
+		var _gthis = this;
+		var _e = this.getCoords(target);
+		(function(f) {
+			return thx_Options.each(_e,f);
+		})(function(_) {
+			var tmp = _.get_row();
+			var tmp1 = _.get_col();
+			_gthis.selectCurrentToCell(tmp,tmp1);
 			return;
 		});
 	}
@@ -2171,6 +2212,11 @@ fancy_Table.prototype = {
 		var _gthis = this;
 		this.selectFromRange(function(_) {
 			return _.selectDownRows(10,_gthis.grid.rows - 1);
+		});
+	}
+	,selectCurrentToCell: function(row,col) {
+		this.selectFromRange(function(_) {
+			return _.selectCurrentToCell(row,col);
 		});
 	}
 	,selectFromRange: function(f) {
@@ -4037,6 +4083,20 @@ fancy_table_Range.prototype = {
 	}
 	,selectToFirstColumn: function() {
 		return this.selectToColumn(0);
+	}
+	,selectCurrentToCell: function(row,col) {
+		var b = this.active.get_row();
+		var minRow = row < b ? row : b;
+		var b1 = this.active.get_col();
+		var minCol = col < b1 ? col : b1;
+		var b2 = this.active.get_row();
+		var maxRow = row > b2 ? row : b2;
+		var b3 = this.active.get_col();
+		var maxCol = col > b3 ? col : b3;
+		var range = new fancy_table_Range(new fancy_table_Coords(minRow,minCol),new fancy_table_Coords(maxRow,maxCol));
+		range.active.set_row(this.active.get_row());
+		range.active.set_col(this.active.get_col());
+		return range;
 	}
 	,selectToColumn: function(col) {
 		if(this.active.get_col() == col) {

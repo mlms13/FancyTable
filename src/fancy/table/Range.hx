@@ -174,6 +174,17 @@ class Range {
   public function selectToFirstColumn()
     return selectToColumn(0);
 
+  public function selectCurrentToCell(row: Int, col: Int) {
+    var minRow = Ints.min(row, active.row),
+        minCol = Ints.min(col, active.col),
+        maxRow = Ints.max(row, active.row),
+        maxCol = Ints.max(col, active.col);
+    var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
+    range.active.row = active.row;
+    range.active.col = active.col;
+    return range;
+  }
+
   public function selectToColumn(col: Int) {
     if(active.col == col) return this;
     var range = if(col < active.col) {
