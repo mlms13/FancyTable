@@ -90,7 +90,6 @@ class Table {
         e.preventDefault();
         focus();
       }, false);
-      // TODO !!! removeEventListener
       js.Browser.document.addEventListener("mousedown", blur, false);
     }
     if(settings.selectionEnabled) {
@@ -112,26 +111,29 @@ class Table {
       el.addEventListener("mousedown", function(e: MouseEvent) {
         e.preventDefault();
         beginDrag(e);
-        function mouseMove(e: MouseEvent) {
-          e.preventDefault();
-          dragging(e);
-        }
-        function mouseUp(e: MouseEvent) {
-          js.Browser.document.removeEventListener("mousemove", mouseMove, false);
-          js.Browser.document.removeEventListener("mouseup", mouseUp, false);
-          e.preventDefault();
-        }
         js.Browser.document.addEventListener("mousemove", mouseMove, false);
         js.Browser.document.addEventListener("mouseup", mouseUp, false);
       });
-      // TODO !!! removeEventListener
-      js.Browser.document.addEventListener("keydown", function(e: KeyboardEvent) {
-        if(!hasFocus) return;
-        pressKey(KeyEvent.fromKeyboardEvent(this, e));
-      }, false);
+      js.Browser.document.addEventListener("keydown", keyDown, false);
     } else {
       el.addEventListener("dblclick", dblClick, false);
     }
+  }
+
+  function mouseMove(e: MouseEvent) {
+    e.preventDefault();
+    dragging(e);
+  }
+
+  function mouseUp(e: MouseEvent) {
+    js.Browser.document.removeEventListener("mousemove", mouseMove, false);
+    js.Browser.document.removeEventListener("mouseup", mouseUp, false);
+    e.preventDefault();
+  }
+
+  function keyDown(e: KeyboardEvent) {
+    if(!hasFocus) return;
+    pressKey(KeyEvent.fromKeyboardEvent(this, e));
   }
 
   function dblClick(e: MouseEvent) {
@@ -653,16 +655,10 @@ class Table {
     });
   }
 
-  /**
-    Sets the value of a cell given the 0-based index of the row and the 0-based
-    index of the cell within that row. Cells can have strings, numbers, or html
-    elements as content.
-
-    TODO: re-enable, but figure out whose job it is to re-render after calling
-    this, and figure out how to validate indexes that are out of range
-  **/
-  // function setCellValue(row: Int, cell: Int, value: CellContent): Table {
-  //   rows[row].setCellValue(cell, value);
-  //   return this;
-  // }
+  public function destroy() {
+    js.Browser.document.removeEventListener("mousedown", blur, false);
+    js.Browser.document.removeEventListener("keydown", keyDown, false);
+    js.Browser.document.removeEventListener("mousemove", mouseMove, false);
+    js.Browser.document.removeEventListener("mouseup", mouseUp, false);
+  }
 }

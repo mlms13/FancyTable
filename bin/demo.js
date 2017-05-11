@@ -1925,30 +1925,28 @@ fancy_Table.prototype = {
 			el.addEventListener("mousedown",function(e2) {
 				e2.preventDefault();
 				_gthis.beginDrag(e2);
-				var mouseMove = function(e3) {
-					e3.preventDefault();
-					_gthis.dragging(e3);
-				};
-				var mouseUp = null;
-				mouseUp = function(e4) {
-					window.document.removeEventListener("mousemove",mouseMove,false);
-					window.document.removeEventListener("mouseup",mouseUp,false);
-					e4.preventDefault();
-				};
-				var mouseUp1 = mouseUp;
-				window.document.addEventListener("mousemove",mouseMove,false);
-				window.document.addEventListener("mouseup",mouseUp1,false);
+				window.document.addEventListener("mousemove",$bind(_gthis,_gthis.mouseMove),false);
+				window.document.addEventListener("mouseup",$bind(_gthis,_gthis.mouseUp),false);
 			});
-			window.document.addEventListener("keydown",function(e5) {
-				if(!_gthis.hasFocus) {
-					return;
-				}
-				var tmp = fancy_table_KeyEvent.fromKeyboardEvent(_gthis,e5);
-				_gthis.pressKey(tmp);
-			},false);
+			window.document.addEventListener("keydown",$bind(this,this.keyDown),false);
 		} else {
 			el.addEventListener("dblclick",$bind(this,this.dblClick),false);
 		}
+	}
+	,mouseMove: function(e) {
+		e.preventDefault();
+		this.dragging(e);
+	}
+	,mouseUp: function(e) {
+		window.document.removeEventListener("mousemove",$bind(this,this.mouseMove),false);
+		window.document.removeEventListener("mouseup",$bind(this,this.mouseUp),false);
+		e.preventDefault();
+	}
+	,keyDown: function(e) {
+		if(!this.hasFocus) {
+			return;
+		}
+		this.pressKey(fancy_table_KeyEvent.fromKeyboardEvent(this,e));
 	}
 	,dblClick: function(e) {
 		var _gthis = this;
