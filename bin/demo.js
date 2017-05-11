@@ -1924,7 +1924,7 @@ fancy_Table.prototype = {
 			var counter = 0;
 			var cancel = function() {
 			};
-			el.addEventListener("click",function(e1) {
+			el.addEventListener("mousedown",function(e1) {
 				if((counter += 1) == 1) {
 					cancel = thx_Timer.delay(function() {
 						counter = 0;
@@ -1935,9 +1935,7 @@ fancy_Table.prototype = {
 					counter = 0;
 					cancel();
 				}
-			},false);
-			el.addEventListener("mousedown",function(e2) {
-				_gthis.beginDrag(e2);
+				_gthis.beginDrag(e1);
 				window.document.addEventListener("mousemove",$bind(_gthis,_gthis.mouseMove),false);
 				window.document.addEventListener("mouseup",$bind(_gthis,_gthis.mouseUp),false);
 			});
@@ -1947,13 +1945,11 @@ fancy_Table.prototype = {
 		}
 	}
 	,mouseMove: function(e) {
-		e.preventDefault();
 		this.dragging(e);
 	}
 	,mouseUp: function(e) {
 		window.document.removeEventListener("mousemove",$bind(this,this.mouseMove),false);
 		window.document.removeEventListener("mouseup",$bind(this,this.mouseUp),false);
-		e.preventDefault();
 	}
 	,keyDown: function(e) {
 		if(!this.hasFocus) {
