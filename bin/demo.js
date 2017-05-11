@@ -1006,6 +1006,21 @@ fancy_Grid.prototype = {
 			return v;
 		}
 	}
+	,rowsInView: function() {
+		var h = this.grid9.get_gridMiddleHeight();
+		var y = this.grid9.position.y;
+		var r = this.lookupRow(fancy_ScrollUnit.Pixels(y));
+		var i = 0;
+		haxe_Log.trace(h,{ fileName : "Grid.hx", lineNumber : 270, className : "fancy.Grid", methodName : "rowsInView", customParams : [y,r]});
+		while(i + r < this.rows) {
+			if(this.vOffset(i + r) >= y + h) {
+				return i;
+			}
+			++i;
+		}
+		haxe_Log.trace(i,{ fileName : "Grid.hx", lineNumber : 276, className : "fancy.Grid", methodName : "rowsInView"});
+		return i;
+	}
 	,resolveHorizontalDistance: function(x) {
 		switch(x[1]) {
 		case 0:
@@ -1901,7 +1916,6 @@ fancy_Table.prototype = {
 			el.addEventListener("mouseleave",$bind(this,this.blur),false);
 		} else {
 			el.addEventListener("mousedown",function(e) {
-				e.preventDefault();
 				_gthis.focus();
 			},false);
 			window.document.addEventListener("mousedown",$bind(this,this.blur),false);
@@ -1923,7 +1937,6 @@ fancy_Table.prototype = {
 				}
 			},false);
 			el.addEventListener("mousedown",function(e2) {
-				e2.preventDefault();
 				_gthis.beginDrag(e2);
 				window.document.addEventListener("mousemove",$bind(_gthis,_gthis.mouseMove),false);
 				window.document.addEventListener("mouseup",$bind(_gthis,_gthis.mouseUp),false);
@@ -2150,14 +2163,18 @@ fancy_Table.prototype = {
 		});
 	}
 	,goPageUp: function() {
+		var size = this.grid.rowsInView();
+		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 326, className : "fancy.Table", methodName : "goPageUp"});
 		this.selectFromRange(function(_) {
-			return _.upRows(10);
+			return _.upRows(size);
 		});
 	}
 	,goPageDown: function() {
 		var last = this.grid.rows - 1;
+		var size = this.grid.rowsInView();
+		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 332, className : "fancy.Table", methodName : "goPageDown"});
 		this.selectFromRange(function(_) {
-			return _.downRows(10,last);
+			return _.downRows(size,last);
 		});
 	}
 	,goNextHorizontal: function() {
@@ -2227,14 +2244,18 @@ fancy_Table.prototype = {
 		this.scrollToRow(last);
 	}
 	,selectPageUp: function() {
+		var size = this.grid.rowsInView();
+		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 365, className : "fancy.Table", methodName : "selectPageUp"});
 		this.selectFromRange(function(_) {
-			return _.selectUpRows(10);
+			return _.selectUpRows(size);
 		});
 	}
 	,selectPageDown: function() {
 		var last = this.grid.rows - 1;
+		var size = this.grid.rowsInView();
+		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 371, className : "fancy.Table", methodName : "selectPageDown"});
 		this.selectFromRange(function(_) {
-			return _.selectDownRows(10,last);
+			return _.selectDownRows(size,last);
 		});
 	}
 	,selectCurrentToCell: function(row,col) {
@@ -4455,6 +4476,24 @@ fancy_table_util_NestedData.toRows = function(data,table,classes,indentation) {
 };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
+var haxe_Log = function() { };
+haxe_Log.__name__ = true;
+haxe_Log.trace = function(v,infos) {
+	var msg = infos != null ? infos.fileName + ":" + infos.lineNumber + ": " : "";
+	msg += js_Boot.__string_rec(v,"");
+	if(infos != null && infos.customParams != null) {
+		var _g = 0;
+		var _g1 = infos.customParams;
+		while(_g < _g1.length) {
+			var v1 = _g1[_g];
+			++_g;
+			msg += "," + js_Boot.__string_rec(v1,"");
+		}
+	}
+	if(typeof(console) != "undefined" && console.log != null) {
+		console.log(msg);
+	}
+};
 var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
 haxe_ds_Option.None = ["None",1];
