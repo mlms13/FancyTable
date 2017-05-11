@@ -70,7 +70,7 @@ class Main {
     });
 
     var elFlat = js.Browser.document.querySelector(".table-container-flat");
-    new Table(elFlat, Tabular(flatDataRows.map(flatDataRowToCellContents)), {
+    var table = new Table(elFlat, Tabular(flatDataRows.map(flatDataRowToCellContents)), {
       fixedTop: 1,
       fixedLeft: 1,
       selection: {
@@ -84,7 +84,9 @@ class Main {
       },
       onDoubleClick: function(event: CellEvent) {
         onStartEditingFlatRowCell(event.coords, "", event.table);
-      }
+      },
+      focusOnHover: false,
+      alwaysFocused: true
     });
   }
 

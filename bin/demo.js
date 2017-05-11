@@ -65,14 +65,14 @@ Main.main = function() {
 	var elNested = window.document.querySelector(".table-container-nested");
 	new fancy_Table(elNested,fancy_FancyTableData.Nested(Main.nestedDataRows.map(Main.nestedDataRowToRowData)),{ fixedTop : 1, fixedLeft : 1, focusOnHover : false, rangeSelectionEnabled : false});
 	var elFlat = window.document.querySelector(".table-container-flat");
-	new fancy_Table(elFlat,fancy_FancyTableData.Tabular(Main.flatDataRows.map(Main.flatDataRowToCellContents)),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onKey : function(e) {
+	var table = new fancy_Table(elFlat,fancy_FancyTableData.Tabular(Main.flatDataRows.map(Main.flatDataRowToCellContents)),{ fixedTop : 1, fixedLeft : 1, selection : { minRow : 1, minCol : 1, maxRow : 2, maxCol : 3}, onKey : function(e) {
 		thx_Options.each(e.get_coords(),function(coords) {
 			Main.onStartEditingFlatRowCell(coords,e.key,e.table);
 			return;
 		});
 	}, onDoubleClick : function(event) {
 		Main.onStartEditingFlatRowCell(event.coords,"",event.table);
-	}});
+	}, focusOnHover : false, alwaysFocused : true});
 };
 Main.createNestedDataRows = function(cards) {
 	var headerRow = { type : NestedDataRowType.HeaderRow([DataCell.CText("Cards"),DataCell.CText("CMC"),DataCell.CText("Draft value"),DataCell.CText("Price")]), isExpanded : true, childRows : []};
@@ -1011,14 +1011,12 @@ fancy_Grid.prototype = {
 		var y = this.grid9.position.y;
 		var r = this.lookupRow(fancy_ScrollUnit.Pixels(y));
 		var i = 0;
-		haxe_Log.trace(h,{ fileName : "Grid.hx", lineNumber : 270, className : "fancy.Grid", methodName : "rowsInView", customParams : [y,r]});
 		while(i + r < this.rows) {
 			if(this.vOffset(i + r) >= y + h) {
 				return i;
 			}
 			++i;
 		}
-		haxe_Log.trace(i,{ fileName : "Grid.hx", lineNumber : 276, className : "fancy.Grid", methodName : "rowsInView"});
 		return i;
 	}
 	,resolveHorizontalDistance: function(x) {
@@ -1914,6 +1912,8 @@ fancy_Table.prototype = {
 		if(this.settings.focusOnHover) {
 			el.addEventListener("mouseenter",$bind(this,this.focus),false);
 			el.addEventListener("mouseleave",$bind(this,this.blur),false);
+		} else if(this.settings.alwaysFocused) {
+			this.focus();
 		} else {
 			el.addEventListener("mousedown",function(e) {
 				_gthis.focus();
@@ -2164,7 +2164,6 @@ fancy_Table.prototype = {
 	}
 	,goPageUp: function() {
 		var size = this.grid.rowsInView();
-		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 326, className : "fancy.Table", methodName : "goPageUp"});
 		this.selectFromRange(function(_) {
 			return _.upRows(size);
 		});
@@ -2172,7 +2171,6 @@ fancy_Table.prototype = {
 	,goPageDown: function() {
 		var last = this.grid.rows - 1;
 		var size = this.grid.rowsInView();
-		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 332, className : "fancy.Table", methodName : "goPageDown"});
 		this.selectFromRange(function(_) {
 			return _.downRows(size,last);
 		});
@@ -2245,7 +2243,6 @@ fancy_Table.prototype = {
 	}
 	,selectPageUp: function() {
 		var size = this.grid.rowsInView();
-		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 365, className : "fancy.Table", methodName : "selectPageUp"});
 		this.selectFromRange(function(_) {
 			return _.selectUpRows(size);
 		});
@@ -2253,7 +2250,6 @@ fancy_Table.prototype = {
 	,selectPageDown: function() {
 		var last = this.grid.rows - 1;
 		var size = this.grid.rowsInView();
-		haxe_Log.trace(size,{ fileName : "Table.hx", lineNumber : 371, className : "fancy.Table", methodName : "selectPageDown"});
 		this.selectFromRange(function(_) {
 			return _.selectDownRows(size,last);
 		});
@@ -3696,7 +3692,7 @@ fancy_table_Coords.prototype = {
 		return this.col = v;
 	}
 };
-var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize,initialX,initialY,selectionEnabled,rangeSelectionEnabled,focusOnHover,onScroll,onResize,onFocus,onBlur,onKey,onClick,onDoubleClick,onRangeChange) {
+var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,classes,hSize,initialX,initialY,selectionEnabled,rangeSelectionEnabled,focusOnHover,alwaysFocused,onScroll,onResize,onFocus,onBlur,onKey,onClick,onDoubleClick,onRangeChange) {
 	this.fixedTop = fixedTop;
 	this.fixedLeft = fixedLeft;
 	this.fallbackCell = fallbackCell;
@@ -3707,6 +3703,7 @@ var fancy_table_FancyTableSettings = function(fixedTop,fixedLeft,fallbackCell,cl
 	this.selectionEnabled = selectionEnabled;
 	this.rangeSelectionEnabled = rangeSelectionEnabled;
 	this.focusOnHover = focusOnHover;
+	this.alwaysFocused = alwaysFocused;
 	this.onScroll = onScroll;
 	this.onResize = onResize;
 	this.onFocus = onFocus;
@@ -3844,7 +3841,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _09) {
 		t9 = null;
 	} else {
-		var _19 = _09.onScroll;
+		var _19 = _09.alwaysFocused;
 		if(null == _19) {
 			t9 = null;
 		} else {
@@ -3856,7 +3853,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _010) {
 		t10 = null;
 	} else {
-		var _110 = _010.onResize;
+		var _110 = _010.onScroll;
 		if(null == _110) {
 			t10 = null;
 		} else {
@@ -3868,7 +3865,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _011) {
 		t11 = null;
 	} else {
-		var _111 = _011.onFocus;
+		var _111 = _011.onResize;
 		if(null == _111) {
 			t11 = null;
 		} else {
@@ -3880,7 +3877,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _012) {
 		t12 = null;
 	} else {
-		var _112 = _012.onBlur;
+		var _112 = _012.onFocus;
 		if(null == _112) {
 			t12 = null;
 		} else {
@@ -3892,7 +3889,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _013) {
 		t13 = null;
 	} else {
-		var _113 = _013.onKey;
+		var _113 = _013.onBlur;
 		if(null == _113) {
 			t13 = null;
 		} else {
@@ -3904,7 +3901,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _014) {
 		t14 = null;
 	} else {
-		var _114 = _014.onClick;
+		var _114 = _014.onKey;
 		if(null == _114) {
 			t14 = null;
 		} else {
@@ -3916,7 +3913,7 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _015) {
 		t15 = null;
 	} else {
-		var _115 = _015.onDoubleClick;
+		var _115 = _015.onClick;
 		if(null == _115) {
 			t15 = null;
 		} else {
@@ -3928,23 +3925,35 @@ fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(null == _016) {
 		t16 = null;
 	} else {
-		var _116 = _016.onRangeChange;
+		var _116 = _016.onDoubleClick;
 		if(null == _116) {
 			t16 = null;
 		} else {
 			t16 = _116;
 		}
 	}
+	var _017 = opts;
+	var t17;
+	if(null == _017) {
+		t17 = null;
+	} else {
+		var _117 = _017.onRangeChange;
+		if(null == _117) {
+			t17 = null;
+		} else {
+			t17 = _117;
+		}
+	}
 	return new fancy_table_FancyTableSettings(fixedTop,fixedLeft,tmp,tmp1,t3 != null ? t3 : function(_,_2) {
 		return fancy_CellDimension.RenderSmart;
-	},t4 != null ? t4 : fancy_HorizontalScrollPosition.Left,t5 != null ? t5 : fancy_VerticalScrollPosition.Top,t6 != null ? t6 : true,t7 != null ? t7 : true,t8 != null ? t8 : true,t9 != null ? t9 : function(_3) {
-	},t10 != null ? t10 : function(_4) {
-	},t11 != null ? t11 : function(_5) {
-	},t12 != null ? t12 : function(_6) {
-	},t13 != null ? t13 : function(_7) {
-	},t14 != null ? t14 : function(_8) {
-	},t15 != null ? t15 : function(_9) {
-	},t16 != null ? t16 : function(_10) {
+	},t4 != null ? t4 : fancy_HorizontalScrollPosition.Left,t5 != null ? t5 : fancy_VerticalScrollPosition.Top,t6 != null ? t6 : true,t7 != null ? t7 : true,t8 != null ? t8 : true,t9 != null && t9,t10 != null ? t10 : function(_3) {
+	},t11 != null ? t11 : function(_4) {
+	},t12 != null ? t12 : function(_5) {
+	},t13 != null ? t13 : function(_6) {
+	},t14 != null ? t14 : function(_7) {
+	},t15 != null ? t15 : function(_8) {
+	},t16 != null ? t16 : function(_9) {
+	},t17 != null ? t17 : function(_10) {
 	});
 };
 var fancy_table_KeyEvent = function(table,key,alt,ctrl,shift,meta,isChar,which,stopPropagation,preventDefault,defaultPrevented) {
@@ -4476,24 +4485,6 @@ fancy_table_util_NestedData.toRows = function(data,table,classes,indentation) {
 };
 var haxe_IMap = function() { };
 haxe_IMap.__name__ = true;
-var haxe_Log = function() { };
-haxe_Log.__name__ = true;
-haxe_Log.trace = function(v,infos) {
-	var msg = infos != null ? infos.fileName + ":" + infos.lineNumber + ": " : "";
-	msg += js_Boot.__string_rec(v,"");
-	if(infos != null && infos.customParams != null) {
-		var _g = 0;
-		var _g1 = infos.customParams;
-		while(_g < _g1.length) {
-			var v1 = _g1[_g];
-			++_g;
-			msg += "," + js_Boot.__string_rec(v1,"");
-		}
-	}
-	if(typeof(console) != "undefined" && console.log != null) {
-		console.log(msg);
-	}
-};
 var haxe_ds_Option = { __ename__ : true, __constructs__ : ["Some","None"] };
 haxe_ds_Option.Some = function(v) { var $x = ["Some",0,v]; $x.__enum__ = haxe_ds_Option; $x.toString = $estr; return $x; };
 haxe_ds_Option.None = ["None",1];

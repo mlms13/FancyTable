@@ -20,6 +20,7 @@ typedef FancyTableOptions = {
   ?selection: { minRow: Int, minCol: Int, maxRow: Int, maxCol: Int },
   ?active: { row: Int, col: Int },
   ?focusOnHover: Bool,
+  ?alwaysFocused: Bool,
 
   ?onScroll: ScrollEvent -> Void,
   ?onResize: ResizeEvent -> Void,
