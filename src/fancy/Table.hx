@@ -85,6 +85,8 @@ class Table {
     if(settings.focusOnHover) {
       el.addEventListener("mouseenter", focus, false);
       el.addEventListener("mouseleave", blur, false);
+    } else if(settings.alwaysFocused) {
+      focus();
     } else {
       el.addEventListener("mousedown", function(e: MouseEvent) {
         focus();

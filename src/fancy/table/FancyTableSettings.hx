@@ -37,8 +37,9 @@ class FancyTableSettings {
   public var selectionEnabled(default, null): Bool;
   public var rangeSelectionEnabled(default, null): Bool;
   public var focusOnHover(default, null): Bool;
+  public var alwaysFocused(default, null): Bool;
 
-  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, selectionEnabled, rangeSelectionEnabled, focusOnHover, onScroll, onResize, onFocus, onBlur, onKey, onClick, onDoubleClick, onRangeChange) {
+  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, selectionEnabled, rangeSelectionEnabled, focusOnHover, alwaysFocused, onScroll, onResize, onFocus, onBlur, onKey, onClick, onDoubleClick, onRangeChange) {
     this.fixedTop = fixedTop;
     this.fixedLeft = fixedLeft;
     this.fallbackCell = fallbackCell;
@@ -51,6 +52,7 @@ class FancyTableSettings {
     this.rangeSelectionEnabled = rangeSelectionEnabled;
 
     this.focusOnHover = focusOnHover;
+    this.alwaysFocused = alwaysFocused;
 
     this.onScroll = onScroll;
     this.onResize = onResize;
@@ -91,6 +93,7 @@ class FancyTableSettings {
       opts.selectionEnabled.or(true),
       opts.rangeSelectionEnabled.or(true),
       opts.focusOnHover.or(true),
+      opts.alwaysFocused.or(false),
       opts.onScroll.or(function(_) {}),
       opts.onResize.or(function(_) {}),
       opts.onFocus.or(function(_) {}),
