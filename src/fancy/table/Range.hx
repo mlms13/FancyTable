@@ -126,22 +126,22 @@ class Range {
 
   public function left() {
     var coord = new Coords(active.row, active.col - 1);
-    return new Range(coord, coord); // TODO !!!
+    return new Range(coord, coord);
   }
 
   public function right() {
     var coord = new Coords(active.row, active.col + 1);
-    return new Range(coord, coord); // TODO !!!
+    return new Range(coord, coord);
   }
 
   public function up() {
     var coord = new Coords(active.row - 1, active.col);
-    return new Range(coord, coord); // TODO !!!
+    return new Range(coord, coord);
   }
 
   public function down() {
     var coord = new Coords(active.row + 1, active.col);
-    return new Range(coord, coord); // TODO !!!
+    return new Range(coord, coord);
   }
 
   public function firstColumn()

@@ -15,8 +15,6 @@ typedef FancyTableOptions = {
   ?hSize: Int -> Int -> CellDimension,
   ?initialScrollX: HorizontalScrollPosition,
   ?initialScrollY: VerticalScrollPosition,
-  // TODO !!!
-  ?canSelect: Int -> Int -> Bool,
   ?selectionEnabled: Bool,
   ?rangeSelectionEnabled: Bool,
   ?selection: { minRow: Int, minCol: Int, maxRow: Int, maxCol: Int },

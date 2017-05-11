@@ -34,13 +34,11 @@ class FancyTableSettings {
   public var onDoubleClick(default, null): CellEvent -> Void;
   public var onRangeChange(default, null): RangeEvent -> Void;
 
-  // TODO !!! use
-  public var canSelect(default, null): Int -> Int -> Bool;
   public var selectionEnabled(default, null): Bool;
   public var rangeSelectionEnabled(default, null): Bool;
   public var focusOnHover(default, null): Bool;
 
-  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, canSelect, selectionEnabled, rangeSelectionEnabled, focusOnHover, onScroll, onResize, onFocus, onBlur, onKey, onClick, onDoubleClick, onRangeChange) {
+  function new(fixedTop, fixedLeft, fallbackCell, classes, hSize, initialX, initialY, selectionEnabled, rangeSelectionEnabled, focusOnHover, onScroll, onResize, onFocus, onBlur, onKey, onClick, onDoubleClick, onRangeChange) {
     this.fixedTop = fixedTop;
     this.fixedLeft = fixedLeft;
     this.fallbackCell = fallbackCell;
@@ -49,7 +47,6 @@ class FancyTableSettings {
     this.initialScrollX = initialX;
     this.initialScrollY = initialY;
 
-    this.canSelect = canSelect;
     this.selectionEnabled = selectionEnabled;
     this.rangeSelectionEnabled = rangeSelectionEnabled;
 
@@ -81,12 +78,6 @@ class FancyTableSettings {
   public static function fromOptions(?opts: FancyTableOptions) {
     if (opts == null) opts = {};
 
-/*
-  ?canSelect: Int -> Int -> Bool,
-  ?selectionEnabled: Bool,
-  ?rangeSelectionEnabled: Bool,
-  ?selection: Option<{ minRow: Int, minCol: Int, maxRow: Int, maxCol: Int}>
-*/
     var fixedTop = opts.fixedTop.or(0),
         fixedLeft = opts.fixedLeft.or(0);
     return new FancyTableSettings(
@@ -97,7 +88,6 @@ class FancyTableSettings {
       opts.hSize.or(function (_, _) return RenderSmart),
       opts.initialScrollX.or(Left),
       opts.initialScrollY.or(Top),
-      opts.canSelect.or(function(r, c) return true),
       opts.selectionEnabled.or(true),
       opts.rangeSelectionEnabled.or(true),
       opts.focusOnHover.or(true),
