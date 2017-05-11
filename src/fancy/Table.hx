@@ -87,7 +87,6 @@ class Table {
       el.addEventListener("mouseleave", blur, false);
     } else {
       el.addEventListener("mousedown", function(e: MouseEvent) {
-        e.preventDefault();
         focus();
       }, false);
       js.Browser.document.addEventListener("mousedown", blur, false);
@@ -108,7 +107,6 @@ class Table {
         }
       }, false);
       el.addEventListener("mousedown", function(e: MouseEvent) {
-        // e.preventDefault();
         beginDrag(e);
         js.Browser.document.addEventListener("mousemove", mouseMove, false);
         js.Browser.document.addEventListener("mouseup", mouseUp, false);
@@ -324,11 +322,13 @@ class Table {
     selectFromRange.fn(_.goToRow(last));
   }
   public function goPageUp() {
-    selectFromRange.fn(_.upRows(10)); // TODO !!!
+    var size = grid.rowsInView();
+    selectFromRange.fn(_.upRows(size));
   }
   public function goPageDown() {
     var last = grid.rows - 1;
-    selectFromRange.fn(_.downRows(10, last)); // TODO !!!
+    var size = grid.rowsInView();
+    selectFromRange.fn(_.downRows(size, last));
   }
 
   public function goNextHorizontal() selectFromRange.fn(_.nextHorizontal());
@@ -359,11 +359,13 @@ class Table {
     scrollToRow(last);
   }
   public function selectPageUp() {
-    selectFromRange.fn(_.selectUpRows(10)); // TODO !!!
+    var size = grid.rowsInView();
+    selectFromRange.fn(_.selectUpRows(size));
   }
   public function selectPageDown() {
     var last = grid.rows - 1;
-    selectFromRange.fn(_.selectDownRows(10, last)); // TODO !!!
+    var size = grid.rowsInView();
+    selectFromRange.fn(_.selectDownRows(size, last));
   }
 
   public function selectCurrentToCell(row: Int, col: Int) {
