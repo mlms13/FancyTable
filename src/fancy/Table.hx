@@ -418,6 +418,18 @@ class Table {
     grid.scrollTo(null, null);
   }
 
+  public function getScrollPosition() : { x: Float, y: Float } {
+    return grid.getScrollPosition();
+  }
+
+  public function scrollToPosition(?x : Float, ?y : Float) : Void {
+    grid.scrollToPosition(x, y);
+  }
+
+  public function scrollTo(?xPos: HorizontalScrollPosition, ?yPos: VerticalScrollPosition) : Void {
+    grid.scrollTo(xPos, yPos);
+  }
+
   public function resetScroll() : Void {
     grid.scrollTo(settings.initialScrollX, settings.initialScrollY);
   }
