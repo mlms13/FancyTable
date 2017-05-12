@@ -3714,7 +3714,7 @@ fancy_table_FancyTableSettings.classesFromOptions = function(opts) {
 	if(opts == null) {
 		opts = { };
 	}
-	return { cellContent : opts.cellContent != null ? opts.cellContent : "ft-cell-content", rowExpanded : opts.rowExpanded != null ? opts.rowExpanded : "ft-row-expanded", rowCollapsed : opts.rowCollapsed != null ? opts.rowCollapsed : "ft-row-collapsed", rowFoldHeader : opts.rowFoldHeader != null ? opts.rowFoldHeader : "ft-row-fold-header", rowIndent : opts.rowIndent != null ? opts.rowIndent : "ft-row-indent-"};
+	return { cellContent : opts.cellContent != null ? opts.cellContent : "ft-cell-content", rowExpanded : opts.rowExpanded != null ? opts.rowExpanded : "ft-row-expanded", rowCollapsed : opts.rowCollapsed != null ? opts.rowCollapsed : "ft-row-collapsed", rowFoldHeader : opts.rowFoldHeader != null ? opts.rowFoldHeader : "ft-row-fold-header", rowIndent : opts.rowIndent != null ? opts.rowIndent : "ft-row-indent-", cellActive : opts.cellActive != null ? opts.cellActive : "ft-cell-active", cellSelected : opts.cellSelected != null ? opts.cellSelected : "ft-cell-selected", cellSelectedTop : opts.cellSelectedTop != null ? opts.cellSelectedTop : "ft-cell-selected-top", cellSelectedRight : opts.cellSelectedRight != null ? opts.cellSelectedRight : "ft-cell-selected-right", cellSelectedBottom : opts.cellSelectedBottom != null ? opts.cellSelectedBottom : "ft-cell-selected-bottom", cellSelectedLeft : opts.cellSelectedLeft != null ? opts.cellSelectedLeft : "ft-cell-selected-left"};
 };
 fancy_table_FancyTableSettings.fromOptions = function(opts) {
 	if(opts == null) {
@@ -4317,20 +4317,20 @@ fancy_table_Row.prototype = {
 			var buff = [];
 			if(range.contains(row,col)) {
 				if(range.isActive(row,col)) {
-					buff.push("active");
+					buff.push(this.classSettings.cellActive);
 				}
-				buff.push("selected");
+				buff.push(this.classSettings.cellSelected);
 				if(range.isOnTop(row)) {
-					buff.push("selected-top");
+					buff.push(this.classSettings.cellSelectedTop);
 				}
 				if(range.isOnRight(col)) {
-					buff.push("selected-right");
+					buff.push(this.classSettings.cellSelectedRight);
 				}
 				if(range.isOnBottom(row)) {
-					buff.push("selected-bottom");
+					buff.push(this.classSettings.cellSelectedBottom);
 				}
 				if(range.isOnLeft(col)) {
-					buff.push("selected-left");
+					buff.push(this.classSettings.cellSelectedLeft);
 				}
 			}
 			classes1 = buff;

@@ -1,10 +1,17 @@
 package fancy.table.util;
 
 typedef FancyTableClassOptions = {
-  ?cellContent: String,
   ?rowExpanded: String,
   ?rowCollapsed: String,
   ?rowFoldHeader: String,
-  ?rowIndent: String
+  ?rowIndent: String,
+
+  ?cellContent: String,
+  ?cellActive: String,
+  ?cellSelected: String,
+  ?cellSelectedTop: String,
+  ?cellSelectedRight: String,
+  ?cellSelectedBottom: String,
+  ?cellSelectedLeft: String
 };
 
