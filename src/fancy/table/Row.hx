@@ -56,16 +56,16 @@ class Row {
         var buff = [];
         if(range.contains(row, col)) {
           if(range.isActive(row, col))
-            buff.push("active"); // TODO !!!
-          buff.push("selected"); // TODO !!!
+            buff.push(classSettings.cellActive);
+          buff.push(classSettings.cellSelected);
           if(range.isOnTop(row))
-            buff.push("selected-top"); // TODO !!!
+            buff.push(classSettings.cellSelectedTop);
           if(range.isOnRight(col))
-            buff.push("selected-right"); // TODO !!!
+            buff.push(classSettings.cellSelectedRight);
           if(range.isOnBottom(row))
-            buff.push("selected-bottom"); // TODO !!!
+            buff.push(classSettings.cellSelectedBottom);
           if(range.isOnLeft(col))
-            buff.push("selected-left"); // TODO !!!
+            buff.push(classSettings.cellSelectedLeft);
         }
         buff;
     }).concat(classes);

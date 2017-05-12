@@ -9,11 +9,18 @@ import fancy.table.util.FancyTableOptions;
 import fancy.Grid;
 
 typedef FancyTableClasses = {
-  cellContent: String,
   rowExpanded: String,
   rowCollapsed: String,
   rowFoldHeader: String,
-  rowIndent: String
+  rowIndent: String,
+
+  cellContent: String,
+  cellActive: String,
+  cellSelected: String,
+  cellSelectedTop: String,
+  cellSelectedRight: String,
+  cellSelectedBottom: String,
+  cellSelectedLeft: String
 }
 
 class FancyTableSettings {
@@ -72,9 +79,14 @@ class FancyTableSettings {
       rowExpanded: opts.rowExpanded != null ? opts.rowExpanded : "ft-row-expanded",
       rowCollapsed: opts.rowCollapsed != null ? opts.rowCollapsed : "ft-row-collapsed",
       rowFoldHeader: opts.rowFoldHeader != null ? opts.rowFoldHeader : "ft-row-fold-header",
-      rowIndent: opts.rowIndent != null ? opts.rowIndent : "ft-row-indent-"
+      rowIndent: opts.rowIndent != null ? opts.rowIndent : "ft-row-indent-",
+      cellActive: opts.cellActive != null ? opts.cellActive : "ft-cell-active",
+      cellSelected: opts.cellSelected != null ? opts.cellSelected : "ft-cell-selected",
+      cellSelectedTop: opts.cellSelectedTop != null ? opts.cellSelectedTop : "ft-cell-selected-top",
+      cellSelectedRight: opts.cellSelectedRight != null ? opts.cellSelectedRight : "ft-cell-selected-right",
+      cellSelectedBottom: opts.cellSelectedBottom != null ? opts.cellSelectedBottom : "ft-cell-selected-bottom",
+      cellSelectedLeft: opts.cellSelectedLeft != null ? opts.cellSelectedLeft : "ft-cell-selected-left"
     };
-    // TODO !!! add classes for selections
   }
 
   public static function fromOptions(?opts: FancyTableOptions) {

@@ -141,31 +141,31 @@ body {
       -ms-user-select: none;
           user-select: none;
 }
-.fancy-grid .selected {
+.fancy-grid .ft-cell-selected {
   background-color: #e9f3ff;
 }
-.fancy-grid .selected-left {
+.fancy-grid .ft-cell-selected-left {
   border-left: 1px solid #0086f8;
 }
-.fancy-grid .selected-right {
+.fancy-grid .ft-cell-selected-right {
   border-right: 1px solid #0086f8;
 }
-.fancy-grid .selected-top {
+.fancy-grid .ft-cell-selected-top {
   border-top: 1px solid #0086f8;
 }
-.fancy-grid .selected-top .ft-cell-content {
+.fancy-grid .ft-cell-selected-top .ft-cell-content {
   padding-top: 7px;
 }
-.fancy-grid .selected-bottom {
+.fancy-grid .ft-cell-selected-bottom {
   border-bottom: 1px solid #0086f8;
 }
-.fancy-grid .selected-bottom .ft-cell-content {
+.fancy-grid .ft-cell-selected-bottom .ft-cell-content {
   padding-bottom: 7px;
 }
-.fancy-grid .active {
+.fancy-grid .ft-cell-active {
   border: 2px solid #0086f8;
 }
-.fancy-grid .active .ft-cell-content {
+.fancy-grid .ft-cell-active .ft-cell-content {
   padding-bottom: 6px;
   padding-top: 6px;
 }
