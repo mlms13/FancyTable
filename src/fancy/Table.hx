@@ -442,7 +442,7 @@ class Table {
     selectRange(range.min.row, range.min.col, range.max.row, range.max.col, range.active.row, range.active.col);
   }
 
-  public function selectRange(minRow: Int, minCol: Int, maxRow: Int, maxCol: Int, ?row: Int = 0, ?col: Int = 0) {
+  public function selectRange(minRow: Int, minCol: Int, maxRow: Int, maxCol: Int, ?row: Int, ?col: Int) {
     if(!settings.selectionEnabled) return;
     if(!settings.rangeSelectionEnabled) {
       maxRow = minRow;
@@ -451,6 +451,9 @@ class Table {
 
     if(minRow < 0 || minCol < 0) return; // negative values
     if(maxRow >= bottomRight.row || maxCol >= bottomRight.col) return; // out of bounds
+
+    if(null == row) row = minRow;
+    if(null == col) col = minCol;
 
     var range = new Range(new Coords(minRow, minCol), new Coords(maxRow, maxCol));
     range.active.row = row;
