@@ -8,6 +8,7 @@ using thx.Arrays;
 using thx.Maps;
 using thx.Options;
 import thx.Tuple;
+import dots.Keys;
 
 import fancy.Table;
 import fancy.table.util.CellContent;
@@ -80,10 +81,10 @@ class Main {
         maxCol: 3
       },
       onKey: function(e: KeyEvent) {
-        e.coords.each(coords -> onStartEditingFlatRowCell(coords, e.key, e.table));
+        e.coords.each(coords -> onStartEditingFlatRowCell(coords, e.key.key, e.table));
       },
       onDoubleClick: function(event: CellEvent) {
-        onStartEditingFlatRowCell(event.coords, "", event.table);
+        onStartEditingFlatRowCell(event.coords, NonPrinting(F(12)), event.table);
       },
       focusOnHover: false,
       alwaysFocused: true
@@ -302,7 +303,7 @@ class Main {
     return element;
   }
 
-  static function onStartEditingFlatRowCell(coords: Coords, typed: String, table: Table) {
+  static function onStartEditingFlatRowCell(coords: Coords, typed: Key, table: Table) {
     var value : String = getFlatRowCellByCoords(coords.row, coords.col)
       .map(data -> switch data.cell {
         case CTextFold(text, _) : text;
@@ -316,8 +317,10 @@ class Main {
     var input = js.Browser.document.createInputElement();
     input.value = "";
     switch typed {
-      case other if(other.length == 1): // normal char
-        input.value = typed;
+      case Printing(char, _):
+        input.value = char.toString();
+      case NonPrinting(F(12)):
+        input.value = value;
       case _:
         return;
     }
