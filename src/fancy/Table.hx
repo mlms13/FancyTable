@@ -1,14 +1,16 @@
 package fancy;
 
+import haxe.ds.Option;
+import js.html.*;
 import js.html.Element;
 
 using thx.Arrays;
 import thx.Ints;
-
-import haxe.ds.Option;
 using thx.Functions;
 using thx.Options;
+import dots.Keys;
 
+import fancy.Grid;
 import fancy.table.CellEvent;
 import fancy.table.Coords;
 import fancy.table.FancyTableSettings;
@@ -22,9 +24,7 @@ import fancy.table.util.CellContent;
 import fancy.table.util.FancyTableOptions;
 using fancy.table.util.NestedData;
 import fancy.table.util.RowData;
-import js.html.*;
 
-import fancy.Grid;
 
 enum FancyTableData {
   Tabular(data : Array<Array<CellContent>>);
@@ -174,82 +174,91 @@ class Table {
   }
 
   public function pressKey(e: KeyEvent) {
-    switch e.key.toLowerCase() {
-      case "home":
+    var shiftPressed = e.key.modifiers.contains(Shift);
+    var ctrlOrMacCmd = e.isCmdOnMacOrCtrl();
+
+    switch e.key {
+      case { key: NonPrinting(Home) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
+        if (shiftPressed && settings.rangeSelectionEnabled)
           selectToFirstColumn();
         else
           goFirstColumn();
-      case "end":
+
+      case { key: NonPrinting(End) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
+        if (shiftPressed && settings.rangeSelectionEnabled)
           selectToLastColumn();
         else
           goLastColumn();
-      case "pageup":
+
+      case { key: NonPrinting(PageUp) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
+        if (shiftPressed && settings.rangeSelectionEnabled)
           selectPageUp();
         else
           goPageUp();
-      case "pagedown":
+
+      case { key: NonPrinting(PageDown) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled)
+        if (shiftPressed && settings.rangeSelectionEnabled)
           selectPageDown();
         else
           goPageDown();
-      case "enter":
+
+      case { key: NamedPrinting(Enter) }:
         e.preventDefault();
-        if(e.shift)
+        if (shiftPressed)
           goPrevious();
         else
           goNext();
-      case "tab":
+
+      case { key: NamedPrinting(Tab) }:
         e.preventDefault();
-        if(e.shift)
+        if (shiftPressed)
           goPreviousHorizontal();
         else
           goNextHorizontal();
-      case "arrowdown":
+
+      case { key: NonPrinting(DownArrow) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled) {
+        if (shiftPressed && settings.rangeSelectionEnabled) {
           // is selection
-          if(e.isCmdOnMacOrCtrl()) {
+          if (ctrlOrMacCmd) {
             selectToLastRow();
           } else {
             selectDown();
           }
         } else {
           // is movement
-          if(e.isCmdOnMacOrCtrl()) {
+          if(ctrlOrMacCmd) {
             goLastRow();
           } else {
             goDown();
           }
         }
-      case "arrowup":
+      case { key: NonPrinting(UpArrow) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled) {
+        if (shiftPressed && settings.rangeSelectionEnabled) {
           // is selection
-          if(e.isCmdOnMacOrCtrl()) {
+          if (ctrlOrMacCmd) {
             selectToFirstRow();
           } else {
             selectUp();
           }
         } else {
           // is movement
-          if(e.isCmdOnMacOrCtrl()) {
+          if (ctrlOrMacCmd) {
             goFirstRow();
           } else {
             goUp();
           }
         }
-      case "arrowleft":
+      case { key: NonPrinting(LeftArrow) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled) {
+        if (shiftPressed && settings.rangeSelectionEnabled) {
           // is selection
-          if(e.isCmdOnMacOrCtrl()) {
+          if (ctrlOrMacCmd) {
             selectToFirstColumn();
           } else {
             selectLeft();
@@ -262,9 +271,9 @@ class Table {
             goLeft();
           }
         }
-      case "arrowright":
+      case { key: NonPrinting(RightArrow) }:
         e.preventDefault();
-        if(e.shift && settings.rangeSelectionEnabled) {
+        if (shiftPressed && settings.rangeSelectionEnabled) {
           // is selection
           if(e.isCmdOnMacOrCtrl()) {
             selectToLastColumn();
